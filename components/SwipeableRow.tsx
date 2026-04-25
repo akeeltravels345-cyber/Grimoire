@@ -1,5 +1,5 @@
 import React, { useRef, useCallback } from 'react';
-import { View, StyleSheet, Animated, Pressable } from 'react-native';
+import { View, StyleSheet, Animated } from 'react-native';
 import { Swipeable } from 'react-native-gesture-handler';
 import { MaterialIcons } from '@expo/vector-icons';
 import { theme } from '../constants/theme';
@@ -12,13 +12,11 @@ interface SwipeableRowProps {
 export default function SwipeableRow({ children, onDelete }: SwipeableRowProps) {
   const swipeableRef = useRef<Swipeable>(null);
 
-  const close = useCallback(() => {
-    swipeableRef.current?.close();
-  }, []);
-
   const handleDelete = useCallback(() => {
     swipeableRef.current?.close();
-    onDelete();
+    setTimeout(() => {
+      onDelete();
+    }, 250);
   }, [onDelete]);
 
   const renderRightActions = useCallback(
@@ -35,11 +33,11 @@ export default function SwipeableRow({ children, onDelete }: SwipeableRowProps) 
       });
 
       return (
-        <Pressable onPress={handleDelete} style={styles.deleteAction}>
+        <View onStartShouldSetResponder={() => true} onResponderRelease={handleDelete} style={styles.deleteAction}>
           <Animated.View style={[styles.deleteIconWrap, { opacity, transform: [{ scale }] }]}>
             <MaterialIcons name="delete" size={22} color="#FFF" />
           </Animated.View>
-        </Pressable>
+        </View>
       );
     },
     [handleDelete],
@@ -53,12 +51,12 @@ export default function SwipeableRow({ children, onDelete }: SwipeableRowProps) 
         overshootFriction={8}
         rightThreshold={80}
         renderRightActions={renderRightActions}
-        onSwipeableWillClose={close}
         overshootRight={false}
+        useNativeAnimations={true}
       >
-        <Pressable onPress={close} style={styles.content}>
+        <View style={styles.content}>
           {children}
-        </Pressable>
+        </View>
       </Swipeable>
     </View>
   );
