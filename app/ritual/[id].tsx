@@ -408,6 +408,64 @@ for (let i = 0; i < 90; i++) {
           <View style={styles.editSection}>
             <Text style={styles.editFieldLabel}>Ingredients & Tools</Text>
             <TextInput style={styles.editInput} value={editIngredients} onChangeText={setEditIngredients} placeholder="Comma-separated: candle, herbs, crystal..." placeholderTextColor={theme.textMuted} />
+          </View>
+        ) : null}
+
+        {/* Scheduled Date */}
+        {isEditing ? (
+          <View style={styles.editSection}>
+            <Text style={styles.editFieldLabel}>Scheduled Date</Text>
+            <Pressable style={styles.editInput} onPress={() => setShowEditDatePicker(true)}>
+              <Text style={{ color: editScheduledDate ? theme.textPrimary : theme.textMuted, fontSize: 15 }}>
+                {editScheduledDate
+                  ? new Date(editScheduledDate).toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })
+                  : 'No date set — tap to add'}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        <Modal visible={showEditDatePicker} transparent animationType="slide">
+          <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' }} onPress={() => setShowEditDatePicker(false)}>
+            <Pressable style={{ backgroundColor: theme.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingBottom: 32, maxHeight: '60%' }} onPress={() => {}}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: theme.border }}>
+                <Text style={{ fontSize: 17, fontWeight: '700', color: theme.textPrimary }}>Select Date</Text>
+                <Pressable onPress={() => setShowEditDatePicker(false)} style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: theme.surfaceLight, alignItems: 'center', justifyContent: 'center' }}>
+                  <MaterialIcons name="close" size={22} color={theme.textPrimary} />
+                </Pressable>
+              </View>
+              <ScrollView style={{ maxHeight: 360 }} showsVerticalScrollIndicator={false}>
+                {editScheduledDate ? (
+                  <Pressable
+                    style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: theme.border + '40', backgroundColor: theme.error + '10' }}
+                    onPress={() => { setEditScheduledDate(undefined); setShowEditDatePicker(false); }}
+                  >
+                    <MaterialIcons name="close" size={18} color={theme.error} />
+                    <Text style={{ fontSize: 15, color: theme.error, fontWeight: '600', marginLeft: 10 }}>Remove date</Text>
+                  </Pressable>
+                ) : null}
+                {editDateOptions.map((d, i) => {
+                  const isSelected = editScheduledDate && d.toDateString() === new Date(editScheduledDate).toDateString();
+                  const isToday = d.toDateString() === new Date().toDateString();
+                  return (
+                    <Pressable
+                      key={i}
+                      style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: theme.border + '40', backgroundColor: isSelected ? theme.primary + '12' : 'transparent' }}
+                      onPress={() => { setEditScheduledDate(d.toISOString()); setShowEditDatePicker(false); Haptics.selectionAsync(); }}
+                    >
+                      <Text style={{ flex: 1, fontSize: 15, color: isSelected ? theme.primary : theme.textPrimary, fontWeight: isSelected ? '700' : '500' }}>
+                        {d.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}
+                        {isToday ? '  (Today)' : ''}
+                      </Text>
+                      {isSelected ? <MaterialIcons name="check-circle" size={20} color={theme.primary} /> : null}
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </Pressable>
+          </Pressable>
+        </Modal>
+            
             <Text style={styles.editHint}>Separate items with commas</Text>
           </View>
         ) : ritual.ingredients && ritual.ingredients.length > 0 ? (
