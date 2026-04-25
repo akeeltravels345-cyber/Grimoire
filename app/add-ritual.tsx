@@ -121,7 +121,7 @@ export default function AddRitualScreen() {
           <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={setDescription} placeholder="Describe the ritual process, steps, and any special notes..." placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
 
           {/* Intention */}
-          <Text style={styles.label}>Intention — What are you calling in? *</Text>
+          <Text style={styles.label}>Intention *</Text>
           <TextInput style={[styles.input, styles.textArea]} value={intention} onChangeText={setIntention} placeholder="What is the purpose of this ritual?" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
           {/* Tangible Outcome */}
           <Text style={styles.label}>Tangible Outcome *</Text>
