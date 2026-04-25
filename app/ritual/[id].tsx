@@ -197,13 +197,6 @@ for (let i = 0; i < 90; i++) {
   }
 
   const msStyle = getStatusLabel(ritual.status);
-  const editDateOptions: Date[] = [];
-const editDateStart = new Date();
-for (let i = 0; i < 90; i++) {
-  const d = new Date(editDateStart);
-  d.setDate(d.getDate() + i);
-  editDateOptions.push(d);
-}
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
