@@ -54,7 +54,7 @@ export default function AddRitualScreen() {
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' });
   };
 
-  const needsDate = schedule !== 'as_needed';
+  const needsDate = true;
   const parsedConsecutive = Math.max(1, parseInt(consecutiveDays) || 1);
   const canSave = name.trim().length > 0 && intention.trim().length > 0 && tangibleOutcome.trim().length > 0 && (needsDate ? scheduledDate !== null : true);
 
@@ -138,15 +138,13 @@ export default function AddRitualScreen() {
           <Text style={styles.label}>Schedule</Text>
           <View style={styles.scheduleGrid}>
             {scheduleOptions.map(opt => (
-              <Pressable key={opt.id} style={[styles.scheduleOption, schedule === opt.id && styles.scheduleOptionActive]} onPress={() => { setSchedule(opt.id); if (opt.id === 'as_needed') { setScheduledDate(null); } Haptics.selectionAsync(); }}>
+              <Pressable key={opt.id} style={[styles.scheduleOption, schedule === opt.id && styles.scheduleOptionActive]} onPress={() => { setSchedule(opt.id); if (opt.id === 'as_needed') { } Haptics.selectionAsync(); }}>
                 <MaterialIcons name={opt.icon as keyof typeof MaterialIcons.glyphMap} size={20} color={schedule === opt.id ? theme.primary : theme.textMuted} />
                 <Text style={[styles.scheduleOptionText, schedule === opt.id && styles.scheduleOptionTextActive]}>{opt.label}</Text>
               </Pressable>
             ))}
           </View>
-          {schedule === 'as_needed' ? (
-            <Text style={styles.hint}>As needed rituals will appear in your tracker without a scheduled date</Text>
-          ) : null}
+        
 
           <TextInput style={styles.input} value={scheduleDetail} onChangeText={setScheduleDetail} placeholder="e.g., Every Sunday evening, Full Moon nights..." placeholderTextColor={theme.textMuted} />
 
