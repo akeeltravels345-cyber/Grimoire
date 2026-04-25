@@ -465,10 +465,9 @@ for (let i = 0; i < 90; i++) {
             </Pressable>
           </Pressable>
         </Modal>
-            
-            <Text style={styles.editHint}>Separate items with commas</Text>
-          </View>
-        ) : ritual.ingredients && ritual.ingredients.length > 0 ? (
+
+        {/* Ingredients (view mode) */}
+        {!isEditing && ritual.ingredients && ritual.ingredients.length > 0 ? (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Ingredients & Tools</Text>
             <View style={styles.ingredientsList}>
