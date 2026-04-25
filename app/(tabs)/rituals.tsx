@@ -110,7 +110,7 @@ export default function RitualsScreen() {
   const [timelineView, setTimelineView] = useState<TimelineView>('list');
   const [activeFilter, setActiveFilter] = useState<StatusFilter>('all');
   const [activeCategory, setActiveCategory] = useState<string>('all');
-  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [selectedDay, setSelectedDay] = useState<Date | null>(new Date());
   const [manifFilter, setManifFilter] = useState<'all' | 'pending' | 'manifested'>('all');
   const [weekOffset, setWeekOffset] = useState(0);
   const [monthOffset, setMonthOffset] = useState(0);
