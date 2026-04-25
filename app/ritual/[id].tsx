@@ -27,9 +27,17 @@ export default function RitualDetailScreen() {
   const [editIntention, setEditIntention] = useState('');
   const [editTangibleOutcome, setEditTangibleOutcome] = useState('');
   const [editCategory, setEditCategory] = useState('');
-  const [editIngredients, setEditIngredients] = useState('');
+  const [editIngredients, setEditIngredients] = useState(''); const [editScheduledDate, setEditScheduledDate] = useState<string | undefined>(undefined);
+const [showEditDatePicker, setShowEditDatePicker] = useState(false);
   const { showAlert } = useAlert();
   const ritual = rituals.find(r => r.id === id);
+  const editDateOptions: Date[] = [];
+const editDateStart = new Date();
+for (let i = 0; i < 90; i++) {
+  const d = new Date(editDateStart);
+  d.setDate(d.getDate() + i);
+  editDateOptions.push(d);
+}
 
   if (!ritual) {
     return (
@@ -85,7 +93,7 @@ export default function RitualDetailScreen() {
     setEditIntention(ritual.intention);
     setEditTangibleOutcome(ritual.tangibleOutcome || '');
     setEditCategory(ritual.category);
-    setEditIngredients(ritual.ingredients ? ritual.ingredients.join(', ') : '');
+    setEditIngredients(ritual.ingredients ? ritual.ingredients.join(', ') : ''); setEditScheduledDate(ritual.scheduledDate);
     setIsEditing(true);
     Haptics.selectionAsync();
   };
@@ -104,6 +112,7 @@ export default function RitualDetailScreen() {
       tangibleOutcome: editTangibleOutcome.trim(),
       category: editCategory,
       ingredients: editIngredients.trim() ? editIngredients.split(',').map(i => i.trim()).filter(Boolean) : undefined,
+      scheduledDate: editScheduledDate,
     });
     setIsEditing(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -188,6 +197,13 @@ export default function RitualDetailScreen() {
   }
 
   const msStyle = getStatusLabel(ritual.status);
+  const editDateOptions: Date[] = [];
+const editDateStart = new Date();
+for (let i = 0; i < 90; i++) {
+  const d = new Date(editDateStart);
+  d.setDate(d.getDate() + i);
+  editDateOptions.push(d);
+}
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
