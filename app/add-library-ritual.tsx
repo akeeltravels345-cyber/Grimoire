@@ -23,7 +23,7 @@ export default function AddLibraryRitualScreen() {
   const [tangibleOutcome, setTangibleOutcome] = useState('');
   const [ingredients, setIngredients] = useState('');
 
-  const canSave = name.trim().length > 0 && intention.trim().length > 0 && tangibleOutcome.trim().length > 0;
+  const canSave = name.trim().length > 0 && intention.trim().length > 0 && tangibleOutcome.trim().length > 0 && description.trim().length > 0;
 
   const handleSave = () => {
     if (!canSave) return;
@@ -100,7 +100,7 @@ export default function AddLibraryRitualScreen() {
           <TextInput style={[styles.input, styles.textArea]} value={intention} onChangeText={setIntention} placeholder="What is the purpose of this spell?" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
 
           {/* Description */}
-          <Text style={styles.label}>Description</Text>
+          <Text style={styles.label}>Ritual Instructions *</Text>
           <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={setDescription} placeholder="Describe the spell process, steps, and any special notes..." placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
 
           {/* Ingredients */}
