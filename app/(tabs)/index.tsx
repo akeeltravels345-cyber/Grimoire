@@ -12,27 +12,6 @@ import { getCurrentPlanetaryHour, formatHourTime, PlanetaryHourInfo } from '../.
 import { useApp } from '../../contexts/AppContext';
 import { getComputedStatus, getDaysUntil, getUniqueRitualCounts } from '../../services/mockData';
 
-const moon = {
-  bg: '#2D2455',
-  card: 'rgba(255,255,255,0.10)',
-  cardWarm: 'rgba(245,213,224,0.06)',
-  border: 'rgba(255,255,255,0.10)',
-  borderWarm: 'rgba(245,213,224,0.14)',
-  primary: '#C9A0DC',
-  primaryD: '#9B6DB5',
-  blush: '#F5D5E0',
-  blushD: '#E0A8C0',
-  lavender: '#B8B0E8',
-  text: '#F5D5E0',
-  text2: '#C4B0D8',
-  text3: '#8878A8',
-  success: '#7ED4A8',
-  warn: '#E8C87A',
-  error: '#E88898',
-};
-
-export { moon };
-
 function getMoonPhaseIndex(): number {
   const now = new Date();
   const year = now.getFullYear();
@@ -180,17 +159,14 @@ function StarField() {
     for (let i = 0; i < 80; i++) {
       let size: number, baseOpacity: number, color: string;
       if (i < 12) {
-        // 15% — bright prominent stars
         size = 2.5 + Math.random() * 0.5;
         baseOpacity = 0.8 + Math.random() * 0.2;
         color = Math.random() < 0.2 ? '#F5D5E0' : '#FFFFFF';
       } else if (i < 36) {
-        // 30% — medium stars
         size = 1.5;
         baseOpacity = 0.5 + Math.random() * 0.2;
         color = '#FFFFFF';
       } else {
-        // 55% — faint small stars
         size = 0.8 + Math.random() * 0.2;
         baseOpacity = 0.2 + Math.random() * 0.2;
         color = '#FFFFFF';
@@ -219,18 +195,19 @@ function StarField() {
   );
 }
 
+export { StarField };
+
 function MoonPhaseVisual({ phaseIndex, size }: { phaseIndex: number; size: number }) {
   const radius = size / 2;
-  const moonColor = moon.blush;
-  const shadowColor = moon.bg;
-  const glowColor = 'rgba(232, 228, 240, 0.15)';
+  const moonColor = theme.textPrimary;
+  const shadowColor = theme.background;
 
   if (phaseIndex === 4) {
     return (
       <View style={{
         width: size, height: size, borderRadius: radius,
         backgroundColor: moonColor,
-        shadowColor: moon.blush, shadowOffset: { width: 0, height: 0 },
+        shadowColor: theme.textPrimary, shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.5, shadowRadius: 16, elevation: 8,
       }} />
     );
@@ -241,7 +218,7 @@ function MoonPhaseVisual({ phaseIndex, size }: { phaseIndex: number; size: numbe
       <View style={{
         width: size, height: size, borderRadius: radius,
         backgroundColor: shadowColor,
-        borderWidth: 1.5, borderColor: '#3D3A56',
+        borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)',
       }} />
     );
   }
@@ -256,7 +233,7 @@ function MoonPhaseVisual({ phaseIndex, size }: { phaseIndex: number; size: numbe
     <View style={{
       width: size, height: size, borderRadius: radius,
       backgroundColor: moonColor, overflow: 'hidden',
-      shadowColor: moon.blush, shadowOffset: { width: 0, height: 0 },
+      shadowColor: theme.textPrimary, shadowOffset: { width: 0, height: 0 },
       shadowOpacity: 0.5, shadowRadius: 16, elevation: 4,
     }}>
       <View style={{
@@ -299,7 +276,7 @@ export default function DashboardScreen() {
   const categoryProgress = useMemo(() => {
     const catMap = new Map<string, { total: number; completed: number; color: string; name: string; icon: string }>();
     categories.forEach(cat => {
-      catMap.set(cat.id, { total: 0, completed: 0, color: categoryColors[cat.id] || moon.lavender, name: cat.name, icon: cat.icon || 'auto-fix-high' });
+      catMap.set(cat.id, { total: 0, completed: 0, color: categoryColors[cat.id] || theme.accent, name: cat.name, icon: cat.icon || 'auto-fix-high' });
     });
     const catGroups = new Map<string, Map<string, typeof rituals>>();
     rituals.forEach(r => {
@@ -395,14 +372,14 @@ export default function DashboardScreen() {
             <View style={{ flexDirection: 'row', gap: 10 }}>
               <Pressable onPress={() => router.push('/add-ritual')} style={styles.addButton}>
                 <LinearGradient
-                  colors={[moon.primary, moon.primaryD]}
+                  colors={[theme.primary, theme.primaryDark]}
                   style={styles.addButtonGradient}
                 >
-                  <MaterialIcons name="add" size={24} color={moon.bg} />
+                  <MaterialIcons name="add" size={24} color={theme.background} />
                 </LinearGradient>
               </Pressable>
               <Pressable onPress={() => router.push('/profile')} style={styles.profileButton}>
-                <MaterialIcons name="person" size={22} color={moon.text2} />
+                <MaterialIcons name="person" size={22} color={theme.textSecondary} />
               </Pressable>
             </View>
           </View>
@@ -450,11 +427,11 @@ export default function DashboardScreen() {
           {overdueRituals.length > 0 ? (
             <View style={styles.alertsSection}>
               <View style={styles.alertsHeader}>
-                <MaterialIcons name="error-outline" size={16} color={moon.error} />
+                <MaterialIcons name="error-outline" size={16} color={theme.error} />
                 <Text style={styles.alertsTitle}>{overdueRituals.length} Past Due</Text>
               </View>
               {overdueRituals.map(r => {
-                const catColor = categoryColors[r.category] || moon.lavender;
+                const catColor = categoryColors[r.category] || theme.accent;
                 const cat = categories.find(c => c.id === r.category);
                 const days = r.scheduledDate ? getDaysUntil(r.scheduledDate) : null;
                 return (
@@ -498,7 +475,7 @@ export default function DashboardScreen() {
             <View style={styles.overallBarBg}>
               <View style={[styles.overallBarFill, { width: `${Math.max(overallPct, 2)}%` }]}>
                 <LinearGradient
-                  colors={[moon.primaryD, moon.primary, moon.blushD]}
+                  colors={[theme.primaryDark, theme.primary, '#E0A8C0']}
                   start={{ x: 0, y: 0.5 }}
                   end={{ x: 1, y: 0.5 }}
                   style={{ flex: 1, borderRadius: 4 }}
@@ -530,8 +507,8 @@ export default function DashboardScreen() {
             {/* Manifestation mini-stats */}
             <View style={styles.manifRow}>
               <View style={styles.manifStat}>
-                <MaterialIcons name="star" size={14} color={moon.success} />
-                <Text style={[styles.manifStatValue, { color: moon.success }]}>{manifestedCount}</Text>
+                <MaterialIcons name="star" size={14} color={theme.success} />
+                <Text style={[styles.manifStatValue, { color: theme.success }]}>{manifestedCount}</Text>
                 <Text style={styles.manifStatLabel}>Manifested</Text>
               </View>
               <View style={styles.manifDivider} />
@@ -542,8 +519,8 @@ export default function DashboardScreen() {
               </View>
               <View style={styles.manifDivider} />
               <View style={styles.manifStat}>
-                <MaterialIcons name="hourglass-top" size={14} color={moon.primary} />
-                <Text style={[styles.manifStatValue, { color: moon.primary }]}>{manifestations.filter(m => m.status === 'pending').length}</Text>
+                <MaterialIcons name="hourglass-top" size={14} color={theme.primary} />
+                <Text style={[styles.manifStatValue, { color: theme.primary }]}>{manifestations.filter(m => m.status === 'pending').length}</Text>
                 <Text style={styles.manifStatLabel}>Awaiting</Text>
               </View>
             </View>
@@ -559,7 +536,7 @@ export default function DashboardScreen() {
                 </Pressable>
               </View>
               {recentEntries.map(entry => {
-                const catColor = categoryColors[entry.category] || moon.lavender;
+                const catColor = categoryColors[entry.category] || theme.accent;
                 return (
                   <Pressable key={entry.id} style={styles.activityCard} onPress={() => router.push(`/ritual/${entry.ritualId}`)}>
                     <View style={[styles.activityDot, { backgroundColor: catColor }]} />
@@ -591,9 +568,9 @@ const styles = StyleSheet.create({
 
   // Header
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, marginBottom: 16 },
-  dateText: { fontSize: 13, color: moon.text2, fontWeight: '500' },
+  dateText: { fontSize: 13, color: theme.textSecondary, fontWeight: '500' },
   greeting: {
-    fontSize: 26, fontWeight: '700', color: moon.text, marginTop: 2,
+    fontSize: 26, fontWeight: '700', color: theme.textPrimary, marginTop: 2,
     textShadowColor: 'rgba(245,213,224,0.3)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
@@ -605,15 +582,15 @@ const styles = StyleSheet.create({
     width: 44, height: 44, borderRadius: 22,
     alignItems: 'center', justifyContent: 'center',
   },
-  profileButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: moon.card, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: moon.border },
+  profileButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: theme.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.border },
 
   // ═══ Cosmic Grid — Square Cards ═══
   cosmicGrid: {
     flexDirection: 'row', gap: 10, marginBottom: 16,
   },
   planetCard: {
-    flex: 1.4, backgroundColor: moon.card, borderRadius: theme.radius.lg,
-    padding: 14, borderWidth: 1, borderColor: moon.border, borderTopColor: 'rgba(255,255,255,0.15)',
+    flex: 1.4, backgroundColor: theme.surface, borderRadius: theme.radius.lg,
+    padding: 14, borderWidth: 1, borderColor: theme.border, borderTopColor: 'rgba(255,255,255,0.15)',
     justifyContent: 'space-between', minHeight: 155, overflow: 'hidden',
   },
   planetCardTop: {
@@ -634,92 +611,92 @@ const styles = StyleSheet.create({
   planetWorkingText: { fontSize: 10, fontWeight: '600' },
   planetHourRow: {
     flexDirection: 'row', alignItems: 'center', gap: 5,
-    paddingTop: 6, borderTopWidth: 1, borderTopColor: moon.border,
+    paddingTop: 6, borderTopWidth: 1, borderTopColor: theme.border,
   },
-  planetHourText: { fontSize: 11, fontWeight: '500', color: moon.text2 },
+  planetHourText: { fontSize: 11, fontWeight: '500', color: theme.textSecondary },
 
   moonCard: {
-    flex: 1, backgroundColor: moon.card, borderRadius: theme.radius.lg,
+    flex: 1, backgroundColor: theme.surface, borderRadius: theme.radius.lg,
     padding: 14, alignItems: 'center', justifyContent: 'center',
-    minHeight: 155, borderWidth: 1, borderColor: moon.border, borderTopColor: 'rgba(255,255,255,0.15)',
+    minHeight: 155, borderWidth: 1, borderColor: theme.border, borderTopColor: 'rgba(255,255,255,0.15)',
     overflow: 'hidden',
   },
   moonVisualWrap: {
     marginBottom: 10,
   },
-  moonPhaseName: { fontSize: 13, fontWeight: '700', color: moon.text, textAlign: 'center', marginBottom: 4 },
-  moonEnergy: { fontSize: 10, fontWeight: '500', color: moon.text2, textAlign: 'center', lineHeight: 14 },
+  moonPhaseName: { fontSize: 13, fontWeight: '700', color: theme.textPrimary, textAlign: 'center', marginBottom: 4 },
+  moonEnergy: { fontSize: 10, fontWeight: '500', color: theme.textSecondary, textAlign: 'center', lineHeight: 14 },
 
   // ═══ Alerts — overdue only ═══
   alertsSection: { marginBottom: 16 },
   alertsHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
-  alertsTitle: { flex: 1, fontSize: 14, fontWeight: '700', color: moon.error },
+  alertsTitle: { flex: 1, fontSize: 14, fontWeight: '700', color: theme.error },
   alertBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: moon.error + '08', borderRadius: theme.radius.md,
+    backgroundColor: theme.error + '08', borderRadius: theme.radius.md,
     padding: 12, marginBottom: 6,
-    borderLeftWidth: 3, borderLeftColor: moon.error,
+    borderLeftWidth: 3, borderLeftColor: theme.error,
   },
   alertIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  alertName: { fontSize: 13, fontWeight: '700', color: moon.error, marginBottom: 1 },
-  alertIntention: { fontSize: 11, color: moon.text2, fontStyle: 'italic' },
+  alertName: { fontSize: 13, fontWeight: '700', color: theme.error, marginBottom: 1 },
+  alertIntention: { fontSize: 11, color: theme.textSecondary, fontStyle: 'italic' },
   alertDatePill: {
-    backgroundColor: moon.error + '18', paddingHorizontal: 8, paddingVertical: 4,
+    backgroundColor: theme.error + '18', paddingHorizontal: 8, paddingVertical: 4,
     borderRadius: 10, marginLeft: 4,
   },
-  alertDateText: { fontSize: 10, fontWeight: '700', color: moon.error },
+  alertDateText: { fontSize: 10, fontWeight: '700', color: theme.error },
 
   // ═══ Practice Overview ═══
   overviewCard: {
-    backgroundColor: moon.card, borderRadius: theme.radius.lg,
-    padding: 16, marginBottom: 20, borderWidth: 1, borderColor: moon.border, borderTopColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: theme.surface, borderRadius: theme.radius.lg,
+    padding: 16, marginBottom: 20, borderWidth: 1, borderColor: theme.border, borderTopColor: 'rgba(255,255,255,0.15)',
     overflow: 'hidden',
   },
   overviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  overviewTitle: { fontSize: 16, fontWeight: '700', color: moon.text },
-  overviewPctChip: { backgroundColor: moon.primary + '18', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10 },
-  overviewPctText: { fontSize: 13, fontWeight: '700', color: moon.primary },
+  overviewTitle: { fontSize: 16, fontWeight: '700', color: theme.textPrimary },
+  overviewPctChip: { backgroundColor: theme.primary + '18', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10 },
+  overviewPctText: { fontSize: 13, fontWeight: '700', color: theme.primary },
 
   // Overall bar
   overallBarBg: { height: 8, backgroundColor: 'rgba(255,255,255,0.10)', borderRadius: 4, marginBottom: 4, overflow: 'hidden' },
   overallBarFill: { height: 8, borderRadius: 4, overflow: 'hidden' },
   overallBarLabels: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
-  overallBarLabel: { fontSize: 10, fontWeight: '500', color: moon.text3 },
+  overallBarLabel: { fontSize: 10, fontWeight: '500', color: theme.textMuted },
 
   // Category bars
   catProgressRow: { marginBottom: 10 },
   catProgressLabel: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  catProgressName: { flex: 1, fontSize: 12, fontWeight: '600', color: moon.text2 },
-  catProgressCount: { fontSize: 11, fontWeight: '600', color: moon.text3 },
+  catProgressName: { flex: 1, fontSize: 12, fontWeight: '600', color: theme.textSecondary },
+  catProgressCount: { fontSize: 11, fontWeight: '600', color: theme.textMuted },
   catBarBg: { height: 5, backgroundColor: 'rgba(255,255,255,0.10)', borderRadius: 3, overflow: 'hidden' },
   catBarFill: { height: 5, borderRadius: 3 },
 
   // Manifestation mini-stats
   manifRow: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
-    marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: moon.border,
+    marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: theme.border,
   },
   manifStat: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   manifStatValue: { fontSize: 15, fontWeight: '700' },
-  manifStatLabel: { fontSize: 10, fontWeight: '500', color: moon.text3 },
-  manifDivider: { width: 1, height: 18, backgroundColor: moon.border },
+  manifStatLabel: { fontSize: 10, fontWeight: '500', color: theme.textMuted },
+  manifDivider: { width: 1, height: 18, backgroundColor: theme.border },
 
   // ═══ Sections ═══
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: moon.text },
-  seeAll: { fontSize: 14, fontWeight: '600', color: moon.primary },
+  sectionTitle: { fontSize: 18, fontWeight: '700', color: theme.textPrimary },
+  seeAll: { fontSize: 14, fontWeight: '600', color: theme.primary },
 
   // ═══ Activity ═══
   activityCard: {
-    flexDirection: 'row', backgroundColor: moon.card, borderRadius: theme.radius.md,
-    padding: 14, marginBottom: 8, gap: 12, borderWidth: 1, borderColor: moon.border, borderTopColor: 'rgba(255,255,255,0.15)',
+    flexDirection: 'row', backgroundColor: theme.surface, borderRadius: theme.radius.md,
+    padding: 14, marginBottom: 8, gap: 12, borderWidth: 1, borderColor: theme.border, borderTopColor: 'rgba(255,255,255,0.15)',
     overflow: 'hidden',
   },
   activityDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
-  activityRitual: { fontSize: 14, fontWeight: '600', color: moon.text, marginBottom: 3 },
-  activityNotes: { fontSize: 13, color: moon.text2, lineHeight: 18, marginBottom: 6 },
+  activityRitual: { fontSize: 14, fontWeight: '600', color: theme.textPrimary, marginBottom: 3 },
+  activityNotes: { fontSize: 13, color: theme.textSecondary, lineHeight: 18, marginBottom: 6 },
   activityMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  activityDate: { fontSize: 12, color: moon.text3 },
+  activityDate: { fontSize: 12, color: theme.textMuted },
   activityMoodBadge: { backgroundColor: 'rgba(255,255,255,0.10)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
-  activityMood: { fontSize: 11, color: moon.text2, fontWeight: '500' },
+  activityMood: { fontSize: 11, color: theme.textSecondary, fontWeight: '500' },
 });

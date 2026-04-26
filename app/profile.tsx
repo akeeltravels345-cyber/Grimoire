@@ -8,6 +8,7 @@ import * as Haptics from 'expo-haptics';
 import * as Notifications from 'expo-notifications';
 import { useAlert } from '@/template';
 import { theme } from '../constants/theme';
+import GradientScreen from '../components/GradientScreen';
 import { useApp } from '../contexts/AppContext';
 import { getComputedStatus } from '../services/mockData';
 import Svg, { Circle } from 'react-native-svg';
@@ -169,7 +170,7 @@ export default function ProfileScreen() {
     : '\u2726';
 
   return (
-    <SafeAreaView edges={['top']} style={styles.container}>
+    <GradientScreen>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.headerBtn}>
           <MaterialIcons name="arrow-back" size={24} color={theme.textPrimary} />
@@ -436,12 +437,12 @@ export default function ProfileScreen() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </GradientScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.background },
+  container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border },
   headerBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '600', color: theme.textPrimary },

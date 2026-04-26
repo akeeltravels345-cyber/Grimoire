@@ -9,6 +9,7 @@ import * as Haptics from 'expo-haptics';
 import { theme } from '../../constants/theme';
 import { useApp } from '../../contexts/AppContext';
 import { useAlert } from '@/template';
+import GradientScreen from '../../components/GradientScreen';
 
 const scheduleLabels: Record<string, string> = {
   daily: 'Daily', weekly: 'Weekly', moon_phase: 'Moon Phase', as_needed: 'As Needed', monthly: 'Monthly',
@@ -90,7 +91,7 @@ export default function LibraryRitualDetailScreen() {
 
   if (!libRitual) {
     return (
-      <SafeAreaView edges={['top']} style={styles.container}>
+      <GradientScreen>
         <View style={styles.notFound}>
           <MaterialIcons name="auto-stories" size={48} color={theme.textMuted} />
           <Text style={styles.notFoundTitle}>Spell not found</Text>
@@ -98,7 +99,7 @@ export default function LibraryRitualDetailScreen() {
             <Text style={styles.notFoundBtnText}>Go Back</Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </GradientScreen>
     );
   }
 
@@ -107,7 +108,7 @@ export default function LibraryRitualDetailScreen() {
   const ingredients = libRitual.ingredients?.filter(Boolean) || [];
 
   return (
-    <SafeAreaView edges={['top']} style={styles.container}>
+    <GradientScreen>
       {/* Header */}
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.backBtn} hitSlop={12}>
@@ -269,12 +270,12 @@ export default function LibraryRitualDetailScreen() {
           </Pressable>
         )}
       </View>
-    </SafeAreaView>
+    </GradientScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.background },
+  container: { flex: 1 },
 
   // Header
   header: {
@@ -404,7 +405,7 @@ const styles = StyleSheet.create({
   floatingBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     paddingHorizontal: 20, paddingTop: 12,
-    backgroundColor: theme.background,
+    backgroundColor: '#1C0E3A',
     borderTopWidth: 1, borderTopColor: theme.border,
   },
   addPracticeBtn: {

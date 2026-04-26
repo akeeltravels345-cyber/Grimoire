@@ -10,6 +10,7 @@ import * as Haptics from 'expo-haptics';
 import { theme } from '../constants/theme';
 import { useApp } from '../contexts/AppContext';
 import { useAlert } from '@/template';
+import GradientScreen from '../components/GradientScreen';
 
 const scheduleOptions = [
   { id: 'daily', label: 'Daily', icon: 'today' },
@@ -71,14 +72,14 @@ export default function AddToPracticeScreen() {
 
   if (!libRitual) {
     return (
-      <SafeAreaView edges={['top']} style={styles.container}>
+      <GradientScreen>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: theme.textSecondary, fontSize: 16 }}>Library ritual not found</Text>
           <Pressable onPress={() => router.back()} style={{ marginTop: 16 }}>
             <Text style={{ color: theme.primary, fontWeight: '600' }}>Go back</Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </GradientScreen>
     );
   }
 
@@ -86,7 +87,7 @@ export default function AddToPracticeScreen() {
   const catColor = categoryColors[libRitual.category] || theme.accent;
 
   return (
-    <SafeAreaView edges={['top']} style={styles.container}>
+    <GradientScreen>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.closeBtn}>
           <MaterialIcons name="close" size={24} color={theme.textPrimary} />
@@ -210,12 +211,12 @@ export default function AddToPracticeScreen() {
           </Pressable>
         </Modal>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </GradientScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.background },
+  container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border },
   closeBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '600', color: theme.textPrimary },
@@ -259,7 +260,7 @@ const styles = StyleSheet.create({
 
   // Date Picker Modal
   dateModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-  dateModalContent: { backgroundColor: theme.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingBottom: 32, maxHeight: '60%' },
+  dateModalContent: { backgroundColor: '#231248', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingBottom: 32, maxHeight: '60%' },
   dateModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: theme.border },
   dateModalTitle: { fontSize: 17, fontWeight: '700', color: theme.textPrimary },
   dateModalClose: { width: 36, height: 36, borderRadius: 18, backgroundColor: theme.surfaceLight, alignItems: 'center', justifyContent: 'center' },

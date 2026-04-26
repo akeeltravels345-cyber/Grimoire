@@ -2,35 +2,35 @@
 // Emotional: Q2 (Calm + Serious) with mystical warmth
 
 export const theme = {
-  // Primary - Mystical Gold
-  primary: '#C9A84C',
-  primaryLight: '#E2C97E',
-  primaryDark: '#A68A3A',
+  // Primary - Moon Lavender
+  primary: '#C9A0DC',
+  primaryLight: '#DFC4EB',
+  primaryDark: '#9B6DB5',
 
-  // Accent - Deep Violet
-  accent: '#7C5CBF',
-  accentLight: '#A78BFA',
-  accentDark: '#5B3A9E',
+  // Accent - Soft Lavender
+  accent: '#B8B0E8',
+  accentLight: '#D0C9F2',
+  accentDark: '#8878A8',
 
-  // Backgrounds
-  background: '#0F0E17',
-  backgroundSecondary: '#1A1828',
-  surface: '#232136',
-  surfaceLight: '#2E2B47',
+  // Backgrounds — Deep celestial purples
+  background: '#1C0E3A',
+  backgroundSecondary: '#231248',
+  surface: 'rgba(255,255,255,0.10)',
+  surfaceLight: 'rgba(255,255,255,0.07)',
 
-  // Text
-  textPrimary: '#E8E4F0',
-  textSecondary: '#9890A8',
-  textMuted: '#6B6480',
+  // Text — Blush & lavender
+  textPrimary: '#F5D5E0',
+  textSecondary: '#C4B0D8',
+  textMuted: '#8878A8',
 
   // Semantic
-  success: '#5EBD8A',
-  error: '#E85D6F',
-  warning: '#E2A84C',
+  success: '#7ED4A8',
+  error: '#E88898',
+  warning: '#E8C87A',
 
   // Borders
-  border: '#2E2B47',
-  borderLight: '#3D3A56',
+  border: 'rgba(255,255,255,0.10)',
+  borderLight: 'rgba(255,255,255,0.15)',
 
   // Default category colors (fallback)
   categories: {

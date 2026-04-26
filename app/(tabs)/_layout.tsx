@@ -1,19 +1,11 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { Tabs, usePathname } from 'expo-router';
+import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Platform } from 'react-native';
 import { theme } from '../../constants/theme';
 
-const moon = {
-  bg: '#2D2455',
-  border: 'rgba(255,255,255,0.10)',
-  blush: '#F5D5E0',
-};
-
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  const pathname = usePathname();
-  const isHome = pathname === '/' || pathname === '/index';
 
   return (
     <Tabs
@@ -31,20 +23,18 @@ export default function TabLayout() {
             android: insets.bottom + 8,
             default: 8,
           }),
-          backgroundColor: isHome ? moon.bg : theme.background,
+          backgroundColor: '#1C0E3A',
           borderTopWidth: 1,
-          borderTopColor: isHome ? moon.border : theme.border,
+          borderTopColor: 'rgba(255,255,255,0.10)',
         },
-        tabBarActiveTintColor: isHome ? moon.blush : theme.primary,
-        tabBarInactiveTintColor: isHome ? 'rgba(200,180,220,0.5)' : theme.textMuted,
+        tabBarActiveTintColor: '#F5D5E0',
+        tabBarInactiveTintColor: 'rgba(200,180,220,0.5)',
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: '600',
-          ...(isHome ? {
-            textShadowColor: 'rgba(245,213,224,0.6)',
-            textShadowOffset: { width: 0, height: 0 },
-            textShadowRadius: 8,
-          } : {}),
+          textShadowColor: 'rgba(245,213,224,0.6)',
+          textShadowOffset: { width: 0, height: 0 },
+          textShadowRadius: 8,
         },
       }}
     >

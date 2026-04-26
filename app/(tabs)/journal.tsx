@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, KeyboardAvoidingView, Platform, Modal } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../constants/theme';
+import GradientScreen from '../../components/GradientScreen';
 import { useApp } from '../../contexts/AppContext';
 import { useAlert } from '@/template';
 import { getRecentActivity, StandaloneJournalEntry } from '../../services/mockData';
@@ -198,7 +199,7 @@ export default function JournalScreen() {
 
   if (allItems.length === 0 && !isAdding) {
     return (
-      <SafeAreaView edges={['top']} style={styles.container}>
+      <GradientScreen>
         <View style={styles.header}>
           <Text style={styles.title}>Journal</Text>
           <Pressable style={styles.addBtn} onPress={() => setIsAdding(true)}>
@@ -214,7 +215,7 @@ export default function JournalScreen() {
             <Text style={styles.emptyCtaText}>Write Entry</Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </GradientScreen>
     );
   }
 
@@ -277,7 +278,7 @@ export default function JournalScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top']} style={styles.container}>
+    <GradientScreen>
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Journal</Text>
@@ -384,7 +385,7 @@ export default function JournalScreen() {
       {/* New Type Modal */}
       <Modal visible={showNewTypeModal} transparent animationType="fade" onRequestClose={() => setShowNewTypeModal(false)}>
         <Pressable style={styles.modalOverlay} onPress={() => setShowNewTypeModal(false)}>
-          <Pressable style={styles.modalContent} onPress={() => {}}>
+          <Pressable style={[styles.modalContent, { backgroundColor: '#231248' }]} onPress={() => {}}>
             <Text style={styles.modalTitle}>Create New Type</Text>
 
             <Text style={styles.modalLabel}>Label</Text>
@@ -430,12 +431,12 @@ export default function JournalScreen() {
           </Pressable>
         </Pressable>
       </Modal>
-    </SafeAreaView>
+    </GradientScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.background },
+  container: { flex: 1 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 },
   title: { fontSize: 28, fontWeight: '700', color: theme.textPrimary },
   headerCount: { fontSize: 13, color: theme.textSecondary, fontWeight: '500', marginTop: 2 },

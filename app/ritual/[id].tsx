@@ -9,6 +9,7 @@ import { theme } from '../../constants/theme';
 import { useApp } from '../../contexts/AppContext';
 import { useAlert } from '@/template';
 import { getComputedStatus, getDaysUntil as getDaysUntilCount } from '../../services/mockData';
+import GradientScreen from '../../components/GradientScreen';
 
 const scheduleLabels: Record<string, string> = {
   daily: 'Daily', weekly: 'Weekly', moon_phase: 'Moon Phase', as_needed: 'As Needed', monthly: 'Monthly',
@@ -41,14 +42,14 @@ for (let i = 0; i < 90; i++) {
 
   if (!ritual) {
     return (
-      <SafeAreaView edges={['top']} style={styles.container}>
+      <GradientScreen>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Ritual not found</Text>
           <Pressable onPress={() => router.back()} style={styles.backLink}>
             <Text style={styles.backLinkText}>Go back</Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </GradientScreen>
     );
   }
 
@@ -199,7 +200,7 @@ for (let i = 0; i < 90; i++) {
   const msStyle = getStatusLabel(ritual.status);
 
   return (
-    <SafeAreaView edges={['top']} style={styles.container}>
+    <GradientScreen>
       <View style={styles.header}>
         <Pressable onPress={isEditing ? cancelEditing : () => router.back()} style={styles.headerBtn}>
           <MaterialIcons name={isEditing ? 'close' : 'arrow-back'} size={24} color={theme.textPrimary} />
@@ -580,12 +581,12 @@ for (let i = 0; i < 90; i++) {
           </Pressable>
         )}
       </View>
-    </SafeAreaView>
+    </GradientScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.background },
+  container: { flex: 1 },
   errorContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   errorText: { fontSize: 18, color: theme.textSecondary, marginBottom: 16 },
   backLink: { paddingHorizontal: 20, paddingVertical: 10, backgroundColor: theme.surface, borderRadius: theme.radius.md },

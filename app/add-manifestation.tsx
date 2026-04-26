@@ -6,6 +6,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../constants/theme';
 import { useApp } from '../contexts/AppContext';
+import GradientScreen from '../components/GradientScreen';
 
 export default function AddManifestationScreen() {
   const { ritualId } = useLocalSearchParams<{ ritualId: string }>();
@@ -29,19 +30,19 @@ export default function AddManifestationScreen() {
 
   if (!ritual || !manif) {
     return (
-      <SafeAreaView edges={['top']} style={styles.container}>
+      <GradientScreen>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: theme.textSecondary, fontSize: 16 }}>Ritual or manifestation not found</Text>
           <Pressable onPress={() => router.back()} style={{ marginTop: 16 }}>
             <Text style={{ color: theme.primary, fontWeight: '600' }}>Go back</Text>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </GradientScreen>
     );
   }
 
   return (
-    <SafeAreaView edges={['top']} style={styles.container}>
+    <GradientScreen>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.closeBtn}>
           <MaterialIcons name="close" size={24} color={theme.textPrimary} />
@@ -127,12 +128,12 @@ export default function AddManifestationScreen() {
           ) : null}
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </GradientScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.background },
+  container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border },
   closeBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '600', color: theme.textPrimary },

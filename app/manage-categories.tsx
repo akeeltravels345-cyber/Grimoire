@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import { theme } from '../constants/theme';
 import { AVAILABLE_ICONS, AVAILABLE_COLORS } from '../constants/config';
 import { useApp } from '../contexts/AppContext';
+import GradientScreen from '../components/GradientScreen';
 
 export default function ManageCategoriesScreen() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function ManageCategoriesScreen() {
   };
 
   return (
-    <SafeAreaView edges={['top']} style={styles.container}>
+    <GradientScreen>
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.headerBtn}>
           <MaterialIcons name="arrow-back" size={24} color={theme.textPrimary} />
@@ -120,12 +121,12 @@ export default function ManageCategoriesScreen() {
           )}
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </GradientScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: theme.background },
+  container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border },
   headerBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '600', color: theme.textPrimary },
