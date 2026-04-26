@@ -250,7 +250,7 @@ export default function LibraryRitualDetailScreen() {
         </View>
       ))}
       <Pressable
-        onPress={() => setEditIngredients(prev => prev.trim() ? prev + ',' : '')}
+        onPress={() => {   const current = editIngredients.trim();   setEditIngredients(current ? current + ',' : ''); }}
         style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}
       >
         <MaterialIcons name="add-circle-outline" size={20} color={theme.primary} />
