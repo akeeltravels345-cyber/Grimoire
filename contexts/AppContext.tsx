@@ -2,11 +2,12 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
-import { Ritual, JournalEntry, ManifestationRecord, ManifestationResult, StandaloneJournalEntry } from '../services/mockData';
+import { Ritual, JournalEntry, ManifestationRecord, ManifestationResult, StandaloneJournalEntry, LibraryRitual } from '../services/mockData';
 import { PracticeCategory, DEFAULT_CATEGORIES, DEFAULT_CATEGORY_COLORS } from '../constants/config';
 
 interface AppContextType {
   rituals: Ritual[];
+  libraryRituals: LibraryRitual[];
   categories: PracticeCategory[];
   categoryColors: Record<string, string>;
   manifestations: ManifestationRecord[];
@@ -26,6 +27,9 @@ interface AppContextType {
   addStandaloneEntry: (entry: Omit<StandaloneJournalEntry, 'id'>) => void;
   deleteStandaloneEntry: (id: string) => void;
   updateStatus: (ritualId: string, status: 'scheduled' | 'approaching' | 'completed' | 'overdue' | 'dismissed') => void;
+  addLibraryRitual: (ritual: Omit<LibraryRitual, 'id' | 'createdAt' | 'timesPerformed'>) => string;
+  deleteLibraryRitual: (id: string) => void;
+  addToPractice: (libraryId: string, scheduledDate?: string) => void;
   clearAllData: () => void;
 }
 
@@ -37,6 +41,7 @@ const COLORS_KEY = 'grimoire_category_colors';
 const MANIFESTATIONS_KEY = 'grimoire_manifestations';
 const STANDALONE_KEY = 'grimoire_standalone_entries';
 const NOTIF_IDS_KEY = 'grimoire_notification_ids';
+const LIBRARY_KEY = 'grimoire_library';
 const DATA_VERSION_KEY = 'grimoire_data_version';
 
 const CURRENT_DATA_VERSION = '3';
@@ -168,6 +173,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [categoryColors, setCategoryColors] = useState<Record<string, string>>(DEFAULT_CATEGORY_COLORS);
   const [manifestations, setManifestations] = useState<ManifestationRecord[]>([]);
   const [standaloneEntries, setStandaloneEntries] = useState<StandaloneJournalEntry[]>([]);
+  const [libraryRituals, setLibraryRituals] = useState<LibraryRitual[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const hasRequestedPermissions = useRef(false);
 
@@ -198,18 +204,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        const [ritualData, catData, colorData, manifData, standaloneData] = await Promise.all([
+        const [ritualData, catData, colorData, manifData, standaloneData, libraryData] = await Promise.all([
           AsyncStorage.getItem(STORAGE_KEY),
           AsyncStorage.getItem(CATEGORIES_KEY),
           AsyncStorage.getItem(COLORS_KEY),
           AsyncStorage.getItem(MANIFESTATIONS_KEY),
           AsyncStorage.getItem(STANDALONE_KEY),
+          AsyncStorage.getItem(LIBRARY_KEY),
         ]);
         if (ritualData) { try { setRituals(JSON.parse(ritualData)); } catch {} }
         if (catData) { try { setCategories(JSON.parse(catData)); } catch {} }
         if (colorData) { try { setCategoryColors(JSON.parse(colorData)); } catch {} }
         if (manifData) { try { setManifestations(JSON.parse(manifData)); } catch {} }
         if (standaloneData) { try { setStandaloneEntries(JSON.parse(standaloneData)); } catch {} }
+        if (libraryData) { try { setLibraryRituals(JSON.parse(libraryData)); } catch {} }
       } catch {}
       setIsLoaded(true);
     })();
@@ -231,6 +239,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(COLORS_KEY, JSON.stringify(categoryColors)); }, [categoryColors, isLoaded]);
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(MANIFESTATIONS_KEY, JSON.stringify(manifestations)); }, [manifestations, isLoaded]);
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(STANDALONE_KEY, JSON.stringify(standaloneEntries)); }, [standaloneEntries, isLoaded]);
+  useEffect(() => { if (isLoaded) AsyncStorage.setItem(LIBRARY_KEY, JSON.stringify(libraryRituals)); }, [libraryRituals, isLoaded]);
 
   const addRitual = (ritual: Omit<Ritual, 'id' | 'createdAt' | 'timesPerformed' | 'journal'> & { status?: Ritual['status'] }) => {
     const id = Date.now().toString();
@@ -433,6 +442,40 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setStandaloneEntries(prev => prev.filter(e => e.id !== id));
   };
 
+  const addLibraryRitual = (ritual: Omit<LibraryRitual, 'id' | 'createdAt' | 'timesPerformed'>): string => {
+    const id = 'lib_' + Date.now().toString();
+    const newLibRitual: LibraryRitual = {
+      ...ritual,
+      id,
+      createdAt: new Date().toISOString(),
+      timesPerformed: 0,
+    };
+    setLibraryRituals(prev => [newLibRitual, ...prev]);
+    return id;
+  };
+
+  const deleteLibraryRitual = (id: string) => {
+    setLibraryRituals(prev => prev.filter(r => r.id !== id));
+  };
+
+  const addToPractice = (libraryId: string, scheduledDate?: string) => {
+    const libRitual = libraryRituals.find(r => r.id === libraryId);
+    if (!libRitual) return;
+    addRitual({
+      name: libRitual.name,
+      category: libRitual.category,
+      description: libRitual.description,
+      intention: libRitual.intention,
+      tangibleOutcome: libRitual.tangibleOutcome,
+      ingredients: libRitual.ingredients,
+      schedule: libRitual.schedule,
+      scheduleDetail: libRitual.scheduleDetail,
+      scheduledDate,
+      libraryId,
+      status: 'scheduled',
+    });
+  };
+
   const updateStatus = (ritualId: string, status: 'scheduled' | 'approaching' | 'completed' | 'overdue' | 'dismissed') => {
     setRituals(prev => prev.map(r => r.id === ritualId ? { ...r, status } : r));
   };
@@ -441,17 +484,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setRituals([]);
     setManifestations([]);
     setStandaloneEntries([]);
-    await AsyncStorage.multiRemove([STORAGE_KEY, MANIFESTATIONS_KEY, STANDALONE_KEY, NOTIF_IDS_KEY]);
+    setLibraryRituals([]);
+    await AsyncStorage.multiRemove([STORAGE_KEY, MANIFESTATIONS_KEY, STANDALONE_KEY, NOTIF_IDS_KEY, LIBRARY_KEY]);
     await Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
   };
 
   return (
     <AppContext.Provider value={{
-      rituals, categories, categoryColors, manifestations, standaloneEntries, isLoaded,
+      rituals, libraryRituals, categories, categoryColors, manifestations, standaloneEntries, isLoaded,
       addRitual, updateRitual, deleteRitual, deleteFutureInSeries, deleteEntireSeries, stopSchedule,
       addJournalEntry, addManifestationResult, getManifestations,
       addCategory, deleteCategory,
-      addStandaloneEntry, deleteStandaloneEntry, updateStatus, clearAllData,
+      addStandaloneEntry, deleteStandaloneEntry, updateStatus,
+      addLibraryRitual, deleteLibraryRitual, addToPractice, clearAllData,
     }}>
       {children}
     </AppContext.Provider>
