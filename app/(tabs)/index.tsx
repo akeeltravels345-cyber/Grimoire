@@ -177,16 +177,31 @@ function ShootingStar() {
 function StarField() {
   const stars = useMemo(() => {
     const result: StarData[] = [];
-    for (let i = 0; i < 65; i++) {
-      const size = 1 + Math.random() * 2;
-      const isLarge = size > 2;
+    for (let i = 0; i < 80; i++) {
+      let size: number, baseOpacity: number, color: string;
+      if (i < 12) {
+        // 15% — bright prominent stars
+        size = 2.5 + Math.random() * 0.5;
+        baseOpacity = 0.8 + Math.random() * 0.2;
+        color = Math.random() < 0.2 ? '#F5D5E0' : '#FFFFFF';
+      } else if (i < 36) {
+        // 30% — medium stars
+        size = 1.5;
+        baseOpacity = 0.5 + Math.random() * 0.2;
+        color = '#FFFFFF';
+      } else {
+        // 55% — faint small stars
+        size = 0.8 + Math.random() * 0.2;
+        baseOpacity = 0.2 + Math.random() * 0.2;
+        color = '#FFFFFF';
+      }
       result.push({
         id: i,
         x: Math.random() * 96 + 2,
         y: Math.random() * 96 + 2,
         size,
-        color: isLarge ? '#F5D5E0' : '#FFFFFF',
-        baseOpacity: 0.2 + Math.random() * 0.7,
+        color,
+        baseOpacity,
         delay: Math.random() * 4000,
         duration: 2000 + Math.random() * 3000,
       });
@@ -332,20 +347,36 @@ export default function DashboardScreen() {
 
   return (
     <LinearGradient
-      colors={['#3D2060', '#2D1855', '#251545', '#1E1040', '#251848']}
+      colors={['#4A2875', '#3A1F65', '#2D1855', '#231245', '#1C0E3A']}
       locations={[0, 0.2, 0.45, 0.7, 1]}
-      start={{ x: 0.3, y: 0 }}
-      end={{ x: 0.7, y: 1 }}
+      start={{ x: 0.25, y: 0 }}
+      end={{ x: 0.75, y: 1 }}
       style={{ flex: 1 }}
     >
       <SafeAreaView edges={['top']} style={styles.container}>
         {/* Atmospheric colour wash overlay */}
         <LinearGradient
-          colors={['rgba(123,51,126,0.35)', 'transparent', 'rgba(70,48,140,0.20)', 'transparent', 'rgba(102,103,171,0.18)']}
-          locations={[0, 0.3, 0.5, 0.75, 1]}
+          colors={['rgba(150,80,180,0.4)', 'rgba(100,60,160,0.1)', 'rgba(80,50,150,0.15)', 'rgba(102,103,171,0.25)']}
+          locations={[0, 0.35, 0.65, 1]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}
+          pointerEvents="none"
+        />
+        {/* Top highlight */}
+        <LinearGradient
+          colors={['rgba(180,120,220,0.3)', 'transparent']}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '30%' as any, zIndex: 0 }}
+          pointerEvents="none"
+        />
+        {/* Bottom vignette */}
+        <LinearGradient
+          colors={['transparent', 'rgba(20,10,40,0.5)']}
+          start={{ x: 0.5, y: 0 }}
+          end={{ x: 0.5, y: 1 }}
+          style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%' as any, zIndex: 0 }}
           pointerEvents="none"
         />
         <StarField />
@@ -379,7 +410,7 @@ export default function DashboardScreen() {
           {/* ═══ COSMIC CONTEXT — Square Cards ═══ */}
           <View style={styles.cosmicGrid}>
             <Pressable
-              style={[styles.planetCard, { borderColor: todayPlanet.color + '25' }]}
+              style={[styles.planetCard, { borderColor: todayPlanet.color + '25', borderTopColor: 'rgba(255,255,255,0.15)' }]}
               onPress={() => router.push('/(tabs)/planetary')}
             >
               <View style={styles.planetCardTop}>
@@ -582,8 +613,8 @@ const styles = StyleSheet.create({
   },
   planetCard: {
     flex: 1.4, backgroundColor: moon.card, borderRadius: theme.radius.lg,
-    padding: 14, borderWidth: 1, borderColor: moon.border, justifyContent: 'space-between',
-    minHeight: 155, overflow: 'hidden',
+    padding: 14, borderWidth: 1, borderColor: moon.border, borderTopColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'space-between', minHeight: 155, overflow: 'hidden',
   },
   planetCardTop: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8,
@@ -610,7 +641,7 @@ const styles = StyleSheet.create({
   moonCard: {
     flex: 1, backgroundColor: moon.card, borderRadius: theme.radius.lg,
     padding: 14, alignItems: 'center', justifyContent: 'center',
-    minHeight: 155, borderWidth: 1, borderColor: moon.border,
+    minHeight: 155, borderWidth: 1, borderColor: moon.border, borderTopColor: 'rgba(255,255,255,0.15)',
     overflow: 'hidden',
   },
   moonVisualWrap: {
@@ -641,7 +672,7 @@ const styles = StyleSheet.create({
   // ═══ Practice Overview ═══
   overviewCard: {
     backgroundColor: moon.card, borderRadius: theme.radius.lg,
-    padding: 16, marginBottom: 20, borderWidth: 1, borderColor: moon.border,
+    padding: 16, marginBottom: 20, borderWidth: 1, borderColor: moon.border, borderTopColor: 'rgba(255,255,255,0.15)',
     overflow: 'hidden',
   },
   overviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
@@ -681,7 +712,7 @@ const styles = StyleSheet.create({
   // ═══ Activity ═══
   activityCard: {
     flexDirection: 'row', backgroundColor: moon.card, borderRadius: theme.radius.md,
-    padding: 14, marginBottom: 8, gap: 12, borderWidth: 1, borderColor: moon.border,
+    padding: 14, marginBottom: 8, gap: 12, borderWidth: 1, borderColor: moon.border, borderTopColor: 'rgba(255,255,255,0.15)',
     overflow: 'hidden',
   },
   activityDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
