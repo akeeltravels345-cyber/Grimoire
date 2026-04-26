@@ -63,7 +63,7 @@ const LIBRARY_KEY = 'grimoire_library';
 const JOURNAL_TYPES_KEY = 'grimoire_journal_types';
 const DATA_VERSION_KEY = 'grimoire_data_version';
 
-const CURRENT_DATA_VERSION = '3';
+const CURRENT_DATA_VERSION = '4';
 
 // Configure notification handler
 Notifications.setNotificationHandler({
