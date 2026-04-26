@@ -107,7 +107,7 @@ function getStatusStyle(status: string) {
 export default function RitualsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { rituals, libraryRituals, categories, categoryColors, manifestations, updateStatus, updateRitual, deleteRitual, deleteFutureInSeries, stopSchedule, addJournalEntry } = useApp();
+  const { rituals, libraryRituals, categories, categoryColors, manifestations, updateStatus, updateRitual, deleteRitual, deleteLibraryRitual, deleteFutureInSeries, stopSchedule, addJournalEntry } = useApp();
   const { showAlert } = useAlert();
 
   const [tabMode, setTabMode] = useState<TabMode>('library');
@@ -399,7 +399,8 @@ export default function RitualsScreen() {
           const cat = categories.find(c => c.id === libR.category);
           const inPractice = libraryInPractice.has(libR.id);
           return (
-            <Pressable key={libR.id} style={styles.libCard} onPress={() => router.push(`/library-ritual/${libR.id}`)}>
+            <SwipeableRow key={libR.id} onDelete={() => { showAlert('Remove from Library?', `Remove "${libR.name}" from your grimoire?`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: () => { deleteLibraryRitual(libR.id); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } }]); }}>
+            <Pressable style={styles.libCard} onPress={() => router.push(`/library-ritual/${libR.id}`)}>
               <View style={[styles.libCardLeftBorder, { backgroundColor: catColor }]} />
               <View style={styles.libCardBody}>
                 <View style={styles.libCardTopRow}>
@@ -409,6 +410,10 @@ export default function RitualsScreen() {
                 </View>
               </View>
             </Pressable>
+          );
+        })}
+              </Pressable>
+            </SwipeableRow>
           );
         })}
       </ScrollView>
