@@ -54,9 +54,9 @@ export default function AddToPracticeScreen() {
     return date.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' });
   };
 
-  const needsDate = schedule !== 'as_needed';
+  const needsDate = true;
   const parsedConsecutive = Math.max(1, parseInt(consecutiveDays) || 1);
-  const canSave = needsDate ? scheduledDate !== null : true;
+  const canSave = scheduledDate !== null;
 
   const handleSave = () => {
     if (!canSave || !libraryId) return;
@@ -135,13 +135,6 @@ export default function AddToPracticeScreen() {
               </Pressable>
             ))}
           </View>
-
-          {schedule === 'as_needed' ? (
-            <View style={styles.asNeededNote}>
-              <MaterialIcons name="info-outline" size={16} color={theme.textMuted} />
-              <Text style={styles.asNeededNoteText}>As needed rituals will appear in your tracker without a scheduled date.</Text>
-            </View>
-          ) : null}
 
           {/* Consecutive Days */}
           {needsDate ? (
