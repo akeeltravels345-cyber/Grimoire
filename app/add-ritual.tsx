@@ -116,19 +116,20 @@ export default function AddRitualScreen() {
             })}
           </View>
 
-          {/* Description */}
-          <Text style={styles.label}>Description</Text>
-          <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={setDescription} placeholder="Describe the ritual process, steps, and any special notes..." placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
-
-          {/* Intention */}
-          <Text style={styles.label}>Intention *</Text>
-          <TextInput style={[styles.input, styles.textArea]} value={intention} onChangeText={setIntention} placeholder="What is the purpose of this ritual?" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
           {/* Tangible Outcome */}
           <Text style={styles.label}>Tangible Outcome *</Text>
-          <TextInput style={[styles.input, styles.textArea]} value={tangibleOutcome} onChangeText={setTangibleOutcome} placeholder="What specific result are you asking for? Be precise — e.g., Receive $5,000 within 30 days" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
-          <Text style={styles.hint}>Be specific — what does success look and feel like?</Text>
-          <Text style={styles.hint}>A non-empty tangible outcome auto-creates a manifestation tracker for this ritual.</Text>
+          <TextInput style={[styles.input, styles.textArea]} value={tangibleOutcome} onChangeText={setTangibleOutcome} placeholder="Translate that intention into a specific measurable result. Be precise - e.g., Receive $5,000 within 30 days" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
+          <Text style={styles.hint}>Be specific - what does the success of this ritual look and feel like?</Text>
+          <Text style={styles.hint}> The information in this field auto generates an entery in your manifestation tracker .</Text>
 
+             {/* Intention */}
+          <Text style={styles.label}>Intention *</Text>
+          <TextInput style={[styles.input, styles.textArea]} value={intention} onChangeText={setIntention} placeholder="What is the purpose of this ritual?" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
+          
+           {/* Description */}
+          <Text style={styles.label}>Description</Text>
+          <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={setDescription} placeholder="Describe the ritual process, steps, and any special notes..." placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
+         
           {/* Ingredients */}
           <Text style={styles.label}>Ingredients & Tools</Text>
           <TextInput style={styles.input} value={ingredients} onChangeText={setIngredients} placeholder="Comma-separated: candle, herbs, crystal..." placeholderTextColor={theme.textMuted} />
@@ -176,7 +177,7 @@ export default function AddRitualScreen() {
                 </Text>
                 <MaterialIcons name="arrow-drop-down" size={24} color={theme.textMuted} />
               </Pressable>
-              {!scheduledDate ? <Text style={styles.hint}>Required — pick the date this ritual is scheduled</Text> : null}
+              {!scheduledDate ? <Text style={styles.hint}>Required - pick the date this ritual is scheduled</Text> : null}
             </>
           ) : null}
         </ScrollView>
