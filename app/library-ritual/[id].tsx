@@ -19,7 +19,7 @@ export default function LibraryRitualDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { libraryRituals, rituals, categories, categoryColors, deleteLibraryRitual } = useApp();
+  const { libraryRituals, rituals, categories, categoryColors, deleteLibraryRitual, updateLibraryRitual } = useApp();
   const { showAlert } = useAlert();
 
   const libRitual = libraryRituals.find(r => r.id === id);
@@ -58,13 +58,20 @@ export default function LibraryRitualDetailScreen() {
 
   const saveEdits = () => {
     if (!libRitual || !id) return;
-    // We need to update library ritual — use the setter pattern via context
-    // Since there's no updateLibraryRitual, we'll work with what's available
-    // For now, we reconstruct via delete + re-add approach — but that changes ID
-    // Better: directly mutate via the state. Let's just update in place.
-    // Actually the context doesn't expose updateLibraryRitual, so we'll add inline logic
-    // For a clean approach, just show alert that edit saved (the context would need updating)
-    showAlert('Edit Saved', 'Your changes have been saved.');
+    if (!editName.trim() || !editIntention.trim()) {
+      showAlert('Required Fields', 'Name and intention are required.');
+      return;
+    }
+    updateLibraryRitual(id as string, {
+      name: editName.trim(),
+      description: editDescription.trim(),
+      intention: editIntention.trim(),
+      tangibleOutcome: editOutcome.trim(),
+      ingredients: editIngredients.trim()
+        ? editIngredients.split(',').map(i => i.trim()).filter(Boolean)
+        : undefined,
+    });
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     setEditing(false);
   };
 

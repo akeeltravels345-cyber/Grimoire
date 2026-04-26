@@ -42,6 +42,7 @@ interface AppContextType {
   deleteStandaloneEntry: (id: string) => void;
   updateStatus: (ritualId: string, status: 'scheduled' | 'approaching' | 'completed' | 'overdue' | 'dismissed') => void;
   addLibraryRitual: (ritual: Omit<LibraryRitual, 'id' | 'createdAt' | 'timesPerformed'>) => string;
+  updateLibraryRitual: (id: string, updates: Partial<LibraryRitual>) => void;
   deleteLibraryRitual: (id: string) => void;
   addToPractice: (libraryId: string, overrides?: { scheduledDate?: string; schedule?: LibraryRitual['schedule']; consecutiveDays?: number }) => void;
   journalEntryTypes: JournalEntryType[];
@@ -476,6 +477,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return id;
   };
 
+  const updateLibraryRitual = (id: string, updates: Partial<LibraryRitual>) => {
+    setLibraryRituals(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
+  };
+
   const deleteLibraryRitual = (id: string) => {
     setLibraryRituals(prev => prev.filter(r => r.id !== id));
   };
@@ -532,7 +537,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addJournalEntry, addManifestationResult, getManifestations,
       addCategory, deleteCategory,
       addStandaloneEntry, deleteStandaloneEntry, updateStatus,
-      addLibraryRitual, deleteLibraryRitual, addToPractice,
+      addLibraryRitual, updateLibraryRitual, deleteLibraryRitual, addToPractice,
       journalEntryTypes, addJournalEntryType, deleteJournalEntryType, clearAllData,
     }}>
       {children}
