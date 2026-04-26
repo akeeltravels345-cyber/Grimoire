@@ -31,7 +31,7 @@ export default function LogRitualScreen() {
   const { ritualId } = useLocalSearchParams<{ ritualId: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { rituals, addJournalEntry, addRitual } = useApp();
+  const { rituals, addJournalEntry } = useApp();
   const ritual = rituals.find(r => r.id === ritualId);
 
   const [notes, setNotes] = useState('');
@@ -39,65 +39,6 @@ export default function LogRitualScreen() {
   const [showCompletedDatePicker, setShowCompletedDatePicker] = useState(false);
   const [mood, setMood] = useState('');
   const [energyLevel, setEnergyLevel] = useState(0);
-
-  const [nextDate, setNextDate] = useState<Date | null>(null);
-  const [showNextDatePicker, setShowNextDatePicker] = useState(false);
-  const [scheduleNext, setScheduleNext] = useState(true);
-
-  // Compute suggested next date based on schedule type
-  const suggestedNextDate = useMemo(() => {
-    if (!ritual) return null;
-    const base = ritual.scheduledDate ? new Date(ritual.scheduledDate) : new Date();
-    const now = new Date();
-    switch (ritual.schedule) {
-      case 'daily': {
-        const d = new Date(now);
-        d.setDate(d.getDate() + 1);
-        return d;
-      }
-      case 'weekly': {
-        const d = new Date(base);
-        d.setDate(d.getDate() + 7);
-        // If that date is in the past, advance from today
-        if (d <= now) { d.setTime(now.getTime()); d.setDate(d.getDate() + 7); }
-        return d;
-      }
-      case 'monthly': {
-        const d = new Date(base);
-        d.setMonth(d.getMonth() + 1);
-        if (d <= now) { d.setTime(now.getTime()); d.setMonth(d.getMonth() + 1); }
-        return d;
-      }
-      case 'moon_phase': {
-        const d = new Date(now);
-        d.setDate(d.getDate() + 29);
-        return d;
-      }
-      case 'as_needed':
-      default:
-        return null;
-    }
-  }, [ritual]);
-
-  // Initialize nextDate from suggestion
-  useState(() => {
-    if (suggestedNextDate && nextDate === null) {
-      setNextDate(suggestedNextDate);
-    }
-  });
-
-  // Generate date options for completed date picker (past 60 days + today)
-  const completedDateOptions = useMemo(() => {
-    const dates: Date[] = [];
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    for (let i = 60; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      dates.push(d);
-    }
-    return dates;
-  }, []);
 
   // Generate date options for picker (next 90 days)
   const nextDateOptions = useMemo(() => {
@@ -130,22 +71,6 @@ export default function LogRitualScreen() {
       notes: notes.trim() + (energyStr ? `\n\n---\n${cosmicStr}${energyStr}` : ''),
       mood,
     });
-
-    // Auto-create next occurrence if scheduled
-    if (scheduleNext && nextDate && ritual) {
-      addRitual({
-        name: ritual.name,
-        category: ritual.category,
-        description: ritual.description,
-        intention: ritual.intention,
-        tangibleOutcome: ritual.tangibleOutcome,
-        ingredients: ritual.ingredients,
-        schedule: ritual.schedule,
-        scheduleDetail: ritual.scheduleDetail,
-        scheduledDate: nextDate.toISOString(),
-        status: 'scheduled',
-      });
-    }
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.back();
@@ -254,22 +179,6 @@ export default function LogRitualScreen() {
           <Text style={styles.label}>Notes *</Text>
           <TextInput style={[styles.input, styles.textArea]} value={notes} onChangeText={setNotes} placeholder="Describe your experience... What happened? What did you notice? How did the energy feel?" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
 
-          {/* Schedule Next Occurrence */}
-          <View style={styles.nextSection}>
-            <View style={styles.nextHeader}>
-              <MaterialIcons name="event-repeat" size={20} color={theme.primary} />
-              <Text style={styles.nextTitle}>Schedule Next Occurrence</Text>
-              <Pressable
-                style={[styles.nextToggle, scheduleNext && styles.nextToggleActive]}
-                onPress={() => { setScheduleNext(!scheduleNext); Haptics.selectionAsync(); }}
-              >
-                <MaterialIcons
-                  name={scheduleNext ? 'check-box' : 'check-box-outline-blank'}
-                  size={22}
-                  color={scheduleNext ? theme.primary : theme.textMuted}
-                />
-              </Pressable>
-            </View>
 
             {scheduleNext ? (
               <>
@@ -338,50 +247,7 @@ export default function LogRitualScreen() {
             </Pressable>
           </Pressable>
         </Modal>
-
-        {/* Next Date Picker Modal */}
-        <Modal visible={showNextDatePicker} transparent animationType="slide">
-          <Pressable style={styles.dateModalOverlay} onPress={() => setShowNextDatePicker(false)}>
-            <Pressable style={styles.dateModalContent} onPress={() => {}}>
-              <View style={styles.dateModalHeader}>
-                <Text style={styles.dateModalTitle}>Next Occurrence</Text>
-                <Pressable onPress={() => setShowNextDatePicker(false)} style={styles.dateModalClose}>
-                  <MaterialIcons name="close" size={22} color={theme.textPrimary} />
-                </Pressable>
-              </View>
-              {suggestedNextDate ? (
-                <Pressable
-                  style={styles.suggestedRow}
-                  onPress={() => { setNextDate(suggestedNextDate); setShowNextDatePicker(false); Haptics.selectionAsync(); }}
-                >
-                  <MaterialIcons name="auto-awesome" size={16} color={theme.primary} />
-                  <Text style={styles.suggestedText}>Suggested: {suggestedNextDate.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}</Text>
-                </Pressable>
-              ) : null}
-              <ScrollView style={{ maxHeight: 340 }} showsVerticalScrollIndicator={false}>
-                {nextDateOptions.map((d, i) => {
-                  const isSelected = nextDate && d.toDateString() === nextDate.toDateString();
-                  const isSuggested = suggestedNextDate && d.toDateString() === suggestedNextDate.toDateString();
-                  return (
-                    <Pressable
-                      key={i}
-                      style={[styles.dateOption, isSelected && styles.dateOptionActive]}
-                      onPress={() => { setNextDate(d); setShowNextDatePicker(false); Haptics.selectionAsync(); }}
-                    >
-                      <View style={{ flex: 1 }}>
-                        <Text style={[styles.dateOptionText, isSelected && styles.dateOptionTextActive]}>
-                          {d.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}
-                          {isSuggested ? '  (Suggested)' : ''}
-                        </Text>
-                      </View>
-                      {isSelected ? <MaterialIcons name="check-circle" size={20} color={theme.primary} /> : null}
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </Pressable>
-          </Pressable>
-        </Modal>
+      
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -432,29 +298,6 @@ const styles = StyleSheet.create({
   input: { backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 14, fontSize: 15, color: theme.textPrimary, borderWidth: 1, borderColor: theme.border },
   textArea: { minHeight: 120, paddingTop: 14, lineHeight: 22 },
 
-  // Schedule Next Occurrence
-  nextSection: {
-    backgroundColor: theme.surface, borderRadius: theme.radius.lg, padding: 16,
-    marginTop: 24, borderWidth: 1, borderColor: theme.primary + '25',
-    ...theme.shadows.card,
-  },
-  nextHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  nextTitle: { flex: 1, fontSize: 15, fontWeight: '700', color: theme.textPrimary },
-  nextToggle: { padding: 4 },
-  nextToggleActive: {},
-  nextHint: { fontSize: 12, color: theme.textSecondary, fontStyle: 'italic', marginTop: 8, marginBottom: 12, lineHeight: 17 },
-  nextDateField: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    backgroundColor: theme.surfaceLight, borderRadius: theme.radius.md,
-    padding: 14, borderWidth: 1, borderColor: theme.border,
-  },
-  nextDateText: { flex: 1, fontSize: 15, color: theme.textPrimary, fontWeight: '500' },
-  nextPreview: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    marginTop: 10, paddingHorizontal: 4,
-  },
-  nextPreviewText: { fontSize: 12, color: theme.accent, fontStyle: 'italic', flex: 1, lineHeight: 16 },
-  nextSkip: { fontSize: 12, color: theme.textMuted, fontStyle: 'italic', marginTop: 8 },
 
   // Date Picker Modal
   dateModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
