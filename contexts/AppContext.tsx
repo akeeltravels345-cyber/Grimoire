@@ -358,12 +358,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Stop a recurring schedule: delete all future unperformed rituals but keep completed/logged ones
   const stopSchedule = (seriesId: string) => {
     const now = new Date();
-    const todayStr = now.toISOString();
     setRituals(prev => {
       const toDelete = prev.filter(r =>
         r.seriesId === seriesId &&
         r.status !== 'completed' &&
-        r.timesPerformed === 0 &&
         r.scheduledDate &&
         new Date(r.scheduledDate).getTime() > now.getTime()
       );

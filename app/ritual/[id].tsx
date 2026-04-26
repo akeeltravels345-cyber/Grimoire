@@ -159,7 +159,7 @@ for (let i = 0; i < 90; i++) {
     if (!ritual.seriesId) return;
     showAlert(
       'Stop Schedule',
-      `This will remove all ${futureInSeries} future unperformed ${scheduleLabels[ritual.schedule] || ''} occurrences of "${ritual.name}". Past completed rituals and their data will be preserved.`,
+      'This will remove all future scheduled occurrences of this ritual from today onward. Completed rituals and their journal entries will be preserved.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
