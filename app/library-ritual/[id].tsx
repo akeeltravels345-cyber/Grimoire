@@ -52,7 +52,7 @@ export default function LibraryRitualDetailScreen() {
     setEditDescription(libRitual.description);
     setEditIntention(libRitual.intention);
     setEditOutcome(libRitual.tangibleOutcome);
-    setEditIngredients(libRitual.ingredients?.join(', ') || '');
+    setEditIngredients(libRitual.ingredients?.join(',') || '');
     setEditing(true);
   };
 
@@ -225,53 +225,57 @@ export default function LibraryRitualDetailScreen() {
 
         {/* Ingredients */}
         <View style={styles.section}>
-  <Text style={styles.sectionLabel}>INGREDIENTS & MATERIALS</Text>
-  {editing ? (
-    <View>
-      {editIngredients.split(',').map((ing, i) => ing.trim()).filter(Boolean).map((ing, i) => (
-        <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 }}>
-          <TextInput
-            style={[styles.input ?? {}, { flex: 1, backgroundColor: theme.surface, borderRadius: 8, padding: 10, fontSize: 14, color: theme.textPrimary, borderWidth: 1, borderColor: theme.border }]}
-            value={ing}
-            onChangeText={(text) => {
-              const parts = editIngredients.split(',');
-              parts[i] = text;
-              setEditIngredients(parts.join(','));
-            }}
-            placeholder="Ingredient..."
-            placeholderTextColor={theme.textMuted}
-          />
-          <Pressable onPress={() => {
-            const parts = editIngredients.split(',').filter((_, idx) => idx !== i);
-            setEditIngredients(parts.join(','));
-          }} hitSlop={8}>
-            <MaterialIcons name="remove-circle-outline" size={22} color={theme.error} />
-          </Pressable>
+          <Text style={styles.sectionLabel}>INGREDIENTS & MATERIALS</Text>
+          {editing ? (
+            <View>
+              {editIngredients.split(',').filter(ing => ing.trim().length > 0).map((ing, i) => (
+                <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 }}>
+                  <TextInput
+                    style={{ flex: 1, backgroundColor: theme.surface, borderRadius: 8, padding: 10, fontSize: 14, color: theme.textPrimary, borderWidth: 1, borderColor: theme.border }}
+                    value={ing.trim()}
+                    onChangeText={(text) => {
+                      const parts = editIngredients.split(',');
+                      parts[i] = text;
+                      setEditIngredients(parts.join(','));
+                    }}
+                    placeholder="Ingredient..."
+                    placeholderTextColor={theme.textMuted}
+                  />
+                  <Pressable
+                    hitSlop={12}
+                    onPress={() => {
+                      const parts = editIngredients.split(',').filter((_, idx) => idx !== i);
+                      setEditIngredients(parts.length > 0 ? parts.join(',') : '');
+                    }}
+                  >
+                    <MaterialIcons name="remove-circle-outline" size={24} color={theme.error} />
+                  </Pressable>
+                </View>
+              ))}
+              <Pressable
+                hitSlop={12}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6, paddingVertical: 10, paddingHorizontal: 4 }}
+                onPress={() => {
+                  setEditIngredients(editIngredients.trim().length > 0 ? editIngredients.trim() + ',' : ',');
+                }}
+              >
+                <MaterialIcons name="add-circle-outline" size={22} color={theme.primary} />
+                <Text style={{ fontSize: 14, color: theme.primary, fontWeight: '600' }}>Add Ingredient</Text>
+              </Pressable>
+            </View>
+          ) : ingredients.length > 0 ? (
+            <View style={styles.ingredientGrid}>
+              {ingredients.map((ing, i) => (
+                <View key={i} style={styles.ingredientChip}>
+                  <MaterialIcons name="fiber-manual-record" size={6} color={theme.primary} />
+                  <Text style={styles.ingredientText}>{ing}</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={{ fontSize: 14, color: theme.textMuted, fontStyle: 'italic' }}>No ingredients added yet</Text>
+          )}
         </View>
-      ))}
-      <Pressable
-        onPress={() => {   const current = editIngredients.trim();   setEditIngredients(current ? current + ',' : ''); }}
-        style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}
-      >
-        <MaterialIcons name="add-circle-outline" size={20} color={theme.primary} />
-        <Text style={{ fontSize: 14, color: theme.primary, fontWeight: '600' }}>Add Ingredient</Text>
-      </Pressable>
-    </View>
-  ) : (
-    ingredients.length > 0 ? (
-      <View style={styles.ingredientGrid}>
-        {ingredients.map((ing, i) => (
-          <View key={i} style={styles.ingredientChip}>
-            <MaterialIcons name="fiber-manual-record" size={6} color={theme.primary} />
-            <Text style={styles.ingredientText}>{ing}</Text>
-          </View>
-        ))}
-      </View>
-    ) : (
-      <Text style={{ fontSize: 14, color: theme.textMuted, fontStyle: 'italic' }}>No ingredients added</Text>
-    )
-  )}
-</View>
 
         {/* Practice History */}
         <View style={styles.section}>

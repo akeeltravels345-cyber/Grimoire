@@ -57,7 +57,7 @@ export default function AddRitualScreen() {
 
   const needsDate = true;
   const parsedConsecutive = Math.max(1, parseInt(consecutiveDays) || 1);
-  const canSave = name.trim().length > 0 && intention.trim().length > 0 && tangibleOutcome.trim().length > 0 && description.trim().length > 0 && (needsDate ? scheduledDate !== null : true);
+  const canSave = name.trim().length > 0 && intention.trim().length > 0 && tangibleOutcome.trim().length > 0 && (needsDate ? scheduledDate !== null : true);
 
   const handleSave = () => {
     if (!canSave) return;
@@ -148,7 +148,7 @@ export default function AddRitualScreen() {
           <Text style={styles.hint}> The information in this field auto generates an entery in your manifestation tracker .</Text>
 
            {/* Description */}
-          <Text style={styles.label}>Ritual Instructions *</Text>
+          <Text style={styles.label}>Description</Text>
           <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={setDescription} placeholder="Describe the ritual process, steps, and any special notes..." placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
          
           {/* Ingredients */}
