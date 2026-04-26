@@ -83,7 +83,12 @@ export default function AddLibraryRitualScreen() {
                 </Pressable>
               );
             })}
+            <Pressable style={styles.newCategoryOption} onPress={() => router.push('/manage-categories')}>
+              <MaterialIcons name="add" size={22} color={theme.textMuted} />
+              <Text style={styles.newCategoryOptionText}>New Category</Text>
+            </Pressable>
           </View>
+          <Text style={styles.hint}>Create a new category in Manage Categories</Text>
 
           {/* Tangible Outcome */}
           <Text style={styles.label}>Tangible Outcome *</Text>
@@ -126,4 +131,6 @@ const styles = StyleSheet.create({
   categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   categoryOption: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: theme.radius.md, backgroundColor: theme.surface, borderWidth: 1.5, borderColor: theme.border },
   categoryOptionText: { fontSize: 13, fontWeight: '600', color: theme.textMuted },
+  newCategoryOption: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 14, paddingVertical: 10, borderRadius: theme.radius.md, backgroundColor: 'transparent', borderWidth: 1.5, borderColor: theme.textMuted + '40', borderStyle: 'dashed' },
+  newCategoryOptionText: { fontSize: 13, fontWeight: '600', color: theme.textMuted },
 });
