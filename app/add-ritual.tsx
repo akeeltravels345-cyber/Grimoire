@@ -22,7 +22,7 @@ const scheduleOptions = [
 export default function AddRitualScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { addRitual, categories, categoryColors } = useApp();
+  const { addRitual, addLibraryRitual, libraryRituals, categories, categoryColors } = useApp();
 
   const [name, setName] = useState('');
   const [category, setCategory] = useState<string>(categories[0]?.id || '');
@@ -74,6 +74,22 @@ export default function AddRitualScreen() {
       consecutiveDays: parsedConsecutive,
       status: 'scheduled',
     });
+
+    const alreadyInLibrary = libraryRituals.some(
+      r => r.name.toLowerCase().trim() === name.toLowerCase().trim()
+    );
+    if (!alreadyInLibrary) {
+      addLibraryRitual({
+        name: name.trim(),
+        category,
+        description: description.trim(),
+        intention: intention.trim(),
+        tangibleOutcome: tangibleOutcome.trim(),
+        ingredients: ingredients.trim() ? ingredients.split(',').map(i => i.trim()).filter(Boolean) : undefined,
+        schedule,
+      });
+    }
+
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.back();
   };

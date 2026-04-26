@@ -404,7 +404,6 @@ export default function RitualsScreen() {
           );
         })}
       </ScrollView>
-      <Pressable style={[styles.libFab, { bottom: insets.bottom + 16 }]} onPress={() => router.push('/add-library-ritual')}><MaterialIcons name="add" size={26} color={theme.background} /></Pressable>
     </View>
   );
 
