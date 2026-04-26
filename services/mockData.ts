@@ -32,7 +32,7 @@ export interface StandaloneJournalEntry {
   notes: string;
   mood?: string;
   tags: string[];
-  type: 'note' | 'reminder' | 'reflection' | 'dream' | 'insight';
+  type: string; // Dynamic — managed via journalEntryTypes in AppContext
 }
 
 export interface LibraryRitual {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, KeyboardAvoidingView, Platform, Modal } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -11,22 +11,22 @@ import { useAlert } from '@/template';
 import { getRecentActivity, StandaloneJournalEntry } from '../../services/mockData';
 import SwipeableRow from '../../components/SwipeableRow';
 
-type JournalTab = 'all' | 'rituals' | 'personal';
+const MOODS = ['Connected', 'Peaceful', 'Grateful', 'Reflective', 'Contemplative', 'Hopeful', 'Empowered', 'Joyful'];
 
-const ENTRY_TYPES: { id: StandaloneJournalEntry['type']; label: string; icon: string }[] = [
-  { id: 'note', label: 'Note', icon: 'sticky-note-2' },
-  { id: 'reflection', label: 'Reflection', icon: 'self-improvement' },
-  { id: 'dream', label: 'Dream', icon: 'nightlight-round' },
-  { id: 'reminder', label: 'Reminder', icon: 'notifications' },
-  { id: 'insight', label: 'Insight', icon: 'lightbulb' },
+const SPIRITUAL_EMOJIS = [
+  '\u{1F300}', '\u2728', '\u{1F52E}', '\u{1F4AB}', '\u{1F30A}', '\u{1F525}', '\u{1F33F}', '\u26A1',
+  '\u{1F56F}\uFE0F', '\u{1F9FF}', '\u{1F311}', '\u2601\uFE0F', '\u{1F5DD}\uFE0F', '\u{1FAAC}', '\u{1FAE7}',
+  '\u{1F338}', '\u{1F98B}', '\u{1F40D}', '\u{1F339}', '\u2B50',
 ];
 
-const MOODS = ['Connected', 'Peaceful', 'Grateful', 'Reflective', 'Contemplative', 'Hopeful', 'Empowered', 'Joyful'];
+const DEFAULT_TYPE_IDS = ['reflection', 'dream', 'encounter', 'insight', 'reminder'];
+
+type JournalTab = 'all' | 'rituals' | 'personal';
 
 export default function JournalScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { rituals, categoryColors, standaloneEntries, addStandaloneEntry, deleteStandaloneEntry } = useApp();
+  const { rituals, categoryColors, standaloneEntries, addStandaloneEntry, deleteStandaloneEntry, journalEntryTypes, addJournalEntryType, deleteJournalEntryType } = useApp();
   const { showAlert } = useAlert();
   const ritualEntries = getRecentActivity(rituals);
   const [tab, setTab] = useState<JournalTab>('all');
@@ -35,17 +35,22 @@ export default function JournalScreen() {
   // New entry form
   const [newTitle, setNewTitle] = useState('');
   const [newNotes, setNewNotes] = useState('');
-  const [newType, setNewType] = useState<StandaloneJournalEntry['type']>('note');
+  const [newType, setNewType] = useState<string>('reflection');
   const [newMood, setNewMood] = useState('');
   const [newTags, setNewTags] = useState('');
   const [editingEntry, setEditingEntry] = useState<StandaloneJournalEntry | null>(null);
+
+  // New type modal
+  const [showNewTypeModal, setShowNewTypeModal] = useState(false);
+  const [newTypeLabel, setNewTypeLabel] = useState('');
+  const [newTypeEmoji, setNewTypeEmoji] = useState('\u2728');
 
   const clearForm = () => {
     setNewTitle('');
     setNewNotes('');
     setNewMood('');
     setNewTags('');
-    setNewType('note');
+    setNewType('reflection');
     setEditingEntry(null);
     setIsAdding(false);
   };
@@ -85,6 +90,43 @@ export default function JournalScreen() {
     setNewType(entry.type);
     setIsAdding(true);
     Haptics.selectionAsync();
+  };
+
+  const handleCreateType = () => {
+    if (!newTypeLabel.trim()) return;
+    const id = newTypeLabel.toLowerCase().trim().replace(/\s+/g, '_');
+    // Prevent duplicates
+    if (journalEntryTypes.some(t => t.id === id)) {
+      showAlert('Duplicate', 'A type with this name already exists.');
+      return;
+    }
+    addJournalEntryType({ id, label: newTypeLabel.trim(), icon: newTypeEmoji });
+    setNewType(id);
+    setNewTypeLabel('');
+    setNewTypeEmoji('\u2728');
+    setShowNewTypeModal(false);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  };
+
+  const handleLongPressType = (typeId: string) => {
+    if (DEFAULT_TYPE_IDS.includes(typeId)) return;
+    const typeObj = journalEntryTypes.find(t => t.id === typeId);
+    showAlert(
+      'Delete Type?',
+      `Remove "${typeObj?.label || typeId}" from your journal types? Existing entries will keep their type label.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            deleteJournalEntryType(typeId);
+            if (newType === typeId) setNewType('reflection');
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          },
+        },
+      ]
+    );
   };
 
   // Build combined timeline
@@ -145,12 +187,12 @@ export default function JournalScreen() {
   const sections = Object.entries(grouped);
 
   const getTypeIcon = (type?: string) => {
-    const t = ENTRY_TYPES.find(et => et.id === type);
-    return t?.icon || 'sticky-note-2';
+    const t = journalEntryTypes.find(et => et.id === type);
+    return t?.icon || '\u{1F4D6}';
   };
 
   const getTypeLabel = (type?: string) => {
-    const t = ENTRY_TYPES.find(et => et.id === type);
+    const t = journalEntryTypes.find(et => et.id === type);
     return t?.label || 'Note';
   };
 
@@ -188,7 +230,7 @@ export default function JournalScreen() {
             <View style={[styles.categoryDot, { backgroundColor: catColor }]} />
           ) : (
             <View style={[styles.personalIcon, { backgroundColor: theme.accent + '20' }]}>
-              <MaterialIcons name={getTypeIcon(item.type) as keyof typeof MaterialIcons.glyphMap} size={14} color={theme.accent} />
+              <Text style={{ fontSize: 14 }}>{getTypeIcon(item.type)}</Text>
             </View>
           )}
           <View style={{ flex: 1 }}>
@@ -278,13 +320,28 @@ export default function JournalScreen() {
 
               {/* Type Selector */}
               <View style={styles.typeRow}>
-                {ENTRY_TYPES.map(et => (
-                  <Pressable key={et.id} style={[styles.typeChip, newType === et.id && styles.typeChipActive]}
-                    onPress={() => { setNewType(et.id); Haptics.selectionAsync(); }}>
-                    <MaterialIcons name={et.icon as keyof typeof MaterialIcons.glyphMap} size={16} color={newType === et.id ? theme.primary : theme.textMuted} />
-                    <Text style={[styles.typeChipText, newType === et.id && { color: theme.primary }]}>{et.label}</Text>
-                  </Pressable>
-                ))}
+                {journalEntryTypes.map(et => {
+                  const isCustom = !DEFAULT_TYPE_IDS.includes(et.id);
+                  return (
+                    <Pressable
+                      key={et.id}
+                      style={[styles.typeChip, newType === et.id && styles.typeChipActive]}
+                      onPress={() => { setNewType(et.id); Haptics.selectionAsync(); }}
+                      onLongPress={isCustom ? () => handleLongPressType(et.id) : undefined}
+                      delayLongPress={500}
+                    >
+                      <Text style={{ fontSize: 14 }}>{et.icon}</Text>
+                      <Text style={[styles.typeChipText, newType === et.id && { color: theme.primary }]}>{et.label}</Text>
+                    </Pressable>
+                  );
+                })}
+                <Pressable
+                  style={styles.newTypeBtn}
+                  onPress={() => { setShowNewTypeModal(true); Haptics.selectionAsync(); }}
+                >
+                  <MaterialIcons name="add" size={14} color={theme.accent} />
+                  <Text style={styles.newTypeBtnText}>New Type</Text>
+                </Pressable>
               </View>
 
               <TextInput style={styles.input} value={newTitle} onChangeText={setNewTitle} placeholder="Title..." placeholderTextColor={theme.textMuted} />
@@ -323,6 +380,56 @@ export default function JournalScreen() {
           ))}
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* New Type Modal */}
+      <Modal visible={showNewTypeModal} transparent animationType="fade" onRequestClose={() => setShowNewTypeModal(false)}>
+        <Pressable style={styles.modalOverlay} onPress={() => setShowNewTypeModal(false)}>
+          <Pressable style={styles.modalContent} onPress={() => {}}>
+            <Text style={styles.modalTitle}>Create New Type</Text>
+
+            <Text style={styles.modalLabel}>Label</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={newTypeLabel}
+              onChangeText={setNewTypeLabel}
+              placeholder="e.g. Channelling"
+              placeholderTextColor={theme.textMuted}
+              autoFocus
+            />
+
+            <Text style={styles.modalLabel}>Choose an Icon</Text>
+            <View style={styles.emojiGrid}>
+              {SPIRITUAL_EMOJIS.map(emoji => (
+                <Pressable
+                  key={emoji}
+                  style={[styles.emojiBtn, newTypeEmoji === emoji && styles.emojiBtnActive]}
+                  onPress={() => { setNewTypeEmoji(emoji); Haptics.selectionAsync(); }}
+                >
+                  <Text style={{ fontSize: 20 }}>{emoji}</Text>
+                </Pressable>
+              ))}
+            </View>
+
+            <View style={styles.modalPreview}>
+              <Text style={{ fontSize: 16 }}>{newTypeEmoji}</Text>
+              <Text style={styles.modalPreviewText}>{newTypeLabel.trim() || 'Preview'}</Text>
+            </View>
+
+            <View style={styles.modalBtnRow}>
+              <Pressable style={styles.modalCancelBtn} onPress={() => { setShowNewTypeModal(false); setNewTypeLabel(''); setNewTypeEmoji('\u2728'); }}>
+                <Text style={styles.modalCancelBtnText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalCreateBtn, !newTypeLabel.trim() && { opacity: 0.4 }]}
+                onPress={handleCreateType}
+                disabled={!newTypeLabel.trim()}
+              >
+                <Text style={styles.modalCreateBtnText}>Create Type</Text>
+              </Pressable>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -352,9 +459,16 @@ const styles = StyleSheet.create({
   addForm: { backgroundColor: theme.surface, borderRadius: theme.radius.lg, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: theme.primary + '30', ...theme.shadows.card },
   addFormTitle: { fontSize: 16, fontWeight: '700', color: theme.textPrimary, marginBottom: 14 },
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
-  typeChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16, backgroundColor: theme.surfaceLight, borderWidth: 1.5, borderColor: theme.border },
+  typeChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16, backgroundColor: theme.surfaceLight, borderWidth: 1.5, borderColor: theme.border },
   typeChipActive: { backgroundColor: theme.primary + '15', borderColor: theme.primary },
   typeChipText: { fontSize: 12, fontWeight: '600', color: theme.textMuted },
+  newTypeBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16,
+    borderWidth: 1.5, borderColor: theme.accent + '40', borderStyle: 'dashed',
+    backgroundColor: theme.accent + '08',
+  },
+  newTypeBtnText: { fontSize: 12, fontWeight: '600', color: theme.accent },
   input: { backgroundColor: theme.backgroundSecondary, borderRadius: theme.radius.sm, padding: 12, fontSize: 15, color: theme.textPrimary, borderWidth: 1, borderColor: theme.border, marginBottom: 10 },
   textArea: { minHeight: 100, paddingTop: 12, lineHeight: 21 },
   formLabel: { fontSize: 11, fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 4, marginBottom: 8 },
@@ -390,4 +504,51 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 14, color: theme.textSecondary, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
   emptyCta: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: theme.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: theme.radius.full },
   emptyCtaText: { fontSize: 15, fontWeight: '600', color: theme.background },
+
+  // New Type Modal
+  modalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.55)',
+    justifyContent: 'center', alignItems: 'center', padding: 24,
+  },
+  modalContent: {
+    backgroundColor: theme.surface, borderRadius: theme.radius.lg,
+    padding: 24, width: '100%', maxWidth: 380,
+    ...theme.shadows.elevated,
+  },
+  modalTitle: { fontSize: 18, fontWeight: '700', color: theme.textPrimary, marginBottom: 16 },
+  modalLabel: { fontSize: 11, fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
+  modalInput: {
+    backgroundColor: theme.backgroundSecondary, borderRadius: theme.radius.sm,
+    padding: 12, fontSize: 15, color: theme.textPrimary,
+    borderWidth: 1, borderColor: theme.border, marginBottom: 16,
+  },
+  emojiGrid: {
+    flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 16,
+  },
+  emojiBtn: {
+    width: 40, height: 40, borderRadius: 10,
+    alignItems: 'center', justifyContent: 'center',
+    backgroundColor: theme.surfaceLight, borderWidth: 1.5, borderColor: 'transparent',
+  },
+  emojiBtnActive: {
+    backgroundColor: theme.primary + '18', borderColor: theme.primary,
+  },
+  modalPreview: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    backgroundColor: theme.surfaceLight, borderRadius: theme.radius.sm,
+    padding: 12, marginBottom: 20,
+  },
+  modalPreviewText: { fontSize: 14, fontWeight: '600', color: theme.textPrimary },
+  modalBtnRow: { flexDirection: 'row', gap: 10 },
+  modalCancelBtn: {
+    flex: 1, paddingVertical: 13, borderRadius: theme.radius.md,
+    backgroundColor: theme.surfaceLight, alignItems: 'center',
+    borderWidth: 1, borderColor: theme.border,
+  },
+  modalCancelBtnText: { fontSize: 14, fontWeight: '600', color: theme.textSecondary },
+  modalCreateBtn: {
+    flex: 1, paddingVertical: 13, borderRadius: theme.radius.md,
+    backgroundColor: theme.primary, alignItems: 'center',
+  },
+  modalCreateBtnText: { fontSize: 14, fontWeight: '600', color: theme.background },
 });

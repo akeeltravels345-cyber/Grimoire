@@ -5,6 +5,35 @@ import { Platform } from 'react-native';
 import { Ritual, JournalEntry, ManifestationRecord, ManifestationResult, StandaloneJournalEntry, LibraryRitual } from '../services/mockData';
 import { PracticeCategory, DEFAULT_CATEGORIES, DEFAULT_CATEGORY_COLORS } from '../constants/config';
 
+export interface JournalEntryType {
+  id: string;
+  label: string;
+  icon: string;
+}
+
+const DEFAULT_JOURNAL_TYPES: JournalEntryType[] = [
+  { id: 'reflection', label: 'Reflection', icon: '\u{1F4D6}' },
+  { id: 'dream', label: 'Dream', icon: '\u{1F319}' },
+  { id: 'encounter', label: 'Encounter', icon: '\u{1F441}\uFE0F' },
+  { id: 'insight', label: 'Insight', icon: '\u{1F4A1}' },
+  { id: 'reminder', label: 'Reminder', icon: '\u{1F514}' },
+];
+import { PracticeCategory, DEFAULT_CATEGORIES, DEFAULT_CATEGORY_COLORS } from '../constants/config';
+
+export interface JournalEntryType {
+  id: string;
+  label: string;
+  icon: string;
+}
+
+const DEFAULT_JOURNAL_TYPES: JournalEntryType[] = [
+  { id: 'reflection', label: 'Reflection', icon: '\u{1F4D6}' },
+  { id: 'dream', label: 'Dream', icon: '\u{1F319}' },
+  { id: 'encounter', label: 'Encounter', icon: '\u{1F441}\uFE0F' },
+  { id: 'insight', label: 'Insight', icon: '\u{1F4A1}' },
+  { id: 'reminder', label: 'Reminder', icon: '\u{1F514}' },
+];
+
 interface AppContextType {
   rituals: Ritual[];
   libraryRituals: LibraryRitual[];
@@ -30,6 +59,9 @@ interface AppContextType {
   addLibraryRitual: (ritual: Omit<LibraryRitual, 'id' | 'createdAt' | 'timesPerformed'>) => string;
   deleteLibraryRitual: (id: string) => void;
   addToPractice: (libraryId: string, overrides?: { scheduledDate?: string; schedule?: LibraryRitual['schedule']; consecutiveDays?: number }) => void;
+  journalEntryTypes: JournalEntryType[];
+  addJournalEntryType: (type: JournalEntryType) => void;
+  deleteJournalEntryType: (id: string) => void;
   clearAllData: () => void;
 }
 
@@ -42,6 +74,7 @@ const MANIFESTATIONS_KEY = 'grimoire_manifestations';
 const STANDALONE_KEY = 'grimoire_standalone_entries';
 const NOTIF_IDS_KEY = 'grimoire_notification_ids';
 const LIBRARY_KEY = 'grimoire_library';
+const JOURNAL_TYPES_KEY = 'grimoire_journal_types';
 const DATA_VERSION_KEY = 'grimoire_data_version';
 
 const CURRENT_DATA_VERSION = '3';
@@ -174,6 +207,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [manifestations, setManifestations] = useState<ManifestationRecord[]>([]);
   const [standaloneEntries, setStandaloneEntries] = useState<StandaloneJournalEntry[]>([]);
   const [libraryRituals, setLibraryRituals] = useState<LibraryRitual[]>([]);
+  const [journalEntryTypes, setJournalEntryTypes] = useState<JournalEntryType[]>(DEFAULT_JOURNAL_TYPES);
   const [isLoaded, setIsLoaded] = useState(false);
   const hasRequestedPermissions = useRef(false);
 
@@ -218,6 +252,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (manifData) { try { setManifestations(JSON.parse(manifData)); } catch {} }
         if (standaloneData) { try { setStandaloneEntries(JSON.parse(standaloneData)); } catch {} }
         if (libraryData) { try { setLibraryRituals(JSON.parse(libraryData)); } catch {} }
+        const journalTypesData = await AsyncStorage.getItem(JOURNAL_TYPES_KEY);
+        if (journalTypesData) { try { setJournalEntryTypes(JSON.parse(journalTypesData)); } catch {} }
       } catch {}
       setIsLoaded(true);
     })();
@@ -240,6 +276,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(MANIFESTATIONS_KEY, JSON.stringify(manifestations)); }, [manifestations, isLoaded]);
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(STANDALONE_KEY, JSON.stringify(standaloneEntries)); }, [standaloneEntries, isLoaded]);
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(LIBRARY_KEY, JSON.stringify(libraryRituals)); }, [libraryRituals, isLoaded]);
+  useEffect(() => { if (isLoaded) AsyncStorage.setItem(JOURNAL_TYPES_KEY, JSON.stringify(journalEntryTypes)); }, [journalEntryTypes, isLoaded]);
 
   const addRitual = (ritual: Omit<Ritual, 'id' | 'createdAt' | 'timesPerformed' | 'journal'> & { status?: Ritual['status'] }) => {
     const id = Date.now().toString();
@@ -458,6 +495,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLibraryRituals(prev => prev.filter(r => r.id !== id));
   };
 
+  const addJournalEntryType = (type: JournalEntryType) => {
+    setJournalEntryTypes(prev => [...prev, type]);
+  };
+
+  const deleteJournalEntryType = (id: string) => {
+    const defaults = ['reflection', 'dream', 'encounter', 'insight', 'reminder'];
+    if (defaults.includes(id)) return;
+    setJournalEntryTypes(prev => prev.filter(t => t.id !== id));
+  };
+
   const addToPractice = (libraryId: string, overrides?: { scheduledDate?: string; schedule?: LibraryRitual['schedule']; consecutiveDays?: number }) => {
     const libRitual = libraryRituals.find(r => r.id === libraryId);
     if (!libRitual) return;
@@ -488,7 +535,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setManifestations([]);
     setStandaloneEntries([]);
     setLibraryRituals([]);
-    await AsyncStorage.multiRemove([STORAGE_KEY, MANIFESTATIONS_KEY, STANDALONE_KEY, NOTIF_IDS_KEY, LIBRARY_KEY]);
+    setJournalEntryTypes(DEFAULT_JOURNAL_TYPES);
+    await AsyncStorage.multiRemove([STORAGE_KEY, MANIFESTATIONS_KEY, STANDALONE_KEY, NOTIF_IDS_KEY, LIBRARY_KEY, JOURNAL_TYPES_KEY]);
     await Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
   };
 
@@ -499,7 +547,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addJournalEntry, addManifestationResult, getManifestations,
       addCategory, deleteCategory,
       addStandaloneEntry, deleteStandaloneEntry, updateStatus,
-      addLibraryRitual, deleteLibraryRitual, addToPractice, clearAllData,
+      addLibraryRitual, deleteLibraryRitual, addToPractice,
+      journalEntryTypes, addJournalEntryType, deleteJournalEntryType, clearAllData,
     }}>
       {children}
     </AppContext.Provider>
