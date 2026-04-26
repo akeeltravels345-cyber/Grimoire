@@ -46,7 +46,7 @@ export interface Ritual {
   schedule: 'daily' | 'weekly' | 'moon_phase' | 'as_needed' | 'monthly';
   scheduleDetail?: string;
   scheduledDate?: string; // ISO date for when it is next scheduled
-  status: 'scheduled' | 'approaching' | 'completed' | 'overdue';
+  status: 'scheduled' | 'approaching' | 'completed' | 'overdue' | 'dismissed';
   createdAt: string;
   lastPerformed?: string;
   timesPerformed: number;
@@ -68,6 +68,7 @@ export function getDaysUntil(dateStr: string): number {
 
 export function getComputedStatus(ritual: Ritual): 'scheduled' | 'approaching' | 'completed' | 'overdue' {
   if (ritual.status === 'completed') return 'completed';
+  if (ritual.status === 'dismissed') return 'scheduled';
   // As-needed rituals without a scheduled date are always 'scheduled'
   if (ritual.schedule === 'as_needed' && !ritual.scheduledDate) return 'scheduled';
   if (ritual.scheduledDate) {

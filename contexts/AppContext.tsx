@@ -25,7 +25,7 @@ interface AppContextType {
   deleteCategory: (categoryId: string) => void;
   addStandaloneEntry: (entry: Omit<StandaloneJournalEntry, 'id'>) => void;
   deleteStandaloneEntry: (id: string) => void;
-  updateStatus: (ritualId: string, status: 'scheduled' | 'approaching' | 'completed' | 'overdue') => void;
+  updateStatus: (ritualId: string, status: 'scheduled' | 'approaching' | 'completed' | 'overdue' | 'dismissed') => void;
   clearAllData: () => void;
 }
 
@@ -435,7 +435,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setStandaloneEntries(prev => prev.filter(e => e.id !== id));
   };
 
-  const updateStatus = (ritualId: string, status: 'scheduled' | 'approaching' | 'completed' | 'overdue') => {
+  const updateStatus = (ritualId: string, status: 'scheduled' | 'approaching' | 'completed' | 'overdue' | 'dismissed') => {
     setRituals(prev => prev.map(r => r.id === ritualId ? { ...r, status } : r));
   };
 

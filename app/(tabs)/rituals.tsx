@@ -103,7 +103,7 @@ function getStatusStyle(status: string) {
 export default function RitualsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { rituals, categories, categoryColors, manifestations, updateStatus, deleteRitual, deleteFutureInSeries, stopSchedule } = useApp();
+  const { rituals, categories, categoryColors, manifestations, updateStatus, updateRitual, deleteRitual, deleteFutureInSeries, stopSchedule } = useApp();
   const { showAlert } = useAlert();
 
   const [viewMode, setViewMode] = useState<ViewMode>('practice');
@@ -259,6 +259,24 @@ export default function RitualsScreen() {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, [updateStatus]);
 
+  const handleDismiss = useCallback((ritual: RitualWithComputed) => {
+    showAlert(
+      'Dismiss Ritual',
+      'Mark this ritual as dismissed? It will be removed from your overdue list.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Dismiss',
+          style: 'destructive',
+          onPress: () => {
+            updateRitual(ritual.id, { status: 'dismissed' as any, scheduledDate: undefined });
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+          },
+        },
+      ]
+    );
+  }, [updateRitual, showAlert]);
+
   const handleDeleteRitual = useCallback((ritual: RitualWithComputed) => {
     if (ritual.seriesId) {
       // Part of a series — offer options
@@ -334,10 +352,18 @@ export default function RitualsScreen() {
                   </View>
                 ) : null}
                 {ritual.computedStatus !== 'completed' ? (
-                  <Pressable style={styles.completeBtn}
-                    onPress={(e) => { e.stopPropagation?.(); handleComplete(ritual.id); }} hitSlop={8}>
-                    <MaterialIcons name="check" size={18} color={theme.success} />
-                  </Pressable>
+                  <View style={styles.cardActionBtns}>
+                    {ritual.computedStatus === 'overdue' ? (
+                      <Pressable style={styles.dismissBtn}
+                        onPress={(e) => { e.stopPropagation?.(); handleDismiss(ritual); }} hitSlop={8}>
+                        <Text style={styles.dismissBtnText}>Dismiss</Text>
+                      </Pressable>
+                    ) : null}
+                    <Pressable style={styles.completeBtn}
+                      onPress={(e) => { e.stopPropagation?.(); handleComplete(ritual.id); }} hitSlop={8}>
+                      <MaterialIcons name="check" size={18} color={theme.success} />
+                    </Pressable>
+                  </View>
                 ) : (
                   <View style={styles.completedIcon}>
                     <MaterialIcons name="check-circle" size={20} color={theme.success + '80'} />
@@ -980,6 +1006,9 @@ const styles = StyleSheet.create({
     borderWidth: 1.5, borderColor: theme.success + '50',
     backgroundColor: theme.success + '08',
   },
+  cardActionBtns: { alignItems: 'flex-end', gap: 4 },
+  dismissBtn: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, backgroundColor: theme.error + '10', borderWidth: 1, borderColor: theme.error + '25' },
+  dismissBtnText: { fontSize: 10, fontWeight: '700', color: theme.error },
   completedIcon: { paddingTop: 2 },
   cardBadgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginLeft: 54 },
   cardBadge: {
