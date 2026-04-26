@@ -178,39 +178,6 @@ export default function LogRitualScreen() {
           {/* Notes */}
           <Text style={styles.label}>Notes *</Text>
           <TextInput style={[styles.input, styles.textArea]} value={notes} onChangeText={setNotes} placeholder="Describe your experience... What happened? What did you notice? How did the energy feel?" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
-
-
-            {scheduleNext ? (
-              <>
-                <Text style={styles.nextHint}>
-                  {ritual.schedule === 'daily' ? 'Daily ritual — suggested: tomorrow'
-                    : ritual.schedule === 'weekly' ? 'Weekly ritual — suggested: 7 days from last date'
-                    : ritual.schedule === 'monthly' ? 'Monthly ritual — suggested: same day next month'
-                    : ritual.schedule === 'moon_phase' ? 'Moon phase ritual — suggested: ~29 days'
-                    : 'As needed — pick a date or uncheck to skip'}
-                </Text>
-                <Pressable style={styles.nextDateField} onPress={() => setShowNextDatePicker(true)}>
-                  <MaterialIcons name="event" size={20} color={nextDate ? theme.primary : theme.textMuted} />
-                  <Text style={[styles.nextDateText, !nextDate && { color: theme.textMuted }]}>
-                    {nextDate
-                      ? nextDate.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })
-                      : 'Select a date...'}
-                  </Text>
-                  <MaterialIcons name="edit-calendar" size={18} color={theme.textMuted} />
-                </Pressable>
-                {nextDate ? (
-                  <View style={styles.nextPreview}>
-                    <MaterialIcons name="auto-awesome" size={14} color={theme.accent} />
-                    <Text style={styles.nextPreviewText}>
-                      A new "{ritual.name}" will be created as Scheduled for this date
-                    </Text>
-                  </View>
-                ) : null}
-              </>
-            ) : (
-              <Text style={styles.nextSkip}>Next occurrence will not be auto-scheduled</Text>
-            )}
-          </View>
         </ScrollView>
 
         {/* Completed Date Picker Modal */}
@@ -224,7 +191,15 @@ export default function LogRitualScreen() {
                 </Pressable>
               </View>
               <ScrollView style={{ maxHeight: 380 }} showsVerticalScrollIndicator={false}>
-                {completedDateOptions.map((d, i) => {
+                {(() => {
+                  const options: Date[] = [];
+                  const now = new Date();
+                  for (let i = 0; i < 60; i++) {
+                    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+                    options.push(d);
+                  }
+                  return options;
+                })().map((d, i) => {
                   const isSelected = d.toDateString() === completedDate.toDateString();
                   const isToday = d.toDateString() === new Date().toDateString();
                   return (
