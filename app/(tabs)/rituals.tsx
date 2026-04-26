@@ -124,7 +124,7 @@ export default function RitualsScreen() {
 
   const [libSearch, setLibSearch] = useState('');
   const [libCategory, setLibCategory] = useState<string>('all');
-
+  const [showLibSearch, setShowLibSearch] = useState(false);
   const [showQuickLog, setShowQuickLog] = useState(false);
   const [quickLogRitualId, setQuickLogRitualId] = useState<string | null>(null);
   const [quickLogMood, setQuickLogMood] = useState('');
@@ -376,7 +376,15 @@ export default function RitualsScreen() {
 
   const renderLibraryTab = () => (
     <View style={{ flex: 1 }}>
-      <View style={styles.libSearchWrap}><MaterialIcons name="search" size={18} color={theme.textMuted} /><TextInput style={styles.libSearchInput} value={libSearch} onChangeText={setLibSearch} placeholder="Search your grimoire..." placeholderTextColor={theme.textMuted} />{libSearch.length > 0 ? <Pressable onPress={() => setLibSearch('')} hitSlop={8}><MaterialIcons name="close" size={16} color={theme.textMuted} /></Pressable> : null}</View>
+      {showLibSearch ? (
+  <View style={styles.libSearchWrap}>
+    <MaterialIcons name="search" size={18} color={theme.textMuted} />
+    <TextInput style={styles.libSearchInput} value={libSearch} onChangeText={setLibSearch} placeholder="Search your grimoire..." placeholderTextColor={theme.textMuted} autoFocus />
+    <Pressable onPress={() => { setLibSearch(''); setShowLibSearch(false); }} hitSlop={8}>
+      <MaterialIcons name="close" size={16} color={theme.textMuted} />
+    </Pressable>
+  </View>
+) : null}
       <View style={styles.libChipStripContainer}><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.libChipStripContent}>
         <Pressable style={[styles.libCatChip, libCategory === 'all' && styles.libCatChipActive]} onPress={() => { setLibCategory('all'); Haptics.selectionAsync(); }}><Text style={[styles.libCatChipText, libCategory === 'all' && styles.libCatChipTextActive]}>All</Text></Pressable>
         {categories.map(cat => { const catColor = categoryColors[cat.id] || theme.accent; const isActive = libCategory === cat.id; return (
