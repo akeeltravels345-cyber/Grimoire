@@ -18,21 +18,6 @@ const DEFAULT_JOURNAL_TYPES: JournalEntryType[] = [
   { id: 'insight', label: 'Insight', icon: '\u{1F4A1}' },
   { id: 'reminder', label: 'Reminder', icon: '\u{1F514}' },
 ];
-import { PracticeCategory, DEFAULT_CATEGORIES, DEFAULT_CATEGORY_COLORS } from '../constants/config';
-
-export interface JournalEntryType {
-  id: string;
-  label: string;
-  icon: string;
-}
-
-const DEFAULT_JOURNAL_TYPES: JournalEntryType[] = [
-  { id: 'reflection', label: 'Reflection', icon: '\u{1F4D6}' },
-  { id: 'dream', label: 'Dream', icon: '\u{1F319}' },
-  { id: 'encounter', label: 'Encounter', icon: '\u{1F441}\uFE0F' },
-  { id: 'insight', label: 'Insight', icon: '\u{1F4A1}' },
-  { id: 'reminder', label: 'Reminder', icon: '\u{1F514}' },
-];
 
 interface AppContextType {
   rituals: Ritual[];
