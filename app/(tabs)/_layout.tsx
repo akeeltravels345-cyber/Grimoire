@@ -7,6 +7,7 @@ import { theme } from '../../constants/theme';
 const moon = {
   bg: '#2D2455',
   border: 'rgba(255,255,255,0.10)',
+  blush: '#F5D5E0',
 };
 
 export default function TabLayout() {
@@ -34,11 +35,16 @@ export default function TabLayout() {
           borderTopWidth: 1,
           borderTopColor: isHome ? moon.border : theme.border,
         },
-        tabBarActiveTintColor: theme.primary,
-        tabBarInactiveTintColor: theme.textMuted,
+        tabBarActiveTintColor: isHome ? moon.blush : theme.primary,
+        tabBarInactiveTintColor: isHome ? 'rgba(200,180,220,0.5)' : theme.textMuted,
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: '600',
+          ...(isHome ? {
+            textShadowColor: 'rgba(245,213,224,0.6)',
+            textShadowOffset: { width: 0, height: 0 },
+            textShadowRadius: 8,
+          } : {}),
         },
       }}
     >

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -12,7 +13,7 @@ import { getComputedStatus, getDaysUntil, getUniqueRitualCounts } from '../../se
 
 const moon = {
   bg: '#2D2455',
-  card: 'rgba(255,255,255,0.07)',
+  card: 'rgba(255,255,255,0.10)',
   cardWarm: 'rgba(245,213,224,0.06)',
   border: 'rgba(255,255,255,0.10)',
   borderWarm: 'rgba(245,213,224,0.14)',
@@ -178,17 +179,17 @@ export default function DashboardScreen() {
       style={{ flex: 1 }}
     >
       <SafeAreaView edges={['top']} style={styles.container}>
+        {/* Ambient glow orbs */}
+        <View style={styles.orbTopLeft} />
+        <View style={styles.orbTopRight} />
+        <View style={styles.orbMidLeft} />
+        <View style={styles.orbBottomRight} />
+
         <ScrollView
-          style={{ flex: 1 }}
+          style={{ flex: 1, zIndex: 1 }}
           contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 16 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* Ambient glow orbs */}
-          <View style={styles.orbTopLeft} />
-          <View style={styles.orbTopRight} />
-          <View style={styles.orbMidLeft} />
-          <View style={styles.orbBottomRight} />
-
           {/* Header */}
           <View style={styles.header}>
             <View>
@@ -218,14 +219,14 @@ export default function DashboardScreen() {
             >
               <View style={styles.planetCardTop}>
                 <Text style={styles.planetEmoji}>{todayPlanet.emoji}</Text>
-                <View style={[styles.planetDayBadge, { backgroundColor: todayPlanet.color + '18' }]}>
+                <View style={[styles.planetDayBadge, { backgroundColor: todayPlanet.color + '33' }]}>
                   <Text style={[styles.planetDayBadgeText, { color: todayPlanet.color }]}>{todayPlanet.day}</Text>
                 </View>
               </View>
               <Text style={[styles.planetCardTitle, { color: todayPlanet.color }]}>Day of {todayPlanet.name}</Text>
               <View style={styles.planetWorkingsWrap}>
                 {todayPlanet.bestWorkings.slice(0, 4).map((w, i) => (
-                  <View key={i} style={[styles.planetWorkingChip, { backgroundColor: todayPlanet.color + '12' }]}>
+                  <View key={i} style={[styles.planetWorkingChip, { backgroundColor: todayPlanet.color + '28' }]}>
                     <Text style={[styles.planetWorkingText, { color: todayPlanet.color }]}>{w}</Text>
                   </View>
                 ))}
@@ -396,22 +397,22 @@ const styles = StyleSheet.create({
   orbTopLeft: {
     position: 'absolute', width: 280, height: 280, borderRadius: 999,
     backgroundColor: '#7B337E', opacity: 0.18, top: -80, left: -60,
-    pointerEvents: 'none',
+    zIndex: 0, pointerEvents: 'none',
   },
   orbTopRight: {
     position: 'absolute', width: 200, height: 200, borderRadius: 999,
     backgroundColor: '#4A3580', opacity: 0.22, top: 60, right: -50,
-    pointerEvents: 'none',
+    zIndex: 0, pointerEvents: 'none',
   },
   orbMidLeft: {
     position: 'absolute', width: 180, height: 180, borderRadius: 999,
     backgroundColor: '#6667AB', opacity: 0.15, top: 400, left: -40,
-    pointerEvents: 'none',
+    zIndex: 0, pointerEvents: 'none',
   },
   orbBottomRight: {
     position: 'absolute', width: 160, height: 160, borderRadius: 999,
     backgroundColor: '#7B337E', opacity: 0.15, bottom: 0, right: -30,
-    pointerEvents: 'none',
+    zIndex: 0, pointerEvents: 'none',
   },
 
   // Header
