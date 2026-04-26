@@ -117,16 +117,15 @@ export default function AddRitualScreen() {
             })}
           </View>
 
-          {/* Tangible Outcome */}
-          <Text style={styles.label}>Tangible Outcome *</Text>
-          <TextInput style={[styles.input, styles.textArea]} value={tangibleOutcome} onChangeText={setTangibleOutcome} placeholder="Translate that intention into a specific measurable result. Be precise - e.g., Receive $5,000 within 30 days" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
-          <Text style={styles.hint}>Be specific - what does the success of this ritual look and feel like?</Text>
-          <Text style={styles.hint}> The information in this field auto generates an entery in your manifestation tracker .</Text>
-
              {/* Intention */}
           <Text style={styles.label}>Intention *</Text>
           <TextInput style={[styles.input, styles.textArea]} value={intention} onChangeText={setIntention} placeholder="What is the purpose of this ritual?" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
-          
+         
+          {/* Tangible Outcome */}
+          <Text style={styles.label}>Tangible Outcome *</Text>
+          <TextInput style={[styles.input, styles.textArea]} value={tangibleOutcome} onChangeText={setTangibleOutcome} placeholder="Translate that intention into a specific measurable result. Be specific e.g. Receive $5,000 within 30 days" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
+          <Text style={styles.hint}> The information in this field auto generates an entery in your manifestation tracker .</Text>
+
            {/* Description */}
           <Text style={styles.label}>Description</Text>
           <TextInput style={[styles.input, styles.textArea]} value={description} onChangeText={setDescription} placeholder="Describe the ritual process, steps, and any special notes..." placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
