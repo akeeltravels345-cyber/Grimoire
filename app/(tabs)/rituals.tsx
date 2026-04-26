@@ -426,15 +426,17 @@ export default function RitualsScreen() {
     <Pressable style={styles.headerIconBtn} onPress={() => router.push('/manage-categories')}>
       <MaterialIcons name="tune" size={20} color={theme.textSecondary} />
     </Pressable>
-    <Pressable style={styles.addButton} onPress={() => {
-      if (tabMode === 'library') {
-        router.push('/add-library-ritual');
-      } else {
-        router.push('/add-ritual');
-      }
-    }}>
-      <MaterialIcons name="add" size={22} color={theme.background} />
-    </Pressable>
+    {tabMode !== 'manifestations' ? (
+  <Pressable style={styles.addButton} onPress={() => {
+    if (tabMode === 'library') {
+      router.push('/add-library-ritual');
+    } else {
+      router.push('/add-ritual');
+    }
+  }}>
+    <MaterialIcons name="add" size={22} color={theme.background} />
+  </Pressable>
+) : null}
   </View>
 </View>
 
