@@ -5,6 +5,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import ReAnimated, { useSharedValue, useAnimatedStyle, withRepeat, withSequence, withTiming, withDelay } from 'react-native-reanimated';
 import { theme, getCurrentMoonPhase } from '../../constants/theme';
 import { getTodayPlanet } from '../../constants/planetaryData';
 import { getCurrentPlanetaryHour, formatHourTime, PlanetaryHourInfo } from '../../services/planetaryHours';
@@ -42,6 +43,86 @@ function getMoonPhaseIndex(): number {
   const jd = c + e + day - 694039.09;
   const phase = jd / 29.53058867;
   return Math.round((phase - Math.floor(phase)) * 8) % 8;
+}
+
+// ═══ Animated Star Field ═══
+interface StarData {
+  id: number;
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  baseOpacity: number;
+  delay: number;
+  duration: number;
+}
+
+function AnimatedStar({ star }: { star: StarData }) {
+  const opacity = useSharedValue(star.baseOpacity * 0.2);
+
+  useEffect(() => {
+    opacity.value = withDelay(
+      star.delay,
+      withRepeat(
+        withSequence(
+          withTiming(star.baseOpacity, { duration: star.duration }),
+          withTiming(star.baseOpacity * 0.2, { duration: star.duration }),
+        ),
+        -1,
+        true
+      )
+    );
+  }, []);
+
+  const animStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
+  return (
+    <ReAnimated.View
+      style={[
+        {
+          position: 'absolute',
+          left: `${star.x}%` as any,
+          top: `${star.y}%` as any,
+          width: star.size,
+          height: star.size,
+          borderRadius: star.size / 2,
+          backgroundColor: star.color,
+        },
+        animStyle,
+      ]}
+    />
+  );
+}
+
+function StarField() {
+  const stars = useMemo(() => {
+    const result: StarData[] = [];
+    for (let i = 0; i < 65; i++) {
+      const size = 1 + Math.random() * 2;
+      const isLarge = size > 2;
+      result.push({
+        id: i,
+        x: Math.random() * 96 + 2,
+        y: Math.random() * 96 + 2,
+        size,
+        color: isLarge ? '#F5D5E0' : '#FFFFFF',
+        baseOpacity: 0.2 + Math.random() * 0.7,
+        delay: Math.random() * 4000,
+        duration: 2000 + Math.random() * 3000,
+      });
+    }
+    return result;
+  }, []);
+
+  return (
+    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }} pointerEvents="none">
+      {stars.map(star => (
+        <AnimatedStar key={star.id} star={star} />
+      ))}
+    </View>
+  );
 }
 
 function MoonPhaseVisual({ phaseIndex, size }: { phaseIndex: number; size: number }) {
@@ -172,18 +253,23 @@ export default function DashboardScreen() {
 
   return (
     <LinearGradient
-      colors={['#4A3580', '#2D2455', '#221E50', '#2A1848']}
-      locations={[0, 0.3, 0.6, 1]}
-      start={{ x: 0.2, y: 0 }}
-      end={{ x: 0.8, y: 1 }}
+      colors={['#3D2060', '#2D1855', '#251545', '#1E1040', '#251848']}
+      locations={[0, 0.2, 0.45, 0.7, 1]}
+      start={{ x: 0.3, y: 0 }}
+      end={{ x: 0.7, y: 1 }}
       style={{ flex: 1 }}
     >
       <SafeAreaView edges={['top']} style={styles.container}>
-        {/* Ambient glow orbs */}
-        <View style={styles.orbTopLeft} />
-        <View style={styles.orbTopRight} />
-        <View style={styles.orbMidLeft} />
-        <View style={styles.orbBottomRight} />
+        {/* Atmospheric colour wash overlay */}
+        <LinearGradient
+          colors={['rgba(123,51,126,0.35)', 'transparent', 'rgba(70,48,140,0.20)', 'transparent', 'rgba(102,103,171,0.18)']}
+          locations={[0, 0.3, 0.5, 0.75, 1]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}
+          pointerEvents="none"
+        />
+        <StarField />
 
         <ScrollView
           style={{ flex: 1, zIndex: 1 }}
@@ -392,28 +478,6 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'transparent' },
-
-  // Ambient glow orbs
-  orbTopLeft: {
-    position: 'absolute', width: 280, height: 280, borderRadius: 999,
-    backgroundColor: '#7B337E', opacity: 0.18, top: -80, left: -60,
-    zIndex: 0, pointerEvents: 'none',
-  },
-  orbTopRight: {
-    position: 'absolute', width: 200, height: 200, borderRadius: 999,
-    backgroundColor: '#4A3580', opacity: 0.22, top: 60, right: -50,
-    zIndex: 0, pointerEvents: 'none',
-  },
-  orbMidLeft: {
-    position: 'absolute', width: 180, height: 180, borderRadius: 999,
-    backgroundColor: '#6667AB', opacity: 0.15, top: 400, left: -40,
-    zIndex: 0, pointerEvents: 'none',
-  },
-  orbBottomRight: {
-    position: 'absolute', width: 160, height: 160, borderRadius: 999,
-    backgroundColor: '#7B337E', opacity: 0.15, bottom: 0, right: -30,
-    zIndex: 0, pointerEvents: 'none',
-  },
 
   // Header
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, marginBottom: 16 },
