@@ -256,7 +256,7 @@ export default function LibraryRitualDetailScreen() {
                 hitSlop={12}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6, paddingVertical: 10, paddingHorizontal: 4 }}
                 onPress={() => {
-                  setEditIngredients(editIngredients.trim().length > 0 ? editIngredients.trim() + ',' : ',');
+                  setEditIngredients(editIngredients.trim().length > 0 ? editIngredients.trim() + ',New ingredient' : 'New ingredient');
                 }}
               >
                 <MaterialIcons name="add-circle-outline" size={22} color={theme.primary} />
