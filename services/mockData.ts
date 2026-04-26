@@ -35,6 +35,20 @@ export interface StandaloneJournalEntry {
   type: 'note' | 'reminder' | 'reflection' | 'dream' | 'insight';
 }
 
+export interface LibraryRitual {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  intention: string;
+  tangibleOutcome: string;
+  ingredients?: string[];
+  schedule: 'daily' | 'weekly' | 'moon_phase' | 'as_needed' | 'monthly';
+  scheduleDetail?: string;
+  createdAt: string;
+  timesPerformed: number;
+}
+
 export interface Ritual {
   id: string;
   name: string;
@@ -54,6 +68,7 @@ export interface Ritual {
   seriesId?: string; // Links propagated rituals together as a series
   consecutiveDays?: number; // Number of consecutive days this ritual spans
   groupId?: string; // Links consecutive-day ritual entries together
+  libraryId?: string; // Links this practice instance back to its Library source
 }
 
 // --- Helper Functions ---
