@@ -18,6 +18,7 @@ export default function RootLayout() {
             <Stack.Screen name="add-manifestation" options={{ presentation: 'modal' }} />
             <Stack.Screen name="manage-categories" options={{ presentation: 'modal' }} />
             <Stack.Screen name="profile" options={{ presentation: 'card' }} />
+            <Stack.Screen name="add-library-ritual" options={{ presentation: 'modal' }} />
           </Stack>
         </AppProvider>
       </SafeAreaProvider>
