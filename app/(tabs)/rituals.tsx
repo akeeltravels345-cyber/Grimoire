@@ -1,11 +1,13 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, Dimensions, Modal, TextInput } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, Dimensions, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
-import { theme } from '../../constants/theme';
+import { theme, getCurrentMoonPhase } from '../../constants/theme';
+import { getTodayPlanet } from '../../constants/planetaryData';
+import { getCurrentPlanetaryHour } from '../../services/planetaryHours';
 import { useApp } from '../../contexts/AppContext';
 import { useAlert } from '@/template';
 import { getComputedStatus, getDaysUntil, getUniqueRitualCounts, Ritual } from '../../services/mockData';
@@ -103,7 +105,7 @@ function getStatusStyle(status: string) {
 export default function RitualsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { rituals, libraryRituals, categories, categoryColors, manifestations, updateStatus, updateRitual, deleteRitual, deleteFutureInSeries, stopSchedule } = useApp();
+  const { rituals, libraryRituals, categories, categoryColors, manifestations, updateStatus, updateRitual, deleteRitual, deleteFutureInSeries, stopSchedule, addJournalEntry } = useApp();
   const { showAlert } = useAlert();
 
   const [tabMode, setTabMode] = useState<TabMode>('library');
@@ -121,6 +123,14 @@ export default function RitualsScreen() {
   // Library state
   const [libSearch, setLibSearch] = useState('');
   const [libCategory, setLibCategory] = useState<string>('all');
+
+  // Quick Log state
+  const [showQuickLog, setShowQuickLog] = useState(false);
+  const [quickLogRitualId, setQuickLogRitualId] = useState<string | null>(null);
+  const [quickLogMood, setQuickLogMood] = useState('');
+  const [quickLogNotes, setQuickLogNotes] = useState('');
+  const [quickLogDate, setQuickLogDate] = useState<Date>(new Date());
+  const [showQuickDatePicker, setShowQuickDatePicker] = useState(false);
 
   const today = useMemo(() => new Date(), []);
   const monthDays = useMemo(() => getMonthDays(), []);
@@ -282,9 +292,17 @@ export default function RitualsScreen() {
     setSelectedDay(prev => prev && isSameDay(prev, day) ? null : day);
     Haptics.selectionAsync();
   }, []);
+  const openQuickLog = useCallback((ritualId: string) => {
+    setQuickLogRitualId(ritualId);
+    setQuickLogMood('');
+    setQuickLogNotes('');
+    setQuickLogDate(new Date());
+    setShowQuickLog(true);
+  }, []);
+
   const handleComplete = useCallback((ritualId: string) => {
-    router.push({ pathname: '/log-ritual', params: { ritualId } });
-  }, [router]);
+    openQuickLog(ritualId);
+  }, [openQuickLog]);
 
   const handleDismiss = useCallback((ritual: RitualWithComputed) => {
     showAlert(
@@ -1018,6 +1036,159 @@ export default function RitualsScreen() {
       )}
 
       {renderCategorySheet()}
+
+      {/* ═══ QUICK LOG BOTTOM SHEET ═══ */}
+      <Modal visible={showQuickLog} transparent animationType="slide" onRequestClose={() => setShowQuickLog(false)}>
+        <Pressable style={styles.qlOverlay} onPress={() => setShowQuickLog(false)}>
+          <Pressable style={styles.qlSheet} onPress={() => {}}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+              <View style={styles.qlHandle} />
+              {(() => {
+                const qlRitual = rituals.find(r => r.id === quickLogRitualId);
+                const moonPhase = getCurrentMoonPhase();
+                const todayPlanet = getTodayPlanet();
+                const currentHour = getCurrentPlanetaryHour();
+                const qlCanSave = quickLogMood.length > 0;
+                const MOODS = [
+                  'Connected', 'Peaceful', 'Grateful', 'Empowered', 'Focused',
+                  'Reflective', 'Grounded', 'Centered', 'Soothed', 'Hopeful',
+                  'Contemplative', 'Determined', 'Joyful', 'Elevated', 'Liberated',
+                  'Radiant', 'Confident',
+                ];
+                return (
+                  <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
+                    {/* Ritual Name */}
+                    <Text style={styles.qlRitualName}>{qlRitual?.name || 'Ritual'}</Text>
+
+                    {/* Cosmic Context */}
+                    <View style={styles.qlCosmicCard}>
+                      <View style={styles.qlCosmicRow}>
+                        <Text style={styles.qlCosmicEmoji}>{moonPhase.icon}</Text>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.qlCosmicLabel}>{moonPhase.name}</Text>
+                          <Text style={styles.qlCosmicSub}>{moonPhase.energy}</Text>
+                        </View>
+                      </View>
+                      <View style={styles.qlCosmicDivider} />
+                      <View style={styles.qlCosmicRow}>
+                        <Text style={styles.qlCosmicEmoji}>{todayPlanet.emoji}</Text>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.qlCosmicLabel}>Day of {todayPlanet.name}</Text>
+                          <Text style={styles.qlCosmicSub}>{todayPlanet.bestWorkings[0]}</Text>
+                        </View>
+                      </View>
+                      {currentHour ? (
+                        <>
+                          <View style={styles.qlCosmicDivider} />
+                          <View style={styles.qlCosmicRow}>
+                            <Text style={styles.qlCosmicEmoji}>{currentHour.planet.emoji}</Text>
+                            <View style={{ flex: 1 }}>
+                              <Text style={styles.qlCosmicLabel}>Hour of {currentHour.planet.name}</Text>
+                              <Text style={styles.qlCosmicSub}>{currentHour.planet.bestWorkings[0]}</Text>
+                            </View>
+                          </View>
+                        </>
+                      ) : null}
+                    </View>
+
+                    {/* Date Completed */}
+                    <Text style={styles.qlLabel}>Date Completed</Text>
+                    <Pressable style={styles.qlDateField} onPress={() => setShowQuickDatePicker(true)}>
+                      <MaterialIcons name="event-available" size={18} color={theme.primary} />
+                      <Text style={styles.qlDateText}>
+                        {quickLogDate.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })}
+                      </Text>
+                      <MaterialIcons name="edit-calendar" size={16} color={theme.textMuted} />
+                    </Pressable>
+                    <Text style={styles.qlDateHint}>Defaults to today \u2014 change if logging a past practice</Text>
+
+                    {/* Mood */}
+                    <Text style={styles.qlLabel}>How did it feel? *</Text>
+                    <View style={styles.qlMoodGrid}>
+                      {MOODS.map(m => (
+                        <Pressable key={m} style={[styles.qlMoodChip, quickLogMood === m && styles.qlMoodChipActive]}
+                          onPress={() => { setQuickLogMood(m); Haptics.selectionAsync(); }}>
+                          <Text style={[styles.qlMoodChipText, quickLogMood === m && styles.qlMoodChipTextActive]}>{m}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+
+                    {/* Notes */}
+                    <Text style={styles.qlLabel}>Notes</Text>
+                    <TextInput
+                      style={styles.qlNotesInput}
+                      value={quickLogNotes}
+                      onChangeText={setQuickLogNotes}
+                      placeholder="What happened? Any signs or observations..."
+                      placeholderTextColor={theme.textMuted}
+                      multiline
+                      textAlignVertical="top"
+                    />
+
+                    {/* Save Button */}
+                    <Pressable
+                      style={[styles.qlSaveBtn, !qlCanSave && styles.qlSaveBtnDisabled]}
+                      disabled={!qlCanSave}
+                      onPress={() => {
+                        if (!qlCanSave || !quickLogRitualId) return;
+                        addJournalEntry(quickLogRitualId, {
+                          date: quickLogDate.toISOString(),
+                          notes: quickLogNotes.trim(),
+                          mood: quickLogMood,
+                        });
+                        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                        setShowQuickLog(false);
+                      }}
+                    >
+                      <Text style={[styles.qlSaveBtnText, !qlCanSave && styles.qlSaveBtnTextDisabled]}>Mark Complete \u2713</Text>
+                    </Pressable>
+                  </ScrollView>
+                );
+              })()}
+            </KeyboardAvoidingView>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
+      {/* ═══ QUICK LOG DATE PICKER ═══ */}
+      <Modal visible={showQuickDatePicker} transparent animationType="slide" onRequestClose={() => setShowQuickDatePicker(false)}>
+        <Pressable style={styles.qlOverlay} onPress={() => setShowQuickDatePicker(false)}>
+          <Pressable style={styles.qlDateModal} onPress={() => {}}>
+            <View style={styles.qlDateModalHeader}>
+              <Text style={styles.qlDateModalTitle}>Date Completed</Text>
+              <Pressable onPress={() => setShowQuickDatePicker(false)} style={styles.qlDateModalClose}>
+                <MaterialIcons name="close" size={22} color={theme.textPrimary} />
+              </Pressable>
+            </View>
+            <ScrollView style={{ maxHeight: 380 }} showsVerticalScrollIndicator={false}>
+              {(() => {
+                const opts: Date[] = [];
+                const now = new Date();
+                for (let i = 0; i < 60; i++) {
+                  opts.push(new Date(now.getFullYear(), now.getMonth(), now.getDate() - i));
+                }
+                return opts;
+              })().map((d, i) => {
+                const isSelected = d.toDateString() === quickLogDate.toDateString();
+                const isToday = d.toDateString() === new Date().toDateString();
+                return (
+                  <Pressable key={i}
+                    style={[styles.qlDateOption, isSelected && styles.qlDateOptionActive]}
+                    onPress={() => { setQuickLogDate(d); setShowQuickDatePicker(false); Haptics.selectionAsync(); }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.qlDateOptionText, isSelected && styles.qlDateOptionTextActive]}>
+                        {d.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}
+                        {isToday ? '  (Today)' : ''}
+                      </Text>
+                    </View>
+                    {isSelected ? <MaterialIcons name="check-circle" size={20} color={theme.primary} /> : null}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -1389,4 +1560,86 @@ const styles = StyleSheet.create({
     borderRadius: 12, marginTop: 4, backgroundColor: theme.primary + '06',
   },
   manifLogBtnText: { fontSize: 13, fontWeight: '600', color: theme.primary },
+
+  // ═══ QUICK LOG STYLES ═══
+  qlOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' },
+  qlSheet: {
+    backgroundColor: theme.background, borderTopLeftRadius: 24, borderTopRightRadius: 24,
+    maxHeight: '88%', paddingTop: 8, paddingBottom: 16,
+  },
+  qlHandle: {
+    width: 40, height: 4, borderRadius: 2, backgroundColor: theme.surfaceLight,
+    alignSelf: 'center', marginBottom: 12,
+  },
+  qlRitualName: {
+    fontSize: 20, fontWeight: '700', color: theme.textPrimary, textAlign: 'center',
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    marginBottom: 16,
+  },
+
+  qlCosmicCard: {
+    backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 14,
+    borderWidth: 1, borderColor: theme.primary + '20', marginBottom: 4,
+    ...theme.shadows.card,
+  },
+  qlCosmicRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 4 },
+  qlCosmicEmoji: { fontSize: 20 },
+  qlCosmicLabel: { fontSize: 13, fontWeight: '600', color: theme.textPrimary },
+  qlCosmicSub: { fontSize: 11, color: theme.textSecondary },
+  qlCosmicDivider: { height: 1, backgroundColor: theme.border + '60', marginVertical: 6 },
+
+  qlLabel: {
+    fontSize: 12, fontWeight: '600', color: theme.textSecondary, marginTop: 18, marginBottom: 8,
+    textTransform: 'uppercase', letterSpacing: 0.5,
+  },
+  qlDateField: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: theme.surface, borderRadius: theme.radius.md,
+    padding: 12, borderWidth: 1, borderColor: theme.primary + '30',
+  },
+  qlDateText: { flex: 1, fontSize: 14, color: theme.textPrimary, fontWeight: '500' },
+  qlDateHint: { fontSize: 11, color: theme.textMuted, marginTop: 4, fontStyle: 'italic' },
+
+  qlMoodGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
+  qlMoodChip: {
+    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 18,
+    backgroundColor: theme.surface, borderWidth: 1.5, borderColor: theme.border,
+  },
+  qlMoodChipActive: { backgroundColor: theme.primary + '20', borderColor: theme.primary },
+  qlMoodChipText: { fontSize: 12, fontWeight: '500', color: theme.textMuted },
+  qlMoodChipTextActive: { color: theme.primary, fontWeight: '600' },
+
+  qlNotesInput: {
+    backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 12,
+    fontSize: 14, color: theme.textPrimary, borderWidth: 1, borderColor: theme.border,
+    minHeight: 80, lineHeight: 20,
+  },
+  qlSaveBtn: {
+    backgroundColor: theme.primary, borderRadius: theme.radius.md,
+    paddingVertical: 16, alignItems: 'center', marginTop: 20,
+  },
+  qlSaveBtnDisabled: { backgroundColor: theme.surfaceLight },
+  qlSaveBtnText: { fontSize: 16, fontWeight: '700', color: theme.background },
+  qlSaveBtnTextDisabled: { color: theme.textMuted },
+
+  qlDateModal: {
+    backgroundColor: theme.surface, borderTopLeftRadius: 20, borderTopRightRadius: 20,
+    paddingBottom: 32, maxHeight: '60%',
+  },
+  qlDateModalHeader: {
+    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+    padding: 16, borderBottomWidth: 1, borderBottomColor: theme.border,
+  },
+  qlDateModalTitle: { fontSize: 17, fontWeight: '700', color: theme.textPrimary },
+  qlDateModalClose: {
+    width: 36, height: 36, borderRadius: 18, backgroundColor: theme.surfaceLight,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  qlDateOption: {
+    flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14,
+    borderBottomWidth: 1, borderBottomColor: theme.border + '40',
+  },
+  qlDateOptionActive: { backgroundColor: theme.primary + '12' },
+  qlDateOptionText: { fontSize: 15, color: theme.textPrimary, fontWeight: '500' },
+  qlDateOptionTextActive: { color: theme.primary, fontWeight: '700' },
 });
