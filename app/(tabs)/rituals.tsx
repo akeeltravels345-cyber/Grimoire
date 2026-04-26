@@ -417,7 +417,26 @@ export default function RitualsScreen() {
 
   return (
     <GradientScreen>
-      <View style={styles.header}><Text style={styles.title}>Rituals</Text><View style={styles.headerRight}><Pressable style={styles.headerIconBtn} onPress={() => router.push('/manage-categories')}><MaterialIcons name="tune" size={20} color={theme.textSecondary} /></Pressable><Pressable style={styles.addButton} onPress={() => router.push('/add-ritual')}><MaterialIcons name="add" size={22} color={theme.background} /></Pressable></View></View>
+      <View style={styles.header}>
+  <Text style={styles.title}>Rituals</Text>
+  <View style={styles.headerRight}>
+    <Pressable style={styles.headerIconBtn} onPress={() => setShowLibSearch(true)}>
+      <MaterialIcons name="search" size={20} color={theme.textSecondary} />
+    </Pressable>
+    <Pressable style={styles.headerIconBtn} onPress={() => router.push('/manage-categories')}>
+      <MaterialIcons name="tune" size={20} color={theme.textSecondary} />
+    </Pressable>
+    <Pressable style={styles.addButton} onPress={() => {
+      if (tabMode === 'library') {
+        router.push('/add-library-ritual');
+      } else {
+        router.push('/add-ritual');
+      }
+    }}>
+      <MaterialIcons name="add" size={22} color={theme.background} />
+    </Pressable>
+  </View>
+</View>
 
       <View style={styles.segmentWrap}><View style={styles.segmentPill}>{([{ key: 'library' as TabMode, label: 'Library' }, { key: 'practice' as TabMode, label: 'Practice' }, { key: 'manifestations' as TabMode, label: 'Manifestations' }]).map(tab => <Pressable key={tab.key} style={[styles.segmentBtn, tabMode === tab.key && styles.segmentBtnActive]} onPress={() => { setTabMode(tab.key); Haptics.selectionAsync(); }}><Text style={[styles.segmentText, tabMode === tab.key && styles.segmentTextActive]}>{tab.label}</Text></Pressable>)}</View></View>
 
