@@ -122,9 +122,15 @@ export default function LibraryRitualDetailScreen() {
           <MaterialIcons name="arrow-back" size={24} color={theme.textPrimary} />
         </Pressable>
         <View style={{ flex: 1 }} />
-        <Pressable onPress={startEditing} style={styles.headerAction} hitSlop={8}>
-          <MaterialIcons name="edit" size={20} color={theme.textSecondary} />
-        </Pressable>
+        {editing ? (
+  <Pressable onPress={saveEdits} style={[styles.headerAction, { backgroundColor: theme.primary }]} hitSlop={8}>
+    <MaterialIcons name="check" size={20} color={theme.background} />
+  </Pressable>
+) : (
+  <Pressable onPress={startEditing} style={styles.headerAction} hitSlop={8}>
+    <MaterialIcons name="edit" size={20} color={theme.textSecondary} />
+  </Pressable>
+)}
         <Pressable onPress={handleDelete} style={styles.headerAction} hitSlop={8}>
           <MaterialIcons name="delete-outline" size={20} color={theme.error} />
         </Pressable>
@@ -136,7 +142,11 @@ export default function LibraryRitualDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Name */}
-        <Text style={styles.ritualName}>{libRitual.name}</Text>
+        {editing ? (
+  <TextInput style={[styles.ritualName, { borderBottomWidth: 1, borderBottomColor: theme.primary }]} value={editName} onChangeText={setEditName} multiline />
+) : (
+  <Text style={styles.ritualName}>{libRitual.name}</Text>
+)}
 
         {/* Category & Schedule badges */}
         <View style={styles.badgeRow}>
@@ -174,7 +184,11 @@ export default function LibraryRitualDetailScreen() {
             <Text style={styles.sectionLabel}>INTENTION</Text>
             <View style={styles.intentionBox}>
               <View style={styles.intentionBorder} />
-              <Text style={styles.intentionText}>{libRitual.intention}</Text>
+              {editing ? (
+  <TextInput style={[styles.intentionText, { borderBottomWidth: 1, borderBottomColor: theme.primary }]} value={editIntention} onChangeText={setEditIntention} multiline />
+) : (
+  <Text style={styles.intentionText}>{libRitual.intention}</Text>
+)}
             </View>
           </View>
         ) : null}
@@ -187,7 +201,11 @@ export default function LibraryRitualDetailScreen() {
               <View style={styles.outcomeBorder} />
               <View style={styles.outcomeContent}>
                 <MaterialIcons name="track-changes" size={16} color={theme.accent} />
-                <Text style={styles.outcomeText}>{libRitual.tangibleOutcome}</Text>
+                {editing ? (
+  <TextInput style={[styles.outcomeText, { borderBottomWidth: 1, borderBottomColor: theme.accent }]} value={editOutcome} onChangeText={setEditOutcome} multiline />
+) : (
+  <Text style={styles.outcomeText}>{libRitual.tangibleOutcome}</Text>
+)}
               </View>
             </View>
           </View>
@@ -197,7 +215,11 @@ export default function LibraryRitualDetailScreen() {
         {libRitual.description ? (
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>DESCRIPTION</Text>
-            <Text style={styles.descriptionText}>{libRitual.description}</Text>
+            {editing ? (
+  <TextInput style={[styles.descriptionText, { borderBottomWidth: 1, borderBottomColor: theme.border, minHeight: 80 }]} value={editDescription} onChangeText={setEditDescription} multiline />
+) : (
+  <Text style={styles.descriptionText}>{libRitual.description}</Text>
+)}
           </View>
         ) : null}
 
