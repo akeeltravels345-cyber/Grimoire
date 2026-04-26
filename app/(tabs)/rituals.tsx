@@ -137,6 +137,10 @@ export default function RitualsScreen() {
     return getUniqueRitualCounts(rituals);
   }, [rituals]);
 
+  const loggedCompleteCount = useMemo(() => {
+    return rituals.filter(r => r.status === 'completed' && r.timesPerformed > 0).length;
+  }, [rituals]);
+
   const dayRitualMap = useMemo(() => {
     const map = new Map<string, RitualWithComputed[]>();
     ritualsWithComputed.forEach(r => {
@@ -740,7 +744,7 @@ export default function RitualsScreen() {
                       style={[styles.statusPill, isActive && { backgroundColor: cfg.color + '20', borderColor: cfg.color + '50' }]}
                       onPress={() => toggleFilter(status)}>
                       <View style={[styles.statusPillDot, { backgroundColor: cfg.color }]} />
-                      <Text style={[styles.statusPillCount, isActive && { color: cfg.color }]}>{counts[status]}</Text>
+                      <Text style={[styles.statusPillCount, isActive && { color: cfg.color }]}>{status === 'completed' ? loggedCompleteCount : counts[status]}</Text>
                       <Text style={[styles.statusPillLabel, isActive && { color: cfg.color }]}>{cfg.label}</Text>
                     </Pressable>
                   );
