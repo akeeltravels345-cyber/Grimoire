@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, Dimensions, Modal } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, Dimensions, Modal, TextInput } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -11,8 +11,8 @@ import { useAlert } from '@/template';
 import { getComputedStatus, getDaysUntil, getUniqueRitualCounts, Ritual } from '../../services/mockData';
 import SwipeableRow from '../../components/SwipeableRow';
 
+type TabMode = 'library' | 'practice' | 'manifestations';
 type StatusFilter = 'all' | 'scheduled' | 'approaching' | 'completed' | 'overdue';
-type ViewMode = 'practice' | 'manifestations';
 type TimelineView = 'list' | 'week' | 'month';
 
 const STATUS_CONFIG = {
@@ -103,10 +103,10 @@ function getStatusStyle(status: string) {
 export default function RitualsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { rituals, categories, categoryColors, manifestations, updateStatus, updateRitual, deleteRitual, deleteFutureInSeries, stopSchedule } = useApp();
+  const { rituals, libraryRituals, categories, categoryColors, manifestations, updateStatus, updateRitual, deleteRitual, deleteFutureInSeries, stopSchedule } = useApp();
   const { showAlert } = useAlert();
 
-  const [viewMode, setViewMode] = useState<ViewMode>('practice');
+  const [tabMode, setTabMode] = useState<TabMode>('library');
   const [timelineView, setTimelineView] = useState<TimelineView>('list');
   const [activeFilter, setActiveFilter] = useState<StatusFilter>('all');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -117,6 +117,10 @@ export default function RitualsScreen() {
   const [selectedCalDay, setSelectedCalDay] = useState<Date | null>(null);
   const [showCategorySheet, setShowCategorySheet] = useState(false);
   const dateScrollRef = useRef<ScrollView>(null);
+
+  // Library state
+  const [libSearch, setLibSearch] = useState('');
+  const [libCategory, setLibCategory] = useState<string>('all');
 
   const today = useMemo(() => new Date(), []);
   const monthDays = useMemo(() => getMonthDays(), []);
@@ -153,6 +157,26 @@ export default function RitualsScreen() {
     });
     return map;
   }, [ritualsWithComputed]);
+
+  // Library filtered data
+  const filteredLibrary = useMemo(() => {
+    let list = libraryRituals;
+    if (libSearch.trim()) {
+      const q = libSearch.toLowerCase().trim();
+      list = list.filter(r => r.name.toLowerCase().includes(q));
+    }
+    if (libCategory !== 'all') {
+      list = list.filter(r => r.category === libCategory);
+    }
+    return list;
+  }, [libraryRituals, libSearch, libCategory]);
+
+  // Check which library rituals are in practice
+  const libraryInPractice = useMemo(() => {
+    const set = new Set<string>();
+    rituals.forEach(r => { if (r.libraryId) set.add(r.libraryId); });
+    return set;
+  }, [rituals]);
 
   // ═══ WEEK DATA ═══
   const currentWeekStart = useMemo(() => {
@@ -259,9 +283,8 @@ export default function RitualsScreen() {
     Haptics.selectionAsync();
   }, []);
   const handleComplete = useCallback((ritualId: string) => {
-    updateStatus(ritualId, 'completed');
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  }, [updateStatus]);
+    router.push({ pathname: '/log-ritual', params: { ritualId } });
+  }, [router]);
 
   const handleDismiss = useCallback((ritual: RitualWithComputed) => {
     showAlert(
@@ -283,7 +306,6 @@ export default function RitualsScreen() {
 
   const handleDeleteRitual = useCallback((ritual: RitualWithComputed) => {
     if (ritual.seriesId) {
-      // Part of a series — offer options
       const seriesCount = rituals.filter(r => r.seriesId === ritual.seriesId).length;
       const futureCount = rituals.filter(r =>
         r.seriesId === ritual.seriesId &&
@@ -637,6 +659,127 @@ export default function RitualsScreen() {
     </Modal>
   );
 
+  // ═══ LIBRARY TAB ═══
+  const renderLibraryTab = () => (
+    <View style={{ flex: 1 }}>
+      {/* Search */}
+      <View style={styles.libSearchWrap}>
+        <MaterialIcons name="search" size={18} color={theme.textMuted} />
+        <TextInput
+          style={styles.libSearchInput}
+          value={libSearch}
+          onChangeText={setLibSearch}
+          placeholder="Search your grimoire..."
+          placeholderTextColor={theme.textMuted}
+        />
+        {libSearch.length > 0 ? (
+          <Pressable onPress={() => setLibSearch('')} hitSlop={8}>
+            <MaterialIcons name="close" size={16} color={theme.textMuted} />
+          </Pressable>
+        ) : null}
+      </View>
+
+      {/* Category chips */}
+      <View style={styles.libChipStripContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.libChipStripContent}>
+          <Pressable
+            style={[styles.libCatChip, libCategory === 'all' && styles.libCatChipActive]}
+            onPress={() => { setLibCategory('all'); Haptics.selectionAsync(); }}>
+            <Text style={[styles.libCatChipText, libCategory === 'all' && styles.libCatChipTextActive]}>All</Text>
+          </Pressable>
+          {categories.map(cat => {
+            const catColor = categoryColors[cat.id] || theme.accent;
+            const isActive = libCategory === cat.id;
+            return (
+              <Pressable key={cat.id}
+                style={[styles.libCatChip, isActive && { backgroundColor: catColor + '20', borderColor: catColor }]}
+                onPress={() => { setLibCategory(isActive ? 'all' : cat.id); Haptics.selectionAsync(); }}>
+                <MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={14}
+                  color={isActive ? catColor : theme.textMuted} />
+                <Text style={[styles.libCatChipText, isActive && { color: catColor }]}>{cat.name}</Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </View>
+
+      {/* Library list */}
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 80 }} showsVerticalScrollIndicator={false}>
+        {filteredLibrary.length === 0 ? (
+          <View style={styles.libEmptyState}>
+            <MaterialIcons name="auto-stories" size={52} color={theme.textMuted} />
+            <Text style={styles.libEmptyTitle}>
+              {libSearch.trim() || libCategory !== 'all' ? 'No spells found' : 'Your grimoire is empty'}
+            </Text>
+            <Text style={styles.libEmptyText}>
+              {libSearch.trim() || libCategory !== 'all'
+                ? 'Try adjusting your search or filter'
+                : 'Add your first spell to build your personal grimoire'}
+            </Text>
+            {!libSearch.trim() && libCategory === 'all' ? (
+              <Pressable style={styles.libEmptyCta} onPress={() => router.push('/add-library-ritual')}>
+                <MaterialIcons name="add" size={18} color={theme.background} />
+                <Text style={styles.libEmptyCtaText}>Add Spell</Text>
+              </Pressable>
+            ) : null}
+          </View>
+        ) : (
+          filteredLibrary.map(libR => {
+            const catColor = categoryColors[libR.category] || theme.accent;
+            const cat = categories.find(c => c.id === libR.category);
+            const inPractice = libraryInPractice.has(libR.id);
+            return (
+              <Pressable key={libR.id} style={styles.libCard}
+                onPress={() => router.push(`/library-ritual/${libR.id}`)}>
+                <View style={[styles.libCardLeftBorder, { backgroundColor: catColor }]} />
+                <View style={styles.libCardBody}>
+                  <View style={styles.libCardTopRow}>
+                    <View style={[styles.libCatIconBox, { backgroundColor: catColor + '18' }]}>
+                      <MaterialIcons name={(cat?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap} size={20} color={catColor} />
+                    </View>
+                    <View style={styles.libCardInfo}>
+                      <Text style={styles.libCardName} numberOfLines={1}>{libR.name}</Text>
+                      <View style={styles.libCardTags}>
+                        <View style={styles.libTag}>
+                          <Text style={styles.libTagText}>{scheduleLabels[libR.schedule] || libR.schedule}</Text>
+                        </View>
+                        {inPractice ? (
+                          <View style={[styles.libTag, { backgroundColor: theme.success + '15', borderColor: theme.success + '30' }]}>
+                            <Text style={[styles.libTagText, { color: theme.success }]}>In Practice</Text>
+                          </View>
+                        ) : null}
+                      </View>
+                    </View>
+                    {inPractice ? (
+                      <View style={styles.libActiveLabel}>
+                        <MaterialIcons name="check-circle" size={16} color={theme.success} />
+                        <Text style={styles.libActiveLabelText}>Active</Text>
+                      </View>
+                    ) : (
+                      <Pressable style={styles.libPracticeBtn}
+                        onPress={(e) => { e.stopPropagation?.(); router.push({ pathname: '/add-to-practice', params: { libraryId: libR.id } }); }}
+                        hitSlop={8}>
+                        <MaterialIcons name="add" size={14} color={theme.primary} />
+                        <Text style={styles.libPracticeBtnText}>Practice</Text>
+                      </Pressable>
+                    )}
+                  </View>
+                </View>
+              </Pressable>
+            );
+          })
+        )}
+      </ScrollView>
+
+      {/* FAB */}
+      <Pressable style={[styles.libFab, { bottom: insets.bottom + 16 }]}
+        onPress={() => router.push('/add-library-ritual')}>
+        <MaterialIcons name="add" size={26} color={theme.background} />
+      </Pressable>
+    </View>
+  );
+
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
       {/* ═══ HEADER ═══ */}
@@ -652,23 +795,24 @@ export default function RitualsScreen() {
         </View>
       </View>
 
-      {/* ═══ SEGMENTED CONTROL: Practice / Manifestations ═══ */}
+      {/* ═══ THREE-TAB SEGMENTED CONTROL ═══ */}
       <View style={styles.segmentWrap}>
         <View style={styles.segmentPill}>
-          <Pressable
-            style={[styles.segmentBtn, viewMode === 'practice' && styles.segmentBtnActive]}
-            onPress={() => { setViewMode('practice'); Haptics.selectionAsync(); }}>
-            <Text style={[styles.segmentText, viewMode === 'practice' && styles.segmentTextActive]}>Practice</Text>
-          </Pressable>
-          <Pressable
-            style={[styles.segmentBtn, viewMode === 'manifestations' && styles.segmentBtnActive]}
-            onPress={() => { setViewMode('manifestations'); Haptics.selectionAsync(); }}>
-            <Text style={[styles.segmentText, viewMode === 'manifestations' && styles.segmentTextActive]}>Manifestations</Text>
-          </Pressable>
+          {([
+            { key: 'library' as TabMode, label: 'Library' },
+            { key: 'practice' as TabMode, label: 'Practice' },
+            { key: 'manifestations' as TabMode, label: 'Manifestations' },
+          ]).map(tab => (
+            <Pressable key={tab.key}
+              style={[styles.segmentBtn, tabMode === tab.key && styles.segmentBtnActive]}
+              onPress={() => { setTabMode(tab.key); Haptics.selectionAsync(); }}>
+              <Text style={[styles.segmentText, tabMode === tab.key && styles.segmentTextActive]}>{tab.label}</Text>
+            </Pressable>
+          ))}
         </View>
       </View>
 
-      {viewMode === 'practice' ? (
+      {tabMode === 'library' ? renderLibraryTab() : tabMode === 'practice' ? (
         <>
           {/* ═══ TOOLBAR ═══ */}
           <View style={styles.toolbar}>
@@ -905,9 +1049,77 @@ const styles = StyleSheet.create({
     flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center',
   },
   segmentBtnActive: { backgroundColor: theme.surface, ...theme.shadows.card },
-  segmentText: { fontSize: 14, fontWeight: '500', color: theme.textMuted },
+  segmentText: { fontSize: 13, fontWeight: '500', color: theme.textMuted },
   segmentTextActive: { color: theme.textPrimary, fontWeight: '700' },
 
+  // ═══ LIBRARY TAB STYLES ═══
+  libSearchWrap: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    marginHorizontal: 16, marginBottom: 10,
+    backgroundColor: theme.surface, borderRadius: theme.radius.md,
+    paddingHorizontal: 12, paddingVertical: 10,
+    borderWidth: 1, borderColor: theme.border,
+  },
+  libSearchInput: {
+    flex: 1, fontSize: 14, color: theme.textPrimary, padding: 0,
+  },
+  libChipStripContainer: { marginBottom: 10 },
+  libChipStripContent: { paddingHorizontal: 16, gap: 8 },
+  libCatChip: {
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20,
+    backgroundColor: theme.surface, borderWidth: 1.5, borderColor: theme.border,
+  },
+  libCatChipActive: { backgroundColor: theme.primary + '18', borderColor: theme.primary },
+  libCatChipText: { fontSize: 12, fontWeight: '600', color: theme.textMuted },
+  libCatChipTextActive: { color: theme.primary },
+
+  libCard: {
+    flexDirection: 'row', backgroundColor: theme.surface,
+    borderRadius: 12, overflow: 'hidden', marginBottom: 10,
+    ...theme.shadows.card,
+  },
+  libCardLeftBorder: { width: 3 },
+  libCardBody: { flex: 1, padding: 14 },
+  libCardTopRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  libCatIconBox: {
+    width: 40, height: 40, borderRadius: 10,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  libCardInfo: { flex: 1 },
+  libCardName: { fontSize: 15, fontWeight: '600', color: theme.textPrimary, marginBottom: 5 },
+  libCardTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  libTag: {
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8,
+    backgroundColor: theme.surfaceLight, borderWidth: 1, borderColor: 'transparent',
+  },
+  libTagText: { fontSize: 10, fontWeight: '600', color: theme.textMuted },
+  libActiveLabel: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+  },
+  libActiveLabelText: { fontSize: 11, fontWeight: '700', color: theme.success },
+  libPracticeBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10,
+    borderWidth: 1.5, borderColor: theme.primary + '50',
+    backgroundColor: theme.primary + '08',
+  },
+  libPracticeBtnText: { fontSize: 11, fontWeight: '700', color: theme.primary },
+
+  libEmptyState: { alignItems: 'center', paddingVertical: 50 },
+  libEmptyTitle: { fontSize: 17, fontWeight: '700', color: theme.textPrimary, marginTop: 12, marginBottom: 4 },
+  libEmptyText: { fontSize: 13, color: theme.textSecondary, textAlign: 'center', lineHeight: 18, paddingHorizontal: 24, marginBottom: 16 },
+  libEmptyCta: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: theme.primary, paddingHorizontal: 20, paddingVertical: 10, borderRadius: theme.radius.full },
+  libEmptyCtaText: { fontSize: 14, fontWeight: '600', color: theme.background },
+
+  libFab: {
+    position: 'absolute', right: 20,
+    width: 52, height: 52, borderRadius: 26,
+    backgroundColor: theme.primary, alignItems: 'center', justifyContent: 'center',
+    ...theme.shadows.elevated,
+  },
+
+  // ═══ PRACTICE TAB STYLES ═══
   toolbar: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 10,
