@@ -1,11 +1,18 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { Tabs } from 'expo-router';
+import { Tabs, usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Platform } from 'react-native';
 import { theme } from '../../constants/theme';
 
+const moon = {
+  bg: '#2D2455',
+  border: 'rgba(255,255,255,0.10)',
+};
+
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const pathname = usePathname();
+  const isHome = pathname === '/' || pathname === '/index';
 
   return (
     <Tabs
@@ -23,9 +30,9 @@ export default function TabLayout() {
             android: insets.bottom + 8,
             default: 8,
           }),
-          backgroundColor: theme.background,
+          backgroundColor: isHome ? moon.bg : theme.background,
           borderTopWidth: 1,
-          borderTopColor: theme.border,
+          borderTopColor: isHome ? moon.border : theme.border,
         },
         tabBarActiveTintColor: theme.primary,
         tabBarInactiveTintColor: theme.textMuted,
