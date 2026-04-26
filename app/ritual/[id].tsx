@@ -94,7 +94,7 @@ for (let i = 0; i < 90; i++) {
     setEditIntention(ritual.intention);
     setEditTangibleOutcome(ritual.tangibleOutcome || '');
     setEditCategory(ritual.category);
-    setEditIngredients(ritual.ingredients ? ritual.ingredients.join(', ') : ''); setEditScheduledDate(ritual.scheduledDate);
+    setEditIngredients(ritual.ingredients ? ritual.ingredients.join(',') : ''); setEditScheduledDate(ritual.scheduledDate);
     setIsEditing(true);
     Haptics.selectionAsync();
   };
@@ -405,12 +405,47 @@ for (let i = 0; i < 90; i++) {
         )}
 
         {/* Ingredients */}
-        {isEditing ? (
-          <View style={styles.editSection}>
-            <Text style={styles.editFieldLabel}>Ingredients & Tools</Text>
-            <TextInput style={styles.editInput} value={editIngredients} onChangeText={setEditIngredients} placeholder="Comma-separated: candle, herbs, crystal..." placeholderTextColor={theme.textMuted} />
-          </View>
-        ) : null}
+{isEditing ? (
+  <View style={styles.editSection}>
+    <Text style={styles.editFieldLabel}>Ingredients & Tools</Text>
+    <View>
+      {editIngredients.split(',').filter(ing => ing.trim().length > 0).map((ing, i) => (
+        <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 }}>
+          <TextInput
+            style={{ flex: 1, backgroundColor: theme.surface, borderRadius: 10, padding: 12, fontSize: 15, color: theme.textPrimary, borderWidth: 1.5, borderColor: theme.primary + '30' }}
+            value={ing.trim()}
+            onChangeText={(text) => {
+              const parts = editIngredients.split(',');
+              parts[i] = text;
+              setEditIngredients(parts.join(','));
+            }}
+            placeholder="Ingredient..."
+            placeholderTextColor={theme.textMuted}
+          />
+          <Pressable
+            hitSlop={12}
+            onPress={() => {
+              const parts = editIngredients.split(',').filter((_, idx) => idx !== i);
+              setEditIngredients(parts.length > 0 ? parts.join(',') : '');
+            }}
+          >
+            <MaterialIcons name="remove-circle-outline" size={24} color={theme.error} />
+          </Pressable>
+        </View>
+      ))}
+      <Pressable
+        hitSlop={12}
+        style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8, paddingVertical: 12, paddingHorizontal: 14, backgroundColor: theme.primary + '10', borderRadius: 10, borderWidth: 1, borderColor: theme.primary + '30' }}
+        onPress={() => {
+          setEditIngredients(editIngredients.trim().length > 0 ? editIngredients.trim() + ',New ingredient' : 'New ingredient');
+        }}
+      >
+        <MaterialIcons name="add-circle-outline" size={22} color={theme.primary} />
+        <Text style={{ fontSize: 14, color: theme.primary, fontWeight: '700', letterSpacing: 0.3 }}>Add Ingredient</Text>
+      </Pressable>
+    </View>
+  </View>
+) : null}
 
         {/* Scheduled Date */}
         {isEditing ? (
