@@ -410,9 +410,6 @@ export default function RitualsScreen() {
                 </View>
               </View>
             </Pressable>
-          );
-        })}
-              </Pressable>
             </SwipeableRow>
           );
         })}
