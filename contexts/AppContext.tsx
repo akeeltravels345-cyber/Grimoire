@@ -29,7 +29,7 @@ interface AppContextType {
   updateStatus: (ritualId: string, status: 'scheduled' | 'approaching' | 'completed' | 'overdue' | 'dismissed') => void;
   addLibraryRitual: (ritual: Omit<LibraryRitual, 'id' | 'createdAt' | 'timesPerformed'>) => string;
   deleteLibraryRitual: (id: string) => void;
-  addToPractice: (libraryId: string, scheduledDate?: string) => void;
+  addToPractice: (libraryId: string, overrides?: { scheduledDate?: string; schedule?: LibraryRitual['schedule']; consecutiveDays?: number }) => void;
   clearAllData: () => void;
 }
 
@@ -458,7 +458,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLibraryRituals(prev => prev.filter(r => r.id !== id));
   };
 
-  const addToPractice = (libraryId: string, scheduledDate?: string) => {
+  const addToPractice = (libraryId: string, overrides?: { scheduledDate?: string; schedule?: LibraryRitual['schedule']; consecutiveDays?: number }) => {
     const libRitual = libraryRituals.find(r => r.id === libraryId);
     if (!libRitual) return;
     addRitual({
@@ -468,12 +468,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
       intention: libRitual.intention,
       tangibleOutcome: libRitual.tangibleOutcome,
       ingredients: libRitual.ingredients,
-      schedule: libRitual.schedule,
+      schedule: overrides?.schedule || libRitual.schedule,
       scheduleDetail: libRitual.scheduleDetail,
-      scheduledDate,
+      scheduledDate: overrides?.scheduledDate,
+      consecutiveDays: overrides?.consecutiveDays,
       libraryId,
       status: 'scheduled',
     });
+    // Increment timesPerformed on the library source
+    setLibraryRituals(prev => prev.map(r => r.id === libraryId ? { ...r, timesPerformed: r.timesPerformed + 1 } : r));
   };
 
   const updateStatus = (ritualId: string, status: 'scheduled' | 'approaching' | 'completed' | 'overdue' | 'dismissed') => {
