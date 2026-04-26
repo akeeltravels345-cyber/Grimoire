@@ -57,20 +57,16 @@ export default function LogRitualScreen() {
   const todayPlanet = getTodayPlanet();
   const currentHour = getCurrentPlanetaryHour();
 
-  const canSave = notes.trim().length > 0 && mood.length > 0;
+  const canSave = mood.length > 0;
 
   const handleSave = () => {
     if (!canSave || !ritualId) return;
 
-    const energyLabel = ENERGY_LEVELS.find(e => e.value === energyLevel)?.label || '';
-    const energyStr = energyLabel ? ` | Energy: ${energyLabel}` : '';
-    const cosmicStr = `Moon: ${moonPhase.name} | Planet Hour: ${currentHour?.planet.name || 'Unknown'}`;
-
-    addJournalEntry(ritualId, {
-      date: completedDate.toISOString(),
-      notes: notes.trim() + (energyStr ? `\n\n---\n${cosmicStr}${energyStr}` : ''),
-      mood,
-    });
+   addJournalEntry(ritualId, {
+  date: completedDate.toISOString(),
+  notes: notes.trim(),
+  mood,
+});
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.back();
@@ -159,18 +155,6 @@ export default function LogRitualScreen() {
             {MOODS.map(m => (
               <Pressable key={m} style={[styles.moodChip, mood === m && styles.moodChipActive]} onPress={() => { setMood(m); Haptics.selectionAsync(); }}>
                 <Text style={[styles.moodChipText, mood === m && styles.moodChipTextActive]}>{m}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          {/* Energy Level */}
-          <Text style={styles.label}>Energy Level</Text>
-          <View style={styles.energyRow}>
-            {ENERGY_LEVELS.map(e => (
-              <Pressable key={e.value} style={[styles.energyOption, energyLevel === e.value && styles.energyOptionActive]}
-                onPress={() => { setEnergyLevel(energyLevel === e.value ? 0 : e.value); Haptics.selectionAsync(); }}>
-                <MaterialIcons name={e.icon as keyof typeof MaterialIcons.glyphMap} size={20} color={energyLevel === e.value ? theme.primary : theme.textMuted} />
-                <Text style={[styles.energyText, energyLevel === e.value && { color: theme.primary }]}>{e.label}</Text>
               </Pressable>
             ))}
           </View>
