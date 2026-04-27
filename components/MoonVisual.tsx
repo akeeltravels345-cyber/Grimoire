@@ -1,6 +1,14 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  Easing,
+  interpolate,
+} from 'react-native-reanimated';
 
 interface MoonVisualProps {
   phaseIndex: number;
@@ -14,6 +22,23 @@ interface MoonVisualProps {
  */
 export default function MoonVisual({ phaseIndex, size }: MoonVisualProps) {
   const r = size / 2;
+
+  // Breathing glow animation
+  const breathe = useSharedValue(0);
+
+  useEffect(() => {
+    breathe.value = withRepeat(
+      withTiming(1, { duration: 4000, easing: Easing.inOut(Easing.sin) }),
+      -1,
+      true
+    );
+  }, []);
+
+  const glowAnimStyle = useAnimatedStyle(() => {
+    const scale = interpolate(breathe.value, [0, 1], [1, 1.12]);
+    const opacity = interpolate(breathe.value, [0, 1], [0.6, 1]);
+    return { transform: [{ scale }], opacity };
+  });
 
   // Crater positions relative to size (as fractions)
   const craters = [
@@ -67,8 +92,8 @@ export default function MoonVisual({ phaseIndex, size }: MoonVisualProps) {
 
   return (
     <View style={{ width: glowSize, height: glowSize, alignItems: 'center', justifyContent: 'center' }}>
-      {/* Atmospheric glow */}
-      <View style={[styles.glow, {
+      {/* Atmospheric glow — animated breathing */}
+      <Animated.View style={[styles.glow, {
         width: glowSize, height: glowSize, borderRadius: glowSize / 2,
         backgroundColor: glowColor,
         shadowColor: isFullMoon ? '#FFF5E0' : '#D0C8E0',
@@ -76,15 +101,15 @@ export default function MoonVisual({ phaseIndex, size }: MoonVisualProps) {
         shadowOpacity: isFullMoon ? 0.7 : 0.3,
         shadowRadius: size * 0.5,
         elevation: 0,
-      }]} />
+      }, glowAnimStyle]} />
 
-      {/* Secondary soft glow ring */}
+      {/* Secondary soft glow ring — animated */}
       {!isNewMoon ? (
-        <View style={[styles.glowRing, {
+        <Animated.View style={[styles.glowRing, {
           width: size * 1.25, height: size * 1.25, borderRadius: size * 0.625,
           borderWidth: size * 0.03,
           borderColor: isFullMoon ? 'rgba(255,248,230,0.12)' : 'rgba(220,215,235,0.08)',
-        }]} />
+        }, glowAnimStyle]} />
       ) : null}
 
       {/* Moon body */}
