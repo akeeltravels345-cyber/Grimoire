@@ -405,6 +405,19 @@ export default function ProfileScreen() {
             </View>
             <MaterialIcons name="chevron-right" size={24} color={theme.textMuted} />
           </Pressable>
+
+          <View style={styles.settingDivider} />
+
+          <Pressable style={styles.settingRow} onPress={() => router.push('/spell-research')}>
+            <View style={styles.settingInfo}>
+              <MaterialIcons name="science" size={20} color={theme.accent} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.settingLabel}>Spell Research List</Text>
+                <Text style={styles.settingDesc}>Spells to explore and add to your grimoire</Text>
+              </View>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color={theme.textMuted} />
+          </Pressable>
         </View>
 
         {/* Data Management */}
