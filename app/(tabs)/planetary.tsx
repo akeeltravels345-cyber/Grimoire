@@ -8,6 +8,7 @@ import { theme } from '../../constants/theme';
 import { getTodayPlanet, PLANETS, DAY_RULERS, getPlanetByKey, PlanetData } from '../../constants/planetaryData';
 import { getPlanetaryHours, getCurrentPlanetaryHour, formatHourTime, getUserTimezone, PlanetaryHourInfo } from '../../services/planetaryHours';
 import GradientScreen from '../../components/GradientScreen';
+import PlanetVisual from '../../components/PlanetVisual';
 
 export default function PlanetaryScreen() {
   const insets = useSafeAreaInsets();
@@ -65,7 +66,9 @@ export default function PlanetaryScreen() {
             const isTodayCell = i === todayDow;
             return (
               <Pressable key={abbr} style={[styles.weekCell, isSelected && { borderColor: planet.color, backgroundColor: planet.color + '15' }, !isSelected && isTodayCell && { borderColor: theme.primary + '40' }]} onPress={() => handleWeekDayTap(i)}>
-                <Text style={[styles.weekEmoji, isSelected && { fontSize: 22 }]}>{planet.emoji}</Text>
+                <View style={{ width: 28, height: 28, alignItems: 'center', justifyContent: 'center' }}>
+                  <PlanetVisual planetKey={planet.key} size={isSelected ? 22 : 18} showGlow={false} />
+                </View>
                 <Text style={[styles.weekAbbr, isSelected && { color: planet.color, fontWeight: '700' }]}>{abbr}</Text>
                 <Text style={[styles.weekSymbol, { color: isSelected ? planet.color : theme.textMuted }]}>{planet.symbol}</Text>
                 {isTodayCell ? <View style={[styles.todayDot, { backgroundColor: isSelected ? planet.color : theme.primary }]} /> : null}
@@ -75,7 +78,7 @@ export default function PlanetaryScreen() {
         </View>
         {!isToday ? <View style={styles.dateIndicator}><MaterialIcons name="calendar-today" size={14} color={theme.textMuted} /><Text style={styles.dateIndicatorText}>{selectedDateStr}</Text><Pressable onPress={() => { setSelectedDay(todayDow); Haptics.selectionAsync(); }}><Text style={styles.todayLink}>Go to Today</Text></Pressable></View> : null}
         <View style={[styles.dayCard, { borderColor: selectedPlanet.color + '40' }]}>
-          <View style={styles.dayCardHeader}><Text style={styles.dayEmoji}>{selectedPlanet.emoji}</Text><View style={{ flex: 1 }}><Text style={styles.dayLabel}>{isToday ? "TODAY'S RULING PLANET" : `${selectedPlanet.day.toUpperCase()} RULER`}</Text><View style={styles.dayNameRow}><Text style={[styles.daySymbol, { color: selectedPlanet.color }]}>{selectedPlanet.symbol}</Text><Text style={styles.dayName}>{selectedPlanet.name}</Text></View></View></View>
+          <View style={styles.dayCardHeader}><View style={styles.dayPlanetVisual}><PlanetVisual planetKey={selectedPlanet.key} size={48} showGlow={true} /></View><View style={{ flex: 1 }}><Text style={styles.dayLabel}>{isToday ? "TODAY'S RULING PLANET" : `${selectedPlanet.day.toUpperCase()} RULER`}</Text><View style={styles.dayNameRow}><Text style={[styles.daySymbol, { color: selectedPlanet.color }]}>{selectedPlanet.symbol}</Text><Text style={styles.dayName}>{selectedPlanet.name}</Text></View></View></View>
           <Text style={styles.dayEnergy}>{selectedPlanet.energy}</Text>
           <Text style={styles.detailLabel}>BEST WORKINGS</Text><View style={styles.chipRow}>{selectedPlanet.bestWorkings.map(w => <View key={w} style={[styles.detailChip, { backgroundColor: selectedPlanet.color + '18' }]}><Text style={[styles.detailChipText, { color: selectedPlanet.color }]}>{w}</Text></View>)}</View>
           <Text style={styles.detailLabel}>HERBS</Text><View style={styles.chipRow}>{selectedPlanet.herbs.map(h => <View key={h} style={styles.subtleChip}><Text style={styles.subtleChipText}>{h}</Text></View>)}</View>
@@ -89,7 +92,7 @@ export default function PlanetaryScreen() {
           {filteredHours.map((h) => { const isActive = h.isCurrent; return (
             <View key={`${h.type}-${h.hourNumber}`} style={[styles.tableRow, isActive && styles.tableRowActive]}>
               <View style={[styles.hourNumBox, isActive ? { backgroundColor: h.planet.color + '25' } : null]}><Text style={[styles.hourNum, isActive ? { color: h.planet.color } : null]}>{h.hourNumber}</Text></View>
-              <Text style={styles.hourEmoji}>{h.planet.emoji}</Text>
+              <View style={styles.hourPlanetIcon}><PlanetVisual planetKey={h.planet.key} size={18} showGlow={false} /></View>
               <View style={{ flex: 1 }}><Text style={[styles.hourPlanetName, isActive ? { color: h.planet.color, fontWeight: '700' } : null]}>{h.planet.name}</Text></View>
               <Text style={[styles.hourEnergySummary, isActive ? { color: h.planet.color } : null]} numberOfLines={1}>{h.planet.bestWorkings[0]}</Text>
               <View style={{ width: 68, alignItems: 'flex-end' }}>{isActive ? <View style={[styles.nowBadge, { backgroundColor: h.planet.color + '25' }]}><Text style={[styles.nowBadgeText, { color: h.planet.color }]}>NOW</Text></View> : <Text style={styles.hourTime}>{formatHourTime(h.startTime)}</Text>}</View>
@@ -107,7 +110,7 @@ const styles = StyleSheet.create({
   topbarSub: { fontSize: 12, color: theme.textSecondary, marginTop: 2 },
   weekGrid: { flexDirection: 'row', gap: 6, marginBottom: 16, marginTop: 4 },
   weekCell: { flex: 1, backgroundColor: theme.surface, borderRadius: theme.radius.md, paddingVertical: 14, alignItems: 'center', gap: 4, borderWidth: 1.5, borderColor: theme.border },
-  weekEmoji: { fontSize: 18 },
+
   weekAbbr: { fontSize: 10, fontWeight: '600', color: theme.textSecondary },
   weekSymbol: { fontSize: 14, fontWeight: '700', color: theme.textMuted },
   todayDot: { width: 5, height: 5, borderRadius: 3, marginTop: 2 },
@@ -116,7 +119,7 @@ const styles = StyleSheet.create({
   todayLink: { fontSize: 13, fontWeight: '600', color: theme.primary },
   dayCard: { backgroundColor: theme.surface, borderRadius: theme.radius.lg, padding: 20, marginBottom: 20, borderWidth: 1 },
   dayCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 14, marginBottom: 14 },
-  dayEmoji: { fontSize: 42 },
+  dayPlanetVisual: { width: 68, height: 68, alignItems: 'center', justifyContent: 'center', marginRight: 4 },
   dayLabel: { fontSize: 10, fontWeight: '700', color: theme.textSecondary, letterSpacing: 1, marginBottom: 4 },
   dayNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   daySymbol: { fontSize: 24, fontWeight: '700' },
@@ -143,7 +146,7 @@ const styles = StyleSheet.create({
   tableRowActive: { backgroundColor: theme.primary + '10', borderRadius: theme.radius.sm },
   hourNumBox: { width: 28, height: 28, borderRadius: 8, backgroundColor: theme.surfaceLight, alignItems: 'center', justifyContent: 'center', marginRight: 4 },
   hourNum: { fontSize: 12, fontWeight: '700', color: theme.textMuted },
-  hourEmoji: { fontSize: 16, width: 32, textAlign: 'center' },
+  hourPlanetIcon: { width: 32, height: 24, alignItems: 'center', justifyContent: 'center' },
   hourPlanetName: { fontSize: 13, fontWeight: '600', color: theme.textPrimary },
   hourEnergySummary: { flex: 1.2, fontSize: 11, color: theme.textSecondary },
   hourTime: { fontSize: 12, color: theme.textMuted },

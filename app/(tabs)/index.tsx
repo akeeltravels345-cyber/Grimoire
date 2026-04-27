@@ -12,6 +12,8 @@ import { useApp } from '../../contexts/AppContext';
 import { getComputedStatus, getDaysUntil, getUniqueRitualCounts } from '../../services/mockData';
 
 import StarField from '../../components/StarField';
+import MoonVisual from '../../components/MoonVisual';
+import PlanetVisual from '../../components/PlanetVisual';
 
 function getMoonPhaseIndex(): number {
   const now = new Date();
@@ -23,54 +25,6 @@ function getMoonPhaseIndex(): number {
   const jd = c + e + day - 694039.09;
   const phase = jd / 29.53058867;
   return Math.round((phase - Math.floor(phase)) * 8) % 8;
-}
-
-function MoonPhaseVisual({ phaseIndex, size }: { phaseIndex: number; size: number }) {
-  const radius = size / 2;
-  const moonColor = theme.textPrimary;
-  const shadowColor = theme.background;
-
-  if (phaseIndex === 4) {
-    return (
-      <View style={{
-        width: size, height: size, borderRadius: radius,
-        backgroundColor: moonColor,
-        shadowColor: theme.textPrimary, shadowOffset: { width: 0, height: 0 },
-        shadowOpacity: 0.5, shadowRadius: 16, elevation: 8,
-      }} />
-    );
-  }
-
-  if (phaseIndex === 0) {
-    return (
-      <View style={{
-        width: size, height: size, borderRadius: radius,
-        backgroundColor: shadowColor,
-        borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)',
-      }} />
-    );
-  }
-
-  const offsets: Record<number, number> = {
-    1: -0.28, 2: -0.52, 3: -0.82,
-    5: 0.82, 6: 0.52, 7: 0.28,
-  };
-  const offset = (offsets[phaseIndex] || 0) * size;
-
-  return (
-    <View style={{
-      width: size, height: size, borderRadius: radius,
-      backgroundColor: moonColor, overflow: 'hidden',
-      shadowColor: theme.textPrimary, shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.5, shadowRadius: 16, elevation: 4,
-    }}>
-      <View style={{
-        position: 'absolute', width: size, height: size,
-        borderRadius: radius, backgroundColor: shadowColor,
-        left: offset, top: 0,
-      }} />
-    </View>
-  );
 }
 
 export default function DashboardScreen() {
@@ -219,7 +173,9 @@ export default function DashboardScreen() {
               onPress={() => router.push('/(tabs)/planetary')}
             >
               <View style={styles.planetCardTop}>
-                <Text style={styles.planetEmoji}>{todayPlanet.emoji}</Text>
+                <View style={styles.planetVisualWrap}>
+                  <PlanetVisual planetKey={todayPlanet.key} size={38} showGlow={false} />
+                </View>
                 <View style={[styles.planetDayBadge, { backgroundColor: todayPlanet.color + '33' }]}>
                   <Text style={[styles.planetDayBadgeText, { color: todayPlanet.color }]}>{todayPlanet.day}</Text>
                 </View>
@@ -234,7 +190,9 @@ export default function DashboardScreen() {
               </View>
               {currentHour ? (
                 <View style={styles.planetHourRow}>
-                  <Text style={{ fontSize: 11 }}>{currentHour.planet.emoji}</Text>
+                  <View style={{ width: 22, height: 22, alignItems: 'center', justifyContent: 'center' }}>
+                    <PlanetVisual planetKey={currentHour.planet.key} size={16} showGlow={false} />
+                  </View>
                   <Text style={styles.planetHourText}>
                     {currentHour.planet.name} hour · {formatHourTime(currentHour.startTime)}
                   </Text>
@@ -244,7 +202,7 @@ export default function DashboardScreen() {
 
             <View style={styles.moonCard}>
               <View style={styles.moonVisualWrap}>
-                <MoonPhaseVisual phaseIndex={moonPhaseIndex} size={54} />
+                <MoonVisual phaseIndex={moonPhaseIndex} size={62} />
               </View>
               <Text style={styles.moonPhaseName}>{moonPhase.name}</Text>
               <Text style={styles.moonEnergy} numberOfLines={2}>{moonPhase.energy}</Text>
@@ -424,7 +382,7 @@ const styles = StyleSheet.create({
   planetCardTop: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8,
   },
-  planetEmoji: { fontSize: 28 },
+  planetVisualWrap: { width: 38, height: 38, alignItems: 'center', justifyContent: 'center' },
   planetDayBadge: {
     paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10,
   },
@@ -450,7 +408,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   moonVisualWrap: {
-    marginBottom: 10,
+    marginBottom: 6, height: 90, alignItems: 'center', justifyContent: 'center',
   },
   moonPhaseName: { fontSize: 13, fontWeight: '700', color: theme.textPrimary, textAlign: 'center', marginBottom: 4 },
   moonEnergy: { fontSize: 10, fontWeight: '500', color: theme.textSecondary, textAlign: 'center', lineHeight: 14 },
