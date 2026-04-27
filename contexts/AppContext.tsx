@@ -490,8 +490,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteJournalEntryType = (id: string) => {
-    const defaults = ['reflection', 'dream', 'encounter', 'insight', 'reminder'];
-    if (defaults.includes(id)) return;
     setJournalEntryTypes(prev => prev.filter(t => t.id !== id));
   };
 
