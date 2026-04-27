@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState } from 'react';
 import {
   View, Text, ScrollView, Pressable, StyleSheet, Platform, TextInput,
@@ -69,8 +70,6 @@ export default function LibraryRitualDetailScreen() {
       description: editDescription.trim(),
       intention: editIntention.trim(),
       category: editCategory,
-      tangibleOutcome: editOutcome.trim(),
-      ingredients: editIngredients.trim()
       tangibleOutcome: editOutcome.trim(),
       ingredients: editIngredients.trim()
         ? editIngredients.split(',').map(i => i.trim()).filter(Boolean)
@@ -148,6 +147,12 @@ export default function LibraryRitualDetailScreen() {
       >
         {/* Name */}
         {editing ? (
+          <TextInput style={[styles.ritualName, { borderBottomWidth: 1, borderBottomColor: theme.primary }]} value={editName} onChangeText={setEditName} multiline />
+        ) : (
+          <Text style={styles.ritualName}>{libRitual.name}</Text>
+        )}
+
+        {/* Category */}
         {editing ? (
   <View style={{ marginBottom: 16, marginTop: 16 }}>
     <Text style={[styles.sectionLabel, { marginBottom: 8 }]}>CATEGORY</Text>
@@ -171,10 +176,6 @@ export default function LibraryRitualDetailScreen() {
     </ScrollView>
   </View>
 ) : null}
-  <TextInput style={[styles.ritualName, { borderBottomWidth: 1, borderBottomColor: theme.primary }]} value={editName} onChangeText={setEditName} multiline />
-) : (
-  <Text style={styles.ritualName}>{libRitual.name}</Text>
-)}
 
         {/* Category & Schedule badges */}
         <View style={styles.badgeRow}>
