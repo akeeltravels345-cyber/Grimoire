@@ -31,6 +31,7 @@ export default function LibraryRitualDetailScreen() {
   const [editIntention, setEditIntention] = useState('');
   const [editOutcome, setEditOutcome] = useState('');
   const [editIngredients, setEditIngredients] = useState('');
+  const [editCategory, setEditCategory] = useState('');
 
   // Practice status
   const practiceRituals = useMemo(() => {
@@ -53,6 +54,7 @@ export default function LibraryRitualDetailScreen() {
     setEditIntention(libRitual.intention);
     setEditOutcome(libRitual.tangibleOutcome);
     setEditIngredients(libRitual.ingredients?.join(',') || '');
+    setEditCategory(libRitual.category);
     setEditing(true);
   };
 
@@ -66,6 +68,9 @@ export default function LibraryRitualDetailScreen() {
       name: editName.trim(),
       description: editDescription.trim(),
       intention: editIntention.trim(),
+      category: editCategory,
+      tangibleOutcome: editOutcome.trim(),
+      ingredients: editIngredients.trim()
       tangibleOutcome: editOutcome.trim(),
       ingredients: editIngredients.trim()
         ? editIngredients.split(',').map(i => i.trim()).filter(Boolean)
@@ -143,6 +148,29 @@ export default function LibraryRitualDetailScreen() {
       >
         {/* Name */}
         {editing ? (
+        {editing ? (
+  <View style={{ marginBottom: 16, marginTop: 16 }}>
+    <Text style={[styles.sectionLabel, { marginBottom: 8 }]}>CATEGORY</Text>
+    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+      <View style={{ flexDirection: 'row', gap: 8, paddingVertical: 4 }}>
+        {categories.map(cat => {
+          const cColor = categoryColors[cat.id] || theme.accent;
+          const isActive = editCategory === cat.id;
+          return (
+            <Pressable
+              key={cat.id}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: isActive ? cColor + '20' : theme.surface, borderWidth: 1.5, borderColor: isActive ? cColor : theme.border }}
+              onPress={() => setEditCategory(cat.id)}
+            >
+              <MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={16} color={isActive ? cColor : theme.textMuted} />
+              <Text style={{ fontSize: 13, fontWeight: '600', color: isActive ? cColor : theme.textMuted }}>{cat.name}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </ScrollView>
+  </View>
+) : null}
   <TextInput style={[styles.ritualName, { borderBottomWidth: 1, borderBottomColor: theme.primary }]} value={editName} onChangeText={setEditName} multiline />
 ) : (
   <Text style={styles.ritualName}>{libRitual.name}</Text>
