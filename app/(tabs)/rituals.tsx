@@ -402,13 +402,18 @@ export default function RitualsScreen() {
           const inPractice = libraryInPractice.has(libR.id);
           return (
             <SwipeableRow key={libR.id} onDelete={() => { showAlert('Remove from Library?', `Remove "${libR.name}" from your grimoire?`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: () => { deleteLibraryRitual(libR.id); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } }]); }}>
-            <Pressable style={styles.libCard} onPress={() => router.push(`/library-ritual/${libR.id}`)}>
-              <View style={[styles.libCardLeftBorder, { backgroundColor: catColor }]} />
+            <Pressable style={[styles.libCard, { borderColor: catColor + '25', borderLeftColor: catColor }]} onPress={() => router.push(`/library-ritual/${libR.id}`)}>
               <View style={styles.libCardBody}>
                 <View style={styles.libCardTopRow}>
-                  <View style={[styles.libCatIconBox, { backgroundColor: catColor + '18' }]}><MaterialIcons name={(cat?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap} size={20} color={catColor} /></View>
-                  <View style={styles.libCardInfo}><Text style={styles.libCardName} numberOfLines={1}>{libR.name}</Text><View style={styles.libCardTags}><View style={styles.libTag}><Text style={styles.libTagText}>{scheduleLabels[libR.schedule] || libR.schedule}</Text></View>{inPractice ? <View style={[styles.libTag, { backgroundColor: theme.success + '15', borderColor: theme.success + '30' }]}><Text style={[styles.libTagText, { color: theme.success }]}>In Practice</Text></View> : null}</View></View>
-                  {inPractice ? <View style={styles.libActiveLabel}><MaterialIcons name="check-circle" size={16} color={theme.success} /><Text style={styles.libActiveLabelText}>Active</Text></View> : <Pressable style={styles.libPracticeBtn} onPress={(e) => { e.stopPropagation?.(); router.push({ pathname: '/add-to-practice', params: { libraryId: libR.id } }); }} hitSlop={8}><MaterialIcons name="add" size={14} color={theme.primary} /><Text style={styles.libPracticeBtnText}>Practice</Text></Pressable>}
+                  <View style={[styles.libCatIconBox, { backgroundColor: catColor + '18', borderColor: catColor + '30' }]}><MaterialIcons name={(cat?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap} size={22} color={catColor} /></View>
+                  <View style={styles.libCardInfo}>
+                    <Text style={styles.libCardName} numberOfLines={1}>{libR.name}</Text>
+                    <View style={styles.libCardTags}>
+                      <View style={[styles.libTag, { backgroundColor: catColor + '12', borderColor: catColor + '25' }]}><Text style={[styles.libTagText, { color: catColor }]}>{scheduleLabels[libR.schedule] || libR.schedule}</Text></View>
+                      {inPractice ? <View style={[styles.libTag, { backgroundColor: theme.success + '18', borderColor: theme.success + '35' }]}><Text style={[styles.libTagText, { color: theme.success }]}>In Practice</Text></View> : null}
+                    </View>
+                  </View>
+                  {inPractice ? <View style={styles.libActiveCheck}><MaterialIcons name="check" size={16} color={theme.success} /></View> : <Pressable style={[styles.libPracticeBtn, { borderColor: catColor + '60', backgroundColor: catColor + '12' }]} onPress={(e) => { e.stopPropagation?.(); router.push({ pathname: '/add-to-practice', params: { libraryId: libR.id } }); }} hitSlop={8}><MaterialIcons name="add" size={14} color={catColor} /><Text style={[styles.libPracticeBtnText, { color: catColor }]}>Practice</Text></Pressable>}
                 </View>
               </View>
             </Pressable>
@@ -547,20 +552,18 @@ const styles = StyleSheet.create({
   libCatChipActive: { backgroundColor: theme.primary + '18', borderColor: theme.primary },
   libCatChipText: { fontSize: 12, fontWeight: '600', color: theme.textMuted },
   libCatChipTextActive: { color: theme.primary },
-  libCard: { flexDirection: 'row', backgroundColor: theme.surface, borderRadius: 12, overflow: 'hidden', marginBottom: 10 },
-  libCardLeftBorder: { width: 3 },
+  libCard: { backgroundColor: theme.surface, borderRadius: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.border, borderLeftWidth: 3, borderLeftColor: theme.accent, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' },
   libCardBody: { flex: 1, padding: 14 },
   libCardTopRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  libCatIconBox: { width: 40, height: 40, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  libCatIconBox: { width: 46, height: 46, borderRadius: 13, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'transparent' },
   libCardInfo: { flex: 1 },
-  libCardName: { fontSize: 15, fontWeight: '600', color: theme.textPrimary, marginBottom: 5 },
+  libCardName: { fontSize: 15, fontWeight: '700', color: theme.textPrimary, marginBottom: 5, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
   libCardTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  libTag: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, backgroundColor: theme.surfaceLight, borderWidth: 1, borderColor: 'transparent' },
-  libTagText: { fontSize: 10, fontWeight: '600', color: theme.textMuted },
-  libActiveLabel: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  libActiveLabelText: { fontSize: 11, fontWeight: '700', color: theme.success },
-  libPracticeBtn: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, borderWidth: 1.5, borderColor: theme.primary + '50', backgroundColor: theme.primary + '08' },
-  libPracticeBtnText: { fontSize: 11, fontWeight: '700', color: theme.primary },
+  libTag: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1, borderColor: 'transparent' },
+  libTagText: { fontSize: 10, fontWeight: '600' },
+  libActiveCheck: { width: 32, height: 32, borderRadius: 16, backgroundColor: theme.success + '15', borderWidth: 1, borderColor: theme.success + '30', alignItems: 'center', justifyContent: 'center' },
+  libPracticeBtn: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1.5 },
+  libPracticeBtnText: { fontSize: 11, fontWeight: '700' },
   libEmptyState: { alignItems: 'center', paddingVertical: 50 },
   libEmptyTitle: { fontSize: 17, fontWeight: '700', color: theme.textPrimary, marginTop: 12, marginBottom: 4 },
   libEmptyText: { fontSize: 13, color: theme.textSecondary, textAlign: 'center', lineHeight: 18, paddingHorizontal: 24, marginBottom: 16 },
