@@ -113,7 +113,7 @@ export default function DashboardScreen() {
 
         <ScrollView
           style={{ flex: 1, zIndex: 1 }}
-          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 16 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom:12 insets.bottom + 16 }}
           showsVerticalScrollIndicator={false}
         >
           {/* Header */}
