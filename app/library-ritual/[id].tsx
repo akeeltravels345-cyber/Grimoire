@@ -228,7 +228,7 @@ export default function LibraryRitualDetailScreen() {
           <Text style={styles.sectionLabel}>INGREDIENTS & MATERIALS</Text>
           {editing ? (
             <View>
-              {editIngredients.split(',').filter(ing => ing.trim().length > 0).map((ing, i) => (
+              {editIngredients.split(',').map((ing, i) => (
                 <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 }}>
                   <TextInput
                     style={{ flex: 1, backgroundColor: theme.surface, borderRadius: 8, padding: 10, fontSize: 14, color: theme.textPrimary, borderWidth: 1, borderColor: theme.border }}
@@ -256,7 +256,7 @@ export default function LibraryRitualDetailScreen() {
                 hitSlop={12}
                 style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 6, paddingVertical: 10, paddingHorizontal: 4 }}
                 onPress={() => {
-                  setEditIngredients(editIngredients.trim().length > 0 ? editIngredients.trim() + ',New ingredient' : 'New ingredient');
+                  setEditIngredients(editIngredients.length > 0 ? editIngredients + ',' : '');
                 }}
               >
                 <MaterialIcons name="add-circle-outline" size={22} color={theme.primary} />
