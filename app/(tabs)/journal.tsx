@@ -20,7 +20,7 @@ const SPIRITUAL_EMOJIS = [
   '\u{1F338}', '\u{1F98B}', '\u{1F40D}', '\u{1F339}', '\u2B50',
 ];
 
-const DEFAULT_TYPE_IDS = ['reflection', 'dream', 'encounter', 'insight', 'reminder'];
+const DEFAULT_TYPE_IDS = ['reflection', 'dream', 'encounter', 'insight'];
 
 type JournalTab = 'all' | 'rituals' | 'personal';
 
