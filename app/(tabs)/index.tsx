@@ -86,8 +86,8 @@ export default function DashboardScreen() {
       <SafeAreaView edges={['top']} style={styles.container}>
         {/* Atmospheric colour wash overlay */}
         <LinearGradient
-          colors={['rgba(150,80,180,0.4)', 'rgba(100,60,160,0.1)', 'rgba(80,50,150,0.15)', 'rgba(102,103,171,0.25)']}
-          locations={[0, 0.35, 0.65, 1]}
+          colors={['rgba(150,80,180,0.15)', 'rgba(100,60,160,0.06)', 'rgba(80,50,150,0.08)', 'rgba(102,103,171,0.12)']}
+locations={[0, 0.35, 0.65, 1]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 0 }}
@@ -95,7 +95,7 @@ export default function DashboardScreen() {
         />
         {/* Top highlight */}
         <LinearGradient
-          colors={['rgba(180,120,220,0.3)', 'transparent']}
+          colors={['rgba(180,120,220,0.12)', 'transparent']}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
           style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '30%' as any, zIndex: 0 }}
