@@ -25,7 +25,6 @@
     },
     "plugins": [
   "expo-router",
-  "react-native-svg",
       [
         "expo-splash-screen",
         {
