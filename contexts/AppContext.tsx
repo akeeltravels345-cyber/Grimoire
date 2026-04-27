@@ -272,6 +272,34 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const numConsecutive = ritual.consecutiveDays || 1;
     const groupId = numConsecutive > 1 ? 'group_' + id : undefined;
 
+    // --- Auto-link or auto-create library ritual ---
+    let resolvedLibraryId = ritual.libraryId;
+    if (!resolvedLibraryId) {
+      const alreadyInLibrary = libraryRituals.find(
+        r => r.name.toLowerCase().trim() === ritual.name.toLowerCase().trim()
+      );
+      if (alreadyInLibrary) {
+        resolvedLibraryId = alreadyInLibrary.id;
+      } else {
+        const libId = 'lib_' + Date.now().toString();
+        const newLibRitual: LibraryRitual = {
+          id: libId,
+          name: ritual.name,
+          category: ritual.category,
+          description: ritual.description || '',
+          intention: ritual.intention || '',
+          tangibleOutcome: ritual.tangibleOutcome || '',
+          ingredients: ritual.ingredients,
+          schedule: ritual.schedule,
+          scheduleDetail: ritual.scheduleDetail,
+          createdAt: new Date().toISOString(),
+          timesPerformed: 0,
+        };
+        setLibraryRituals(prev => [newLibRitual, ...prev]);
+        resolvedLibraryId = libId;
+      }
+    }
+
     // --- Consecutive days mode: create a group of entries ---
     if (numConsecutive > 1 && ritual.scheduledDate) {
       const baseDate = new Date(ritual.scheduledDate);
@@ -286,6 +314,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
           name: `${ritual.name} \u2014 Day ${i + 1} of ${numConsecutive}`,
           groupId,
           consecutiveDays: numConsecutive,
+          libraryId: resolvedLibraryId,
           createdAt: new Date().toISOString(),
           timesPerformed: 0,
           journal: [],
@@ -296,9 +325,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setRituals(prev => [...groupRituals, ...prev]);
     } else {
       // --- Normal mode (single or schedule-propagated) ---
-      const newRitual: Ritual = {
+      let newRitual: Ritual = {
         ...ritual,
         id,
+        libraryId: resolvedLibraryId,
         createdAt: new Date().toISOString(),
         timesPerformed: 0,
         journal: [],
@@ -316,6 +346,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
             ...ritual,
             id: id + '_p' + (i + 1),
             seriesId,
+            libraryId: resolvedLibraryId,
             createdAt: new Date().toISOString(),
             timesPerformed: 0,
             journal: [],
