@@ -55,13 +55,60 @@ export default function DashboardScreen() {
       });
   }, [rituals]);
 
-  const categoryProgress = useMemo(() => {
-    const catMap = new Map<string, { total: number; completed: number; color: string; name: string; icon: string }>();
+  const VITAL_CATEGORIES = ['Money Work', 'Glamour', 'Unblocking', 'Protection'];
+
+  const { vitalStats, otherStats } = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    const vitalCatIds = new Set<string>();
+    const vitalResults: { catId: string; name: string; icon: string; color: string; completedCount: number; totalCount: number; neglected: boolean }[] = [];
+
+    VITAL_CATEGORIES.forEach(vitalName => {
+      const catObj = categories.find(c => c.name === vitalName);
+      if (!catObj) {
+        vitalResults.push({ catId: '', name: vitalName, icon: 'auto-fix-high', color: theme.accent, completedCount: 0, totalCount: 0, neglected: true });
+        return;
+      }
+      vitalCatIds.add(catObj.id);
+      const catColor = categoryColors[catObj.id] || theme.accent;
+      const catRituals = rituals.filter(r => r.category === catObj.id);
+      const monthRituals = catRituals.filter(r => {
+        if (!r.scheduledDate) return false;
+        const d = new Date(r.scheduledDate);
+        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      });
+      const totalCount = monthRituals.length;
+      const completedCount = monthRituals.filter(r => r.status === 'completed').length;
+
+      let neglected = false;
+      if (completedCount === 0) {
+        neglected = true;
+      } else {
+        const performedDates = catRituals
+          .filter(r => r.lastPerformed)
+          .map(r => new Date(r.lastPerformed!).getTime());
+        if (performedDates.length === 0) {
+          neglected = true;
+        } else {
+          const mostRecent = new Date(Math.max(...performedDates));
+          neglected = mostRecent < thirtyDaysAgo;
+        }
+      }
+      vitalResults.push({ catId: catObj.id, name: catObj.name, icon: catObj.icon || 'auto-fix-high', color: catColor, completedCount, totalCount, neglected });
+    });
+
+    // Other categories (non-vital with rituals)
+    const otherCatMap = new Map<string, { total: number; completed: number; color: string; name: string; icon: string }>();
     categories.forEach(cat => {
-      catMap.set(cat.id, { total: 0, completed: 0, color: categoryColors[cat.id] || theme.accent, name: cat.name, icon: cat.icon || 'auto-fix-high' });
+      if (vitalCatIds.has(cat.id)) return;
+      otherCatMap.set(cat.id, { total: 0, completed: 0, color: categoryColors[cat.id] || theme.accent, name: cat.name, icon: cat.icon || 'auto-fix-high' });
     });
     const catGroups = new Map<string, Map<string, typeof rituals>>();
     rituals.forEach(r => {
+      if (vitalCatIds.has(r.category)) return;
       if (!catGroups.has(r.category)) catGroups.set(r.category, new Map());
       const groupMap = catGroups.get(r.category)!;
       const key = r.seriesId || r.groupId || r.id;
@@ -69,7 +116,7 @@ export default function DashboardScreen() {
       groupMap.get(key)!.push(r);
     });
     catGroups.forEach((groupMap, catId) => {
-      const entry = catMap.get(catId);
+      const entry = otherCatMap.get(catId);
       if (!entry) return;
       groupMap.forEach(group => {
         entry.total++;
@@ -77,7 +124,8 @@ export default function DashboardScreen() {
         if (allCompleted) entry.completed++;
       });
     });
-    return Array.from(catMap.values()).filter(c => c.total > 0);
+    const otherResults = Array.from(otherCatMap.values()).filter(c => c.total > 0);
+    return { vitalStats: vitalResults, otherStats: otherResults };
   }, [rituals, categories, categoryColors]);
 
   const uniqueCounts = useMemo(() => getUniqueRitualCounts(rituals), [rituals]);
@@ -273,22 +321,63 @@ export default function DashboardScreen() {
               <Text style={styles.overallBarLabel}>{totalRituals} total</Text>
             </View>
 
-            {/* Per-category bars */}
-            {categoryProgress.map((cat, i) => {
-              const pct = cat.total > 0 ? Math.round((cat.completed / cat.total) * 100) : 0;
+            {/* Vital category bars */}
+            {vitalStats.map((cat, i) => {
+              const pct = cat.totalCount > 0 ? Math.round((cat.completedCount / cat.totalCount) * 100) : 0;
+              const displayColor = cat.neglected ? theme.warning : cat.color;
+              const isEmpty = cat.totalCount === 0;
               return (
-                <View key={i} style={styles.catProgressRow}>
+                <View key={`vital-${i}`} style={styles.catProgressRow}>
                   <View style={styles.catProgressLabel}>
-                    <MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={14} color={cat.color} />
-                    <Text style={styles.catProgressName} numberOfLines={1}>{cat.name}</Text>
-                    <Text style={styles.catProgressCount}>{cat.completed}/{cat.total}</Text>
+                    <MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={14} color={displayColor} />
+                    <Text style={[styles.catProgressName, cat.neglected ? { color: theme.warning } : null]} numberOfLines={1}>{cat.name}</Text>
+                    {cat.neglected && cat.totalCount > 0 ? (
+                      <View style={styles.neglectedBadge}>
+                        <Text style={styles.neglectedBadgeText}>30d+</Text>
+                      </View>
+                    ) : null}
+                    {isEmpty ? (
+                      <Text style={[styles.catProgressCount, { color: theme.textMuted, fontStyle: 'italic' }]}>0 scheduled</Text>
+                    ) : (
+                      <Text style={[styles.catProgressCount, cat.neglected ? { color: theme.warning } : null]}>{cat.completedCount}/{cat.totalCount}</Text>
+                    )}
                   </View>
-                  <View style={styles.catBarBg}>
-                    <View style={[styles.catBarFill, { width: `${Math.max(pct, 2)}%`, backgroundColor: cat.color }]} />
-                  </View>
+                  {isEmpty ? (
+                    <View style={styles.catBarEmpty} />
+                  ) : (
+                    <View style={styles.catBarBg}>
+                      <View style={[styles.catBarFill, { width: `${Math.max(pct, 2)}%`, backgroundColor: displayColor }]} />
+                    </View>
+                  )}
                 </View>
               );
             })}
+
+            {/* Other practice categories */}
+            {otherStats.length > 0 ? (
+              <>
+                <View style={styles.otherDivider}>
+                  <View style={styles.otherDividerLine} />
+                  <Text style={styles.otherDividerText}>Other Practice</Text>
+                  <View style={styles.otherDividerLine} />
+                </View>
+                {otherStats.map((cat, i) => {
+                  const pct = cat.total > 0 ? Math.round((cat.completed / cat.total) * 100) : 0;
+                  return (
+                    <View key={`other-${i}`} style={styles.catProgressRow}>
+                      <View style={styles.catProgressLabel}>
+                        <MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={14} color={cat.color} />
+                        <Text style={styles.catProgressName} numberOfLines={1}>{cat.name}</Text>
+                        <Text style={styles.catProgressCount}>{cat.completed}/{cat.total}</Text>
+                      </View>
+                      <View style={styles.catBarBg}>
+                        <View style={[styles.catBarFill, { width: `${Math.max(pct, 2)}%`, backgroundColor: cat.color }]} />
+                      </View>
+                    </View>
+                  );
+                })}
+              </>
+            ) : null}
 
             {/* Manifestation mini-stats */}
             <View style={styles.manifRow}>
@@ -456,6 +545,12 @@ const styles = StyleSheet.create({
   catProgressCount: { fontSize: 11, fontWeight: '600', color: theme.textMuted },
   catBarBg: { height: 5, backgroundColor: 'rgba(255,255,255,0.10)', borderRadius: 3, overflow: 'hidden' },
   catBarFill: { height: 5, borderRadius: 3 },
+  catBarEmpty: { height: 5, borderRadius: 3, borderWidth: 1, borderStyle: 'dashed', borderColor: theme.textMuted + '40' },
+  neglectedBadge: { backgroundColor: theme.warning + '20', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 6, marginLeft: 4 },
+  neglectedBadgeText: { fontSize: 9, fontWeight: '700', color: theme.warning },
+  otherDivider: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12, marginBottom: 10 },
+  otherDividerLine: { flex: 1, height: 1, backgroundColor: theme.border },
+  otherDividerText: { fontSize: 9, fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.8 },
 
   // Manifestation mini-stats
   manifRow: {
