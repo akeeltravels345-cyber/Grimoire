@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, KeyboardAvoidingView, Platform, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -45,6 +45,7 @@ export default function JournalScreen() {
   const [showNewTypeModal, setShowNewTypeModal] = useState(false);
   const [newTypeLabel, setNewTypeLabel] = useState('');
   const [newTypeEmoji, setNewTypeEmoji] = useState('\u2728');
+  const [typeFilter, setTypeFilter] = useState<string | null>(null);
 
   const clearForm = () => {
     setNewTitle('');
@@ -55,6 +56,44 @@ export default function JournalScreen() {
     setEditingEntry(null);
     setIsAdding(false);
   };
+
+  const formatLastDate = (dateStr?: string): string => {
+    if (!dateStr) return '\u2014';
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diffDays = Math.floor((now.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    return `${diffDays}d ago`;
+  };
+
+  const summaryData = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const isThisMonth = (dateStr: string) => {
+      const d = new Date(dateStr);
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+    };
+
+    const dreamEntries = standaloneEntries.filter(e => e.type === 'dream');
+    const dreamsThisMonth = dreamEntries.filter(e => isThisMonth(e.date)).length;
+    const sortedDreams = [...dreamEntries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const lastDreamDate = sortedDreams.length > 0 ? sortedDreams[0].date : undefined;
+
+    const encounterEntries = standaloneEntries.filter(e => e.type === 'encounter');
+    const encountersThisMonth = encounterEntries.filter(e => isThisMonth(e.date)).length;
+    const sortedEncounters = [...encounterEntries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const lastEncounterDate = sortedEncounters.length > 0 ? sortedEncounters[0].date : undefined;
+
+    const moodCounts: Record<string, number> = {};
+    rituals.forEach(r => r.journal.forEach(j => { if (j.mood) moodCounts[j.mood] = (moodCounts[j.mood] || 0) + 1; }));
+    standaloneEntries.forEach(e => { if (e.mood) moodCounts[e.mood] = (moodCounts[e.mood] || 0) + 1; });
+    const topMoods = Object.entries(moodCounts).sort(([, a], [, b]) => b - a).slice(0, 4).map(([mood, count]) => ({ mood, count }));
+    const maxMoodCount = topMoods.length > 0 ? topMoods[0].count : 1;
+
+    return { dreamsThisMonth, lastDreamDate, encountersThisMonth, lastEncounterDate, topMoods, maxMoodCount };
+  }, [standaloneEntries, rituals]);
 
   const handleSaveEntry = () => {
     if (!newTitle.trim() || !newNotes.trim()) return;
@@ -177,9 +216,11 @@ export default function JournalScreen() {
 
   allItems.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  const displayItems = typeFilter ? allItems.filter(item => item.type === typeFilter) : allItems;
+
   // Group by date
   const grouped: Record<string, TimelineItem[]> = {};
-  allItems.forEach(item => {
+  displayItems.forEach(item => {
     const dateKey = new Date(item.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
     if (!grouped[dateKey]) grouped[dateKey] = [];
     grouped[dateKey].push(item);
@@ -281,7 +322,7 @@ export default function JournalScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.title}>Journal</Text>
-          <Text style={styles.headerCount}>{allItems.length} entries</Text>
+          <Text style={styles.headerCount}>{displayItems.length} entries</Text>
         </View>
         <Pressable style={styles.addBtn} onPress={() => { if (isAdding) { clearForm(); } else { setIsAdding(true); } }}>
           <MaterialIcons name={isAdding ? 'close' : 'add'} size={22} color={theme.background} />
@@ -290,17 +331,68 @@ export default function JournalScreen() {
 
       {/* Tab Filters */}
       <View style={styles.tabRow}>
-        <Pressable style={[styles.tabChip, tab === 'all' && styles.tabChipActive]} onPress={() => setTab('all')}>
+        <Pressable style={[styles.tabChip, tab === 'all' && styles.tabChipActive]} onPress={() => { setTab('all'); setTypeFilter(null); }}>
           <Text style={[styles.tabChipText, tab === 'all' && styles.tabChipTextActive]}>All</Text>
         </Pressable>
-        <Pressable style={[styles.tabChip, tab === 'rituals' && styles.tabChipActive]} onPress={() => setTab('rituals')}>
+        <Pressable style={[styles.tabChip, tab === 'rituals' && styles.tabChipActive]} onPress={() => { setTab('rituals'); setTypeFilter(null); }}>
           <MaterialIcons name="menu-book" size={14} color={tab === 'rituals' ? theme.textPrimary : theme.textMuted} />
           <Text style={[styles.tabChipText, tab === 'rituals' && styles.tabChipTextActive]}>Rituals</Text>
         </Pressable>
-        <Pressable style={[styles.tabChip, tab === 'personal' && styles.tabChipActive]} onPress={() => setTab('personal')}>
+        <Pressable style={[styles.tabChip, tab === 'personal' && styles.tabChipActive]} onPress={() => { setTab('personal'); setTypeFilter(null); }}>
           <MaterialIcons name="edit-note" size={14} color={tab === 'personal' ? theme.textPrimary : theme.textMuted} />
           <Text style={[styles.tabChipText, tab === 'personal' && styles.tabChipTextActive]}>Personal</Text>
         </Pressable>
+        {typeFilter ? (
+          <Pressable style={styles.typeFilterChip} onPress={() => setTypeFilter(null)}>
+            <Text style={styles.typeFilterChipText}>{getTypeLabel(typeFilter)}</Text>
+            <MaterialIcons name="close" size={12} color={theme.primary} />
+          </Pressable>
+        ) : null}
+      </View>
+
+      {/* Summary Cards */}
+      <View style={styles.summaryStripWrap}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.summaryStripContent}>
+          <Pressable style={[styles.summaryCard, { width: 140, borderLeftColor: '#6667AB' }]} onPress={() => { setTab('personal'); setTypeFilter('dream'); }}>
+            <View style={styles.summaryCardHeader}>
+              <Text style={{ fontSize: 16 }}>{'\u{1F319}'}</Text>
+              <Text style={[styles.summaryLabel, { color: '#6667AB' }]}>DREAMS</Text>
+            </View>
+            <Text style={[styles.summaryNumber, { color: '#6667AB' }]}>{summaryData.dreamsThisMonth}</Text>
+            <Text style={styles.summarySub}>entries this month</Text>
+            <View style={styles.summaryDivider} />
+            <Text style={styles.summaryFooter}>Last: {formatLastDate(summaryData.lastDreamDate)}</Text>
+          </Pressable>
+
+          <Pressable style={[styles.summaryCard, { width: 140, borderLeftColor: '#C9847A' }]} onPress={() => { setTab('personal'); setTypeFilter('encounter'); }}>
+            <View style={styles.summaryCardHeader}>
+              <Text style={{ fontSize: 16 }}>{'\u{1F441}\uFE0F'}</Text>
+              <Text style={[styles.summaryLabel, { color: '#C9847A' }]}>ENCOUNTERS</Text>
+            </View>
+            <Text style={[styles.summaryNumber, { color: '#C9847A' }]}>{summaryData.encountersThisMonth}</Text>
+            <Text style={styles.summarySub}>this month</Text>
+            <View style={styles.summaryDivider} />
+            <Text style={styles.summaryFooter}>Last: {formatLastDate(summaryData.lastEncounterDate)}</Text>
+          </Pressable>
+
+          <View style={[styles.summaryCard, { width: 155, borderLeftColor: '#5EBD8A' }]}>
+            <View style={styles.summaryCardHeader}>
+              <MaterialIcons name="auto-awesome" size={18} color="#5EBD8A" />
+              <Text style={[styles.summaryLabel, { color: '#5EBD8A' }]}>TOP MOODS</Text>
+            </View>
+            <View style={[styles.summaryDivider, { marginTop: 6 }]} />
+            {summaryData.topMoods.length > 0 ? summaryData.topMoods.map((m, i) => {
+              const barColors = ['#5EBD8A', '#6667AB', '#C9847A', '#7B337E'];
+              const barWidth = Math.max(8, (m.count / summaryData.maxMoodCount) * 60);
+              return (
+                <View key={m.mood} style={styles.moodBarRow}>
+                  <Text style={styles.moodBarLabel} numberOfLines={1}>{m.mood}</Text>
+                  <View style={[styles.moodBar, { width: barWidth, backgroundColor: barColors[i] || barColors[0] }]} />
+                </View>
+              );
+            }) : <Text style={styles.summaryFooter}>No mood data</Text>}
+          </View>
+        </ScrollView>
       </View>
 
       {/* Swipe hint for personal entries */}
@@ -461,6 +553,24 @@ const styles = StyleSheet.create({
   tabChipActive: { backgroundColor: theme.surfaceLight, borderWidth: 1, borderColor: theme.primary + '40' },
   tabChipText: { fontSize: 13, fontWeight: '600', color: theme.textMuted },
   tabChipTextActive: { color: theme.textPrimary },
+
+  // Type Filter Chip
+  typeFilterChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 16, backgroundColor: theme.primary + '18', borderWidth: 1, borderColor: theme.primary + '40', marginLeft: 4 },
+  typeFilterChipText: { fontSize: 12, fontWeight: '600', color: theme.primary },
+
+  // Summary Cards
+  summaryStripWrap: { marginBottom: 8 },
+  summaryStripContent: { paddingHorizontal: 16, gap: 8 },
+  summaryCard: { backgroundColor: theme.surface, borderRadius: theme.radius.lg, borderWidth: 1, borderColor: theme.border, borderLeftWidth: 3, padding: 14 },
+  summaryCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
+  summaryLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 1 },
+  summaryNumber: { fontSize: 28, fontWeight: '700', lineHeight: 32 },
+  summarySub: { fontSize: 10, fontWeight: '500', color: theme.textMuted, marginTop: 1 },
+  summaryDivider: { height: 1, backgroundColor: theme.border, marginVertical: 8 },
+  summaryFooter: { fontSize: 10, fontWeight: '500', color: theme.textSecondary },
+  moodBarRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 5 },
+  moodBarLabel: { fontSize: 10, fontWeight: '500', color: theme.textSecondary, width: 64 },
+  moodBar: { height: 6, borderRadius: 3, minWidth: 8 },
 
   // Swipe hint
   swipeHint: {
