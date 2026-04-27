@@ -410,7 +410,7 @@ for (let i = 0; i < 90; i++) {
   <View style={styles.editSection}>
     <Text style={styles.editFieldLabel}>Ingredients & Tools</Text>
     <View>
-      {editIngredients.split(',').filter(ing => ing.trim().length > 0).map((ing, i) => (
+      {editIngredients.split(',').map((ing, i) => (
         <View key={i} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 }}>
           <TextInput
             style={{ flex: 1, backgroundColor: theme.surface, borderRadius: 10, padding: 12, fontSize: 15, color: theme.textPrimary, borderWidth: 1.5, borderColor: theme.primary + '30' }}
@@ -438,7 +438,7 @@ for (let i = 0; i < 90; i++) {
         hitSlop={12}
         style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8, paddingVertical: 12, paddingHorizontal: 14, backgroundColor: theme.primary + '10', borderRadius: 10, borderWidth: 1, borderColor: theme.primary + '30' }}
         onPress={() => {
-          setEditIngredients(editIngredients.trim().length > 0 ? editIngredients.trim() + ',New ingredient' : 'New ingredient');
+          setEditIngredients(editIngredients.length > 0 ? editIngredients + ',' : '');
         }}
       >
         <MaterialIcons name="add-circle-outline" size={22} color={theme.primary} />
