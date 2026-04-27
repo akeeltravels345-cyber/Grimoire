@@ -12,14 +12,8 @@ import { theme, getCurrentMoonPhase } from '../constants/theme';
 import { getTodayPlanet } from '../constants/planetaryData';
 import { getCurrentPlanetaryHour } from '../services/planetaryHours';
 import { useApp } from '../contexts/AppContext';
+import { useAlert } from '@/template';
 import GradientScreen from '../components/GradientScreen';
-
-const MOODS = [
-  'Connected', 'Peaceful', 'Grateful', 'Empowered', 'Focused',
-  'Reflective', 'Grounded', 'Centered', 'Soothed', 'Hopeful',
-  'Contemplative', 'Determined', 'Joyful', 'Elevated', 'Liberated',
-  'Radiant', 'Confident',
-];
 
 const ENERGY_LEVELS = [
   { value: 1, label: 'Low', icon: 'battery-1-bar' },
@@ -32,7 +26,8 @@ export default function LogRitualScreen() {
   const { ritualId } = useLocalSearchParams<{ ritualId: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { rituals, addJournalEntry } = useApp();
+  const { rituals, addJournalEntry, moods, addMood, deleteMood } = useApp();
+  const { showAlert } = useAlert();
   const ritual = rituals.find(r => r.id === ritualId);
 
   const [notes, setNotes] = useState('');
@@ -40,6 +35,8 @@ export default function LogRitualScreen() {
   const [showCompletedDatePicker, setShowCompletedDatePicker] = useState(false);
   const [mood, setMood] = useState('');
   const [energyLevel, setEnergyLevel] = useState(0);
+  const [isAddingMood, setIsAddingMood] = useState(false);
+  const [newMoodText, setNewMoodText] = useState('');
 
   // Generate date options for picker (next 90 days)
   const nextDateOptions = useMemo(() => {
@@ -153,11 +150,23 @@ export default function LogRitualScreen() {
           {/* How do you feel? */}
           <Text style={styles.label}>How do you feel? *</Text>
           <View style={styles.moodGrid}>
-            {MOODS.map(m => (
-              <Pressable key={m} style={[styles.moodChip, mood === m && styles.moodChipActive]} onPress={() => { setMood(m); Haptics.selectionAsync(); }}>
+            {moods.map(m => (
+              <Pressable key={m} style={[styles.moodChip, mood === m && styles.moodChipActive]} onPress={() => { setMood(m); Haptics.selectionAsync(); }} onLongPress={() => { showAlert('Delete Mood?', `Remove "${m}" from your mood options?`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: () => { deleteMood(m); if (mood === m) setMood(''); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } }]); }} delayLongPress={500}>
                 <Text style={[styles.moodChipText, mood === m && styles.moodChipTextActive]}>{m}</Text>
               </Pressable>
             ))}
+            {isAddingMood ? (
+              <View style={styles.moodAddInline}>
+                <TextInput style={styles.moodAddInput} value={newMoodText} onChangeText={setNewMoodText} placeholder="New mood..." placeholderTextColor={theme.textMuted} autoFocus onSubmitEditing={() => { if (newMoodText.trim()) { addMood(newMoodText.trim()); setNewMoodText(''); } setIsAddingMood(false); }} returnKeyType="done" />
+                <Pressable onPress={() => { if (newMoodText.trim()) { addMood(newMoodText.trim()); setNewMoodText(''); } setIsAddingMood(false); }} hitSlop={8}><MaterialIcons name="check" size={18} color={theme.success} /></Pressable>
+                <Pressable onPress={() => { setIsAddingMood(false); setNewMoodText(''); }} hitSlop={8}><MaterialIcons name="close" size={18} color={theme.textMuted} /></Pressable>
+              </View>
+            ) : (
+              <Pressable style={styles.moodAddChip} onPress={() => { setIsAddingMood(true); Haptics.selectionAsync(); }}>
+                <MaterialIcons name="add" size={14} color={theme.accent} />
+                <Text style={styles.moodAddChipText}>Add</Text>
+              </Pressable>
+            )}
           </View>
 
           {/* Notes */}
@@ -248,6 +257,10 @@ const styles = StyleSheet.create({
   moodChipActive: { backgroundColor: theme.primary + '20', borderColor: theme.primary },
   moodChipText: { fontSize: 13, fontWeight: '500', color: theme.textMuted },
   moodChipTextActive: { color: theme.primary, fontWeight: '600' },
+  moodAddChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, borderWidth: 1.5, borderColor: theme.accent + '40', borderStyle: 'dashed', backgroundColor: theme.accent + '08' },
+  moodAddChipText: { fontSize: 13, fontWeight: '600', color: theme.accent },
+  moodAddInline: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, backgroundColor: theme.surface, borderWidth: 1.5, borderColor: theme.primary + '40' },
+  moodAddInput: { fontSize: 13, color: theme.textPrimary, minWidth: 80, padding: 0 },
 
   // Energy
   energyRow: { flexDirection: 'row', gap: 10 },

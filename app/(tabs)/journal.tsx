@@ -12,8 +12,6 @@ import { useAlert } from '@/template';
 import { getRecentActivity, StandaloneJournalEntry } from '../../services/mockData';
 import SwipeableRow from '../../components/SwipeableRow';
 
-const MOODS = ['Connected', 'Peaceful', 'Grateful', 'Reflective', 'Contemplative', 'Hopeful', 'Empowered', 'Joyful'];
-
 const SPIRITUAL_EMOJIS = [
   '\u{1F300}', '\u2728', '\u{1F52E}', '\u{1F4AB}', '\u{1F30A}', '\u{1F525}', '\u{1F33F}', '\u26A1',
   '\u{1F56F}\uFE0F', '\u{1F9FF}', '\u{1F311}', '\u2601\uFE0F', '\u{1F5DD}\uFE0F', '\u{1FAAC}', '\u{1FAE7}',
@@ -27,7 +25,7 @@ type JournalTab = 'all' | 'rituals' | 'personal';
 export default function JournalScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { rituals, categoryColors, standaloneEntries, addStandaloneEntry, deleteStandaloneEntry, journalEntryTypes, addJournalEntryType, deleteJournalEntryType } = useApp();
+  const { rituals, categoryColors, standaloneEntries, addStandaloneEntry, deleteStandaloneEntry, journalEntryTypes, addJournalEntryType, deleteJournalEntryType, moods, addMood, deleteMood } = useApp();
   const { showAlert } = useAlert();
   const ritualEntries = getRecentActivity(rituals);
   const [tab, setTab] = useState<JournalTab>('all');
@@ -40,6 +38,8 @@ export default function JournalScreen() {
   const [newMood, setNewMood] = useState('');
   const [newTags, setNewTags] = useState('');
   const [editingEntry, setEditingEntry] = useState<StandaloneJournalEntry | null>(null);
+  const [isAddingMood, setIsAddingMood] = useState(false);
+  const [newMoodText, setNewMoodText] = useState('');
 
   // New type modal
   const [showNewTypeModal, setShowNewTypeModal] = useState(false);
@@ -352,12 +352,26 @@ export default function JournalScreen() {
               {/* Mood */}
               <Text style={styles.formLabel}>Mood (optional)</Text>
               <View style={styles.moodRow}>
-                {MOODS.map(m => (
+                {moods.map(m => (
                   <Pressable key={m} style={[styles.moodChip, newMood === m && styles.moodChipActive]}
-                    onPress={() => { setNewMood(newMood === m ? '' : m); Haptics.selectionAsync(); }}>
+                    onPress={() => { setNewMood(newMood === m ? '' : m); Haptics.selectionAsync(); }}
+                    onLongPress={() => { showAlert('Delete Mood?', `Remove "${m}" from your mood options?`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: () => { deleteMood(m); if (newMood === m) setNewMood(''); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } }]); }}
+                    delayLongPress={500}>
                     <Text style={[styles.moodChipText, newMood === m && styles.moodChipTextActive]}>{m}</Text>
                   </Pressable>
                 ))}
+                {isAddingMood ? (
+                  <View style={styles.moodAddInline}>
+                    <TextInput style={styles.moodAddInput} value={newMoodText} onChangeText={setNewMoodText} placeholder="New mood..." placeholderTextColor={theme.textMuted} autoFocus onSubmitEditing={() => { if (newMoodText.trim()) { addMood(newMoodText.trim()); setNewMoodText(''); } setIsAddingMood(false); }} returnKeyType="done" />
+                    <Pressable onPress={() => { if (newMoodText.trim()) { addMood(newMoodText.trim()); setNewMoodText(''); } setIsAddingMood(false); }} hitSlop={8}><MaterialIcons name="check" size={18} color={theme.success} /></Pressable>
+                    <Pressable onPress={() => { setIsAddingMood(false); setNewMoodText(''); }} hitSlop={8}><MaterialIcons name="close" size={18} color={theme.textMuted} /></Pressable>
+                  </View>
+                ) : (
+                  <Pressable style={styles.moodAddChip} onPress={() => { setIsAddingMood(true); Haptics.selectionAsync(); }}>
+                    <MaterialIcons name="add" size={14} color={theme.accent} />
+                    <Text style={styles.moodAddChipText}>Add</Text>
+                  </Pressable>
+                )}
               </View>
 
               {/* Tags */}
@@ -477,6 +491,10 @@ const styles = StyleSheet.create({
   moodChipActive: { backgroundColor: theme.primary + '20', borderColor: theme.primary },
   moodChipText: { fontSize: 12, fontWeight: '500', color: theme.textMuted },
   moodChipTextActive: { color: theme.primary, fontWeight: '600' },
+  moodAddChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, borderWidth: 1.5, borderColor: theme.accent + '40', borderStyle: 'dashed', backgroundColor: theme.accent + '08' },
+  moodAddChipText: { fontSize: 12, fontWeight: '600', color: theme.accent },
+  moodAddInline: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 16, backgroundColor: theme.surface, borderWidth: 1.5, borderColor: theme.primary + '40' },
+  moodAddInput: { fontSize: 12, color: theme.textPrimary, minWidth: 80, padding: 0 },
   saveEntryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: theme.primary, paddingVertical: 14, borderRadius: theme.radius.md, marginTop: 8 },
   saveEntryBtnText: { fontSize: 15, fontWeight: '600', color: theme.background },
 

@@ -11,6 +11,9 @@ export interface JournalEntryType {
   icon: string;
 }
 
+const DEFAULT_MOODS = ['Connected', 'Peaceful', 'Grateful', 'Reflective', 'Contemplative', 'Hopeful', 'Empowered', 'Joyful', 'Grounded', 'Centered', 'Elevated', 'Determined', 'Radiant', 'Mystified', 'Aware'];
+const MOODS_KEY = 'grimoire_moods';
+
 const DEFAULT_JOURNAL_TYPES: JournalEntryType[] = [
   { id: 'reflection', label: 'Reflection', icon: '\u{1F4D6}' },
   { id: 'dream', label: 'Dream', icon: '\u{1F319}' },
@@ -48,6 +51,9 @@ interface AppContextType {
   journalEntryTypes: JournalEntryType[];
   addJournalEntryType: (type: JournalEntryType) => void;
   deleteJournalEntryType: (id: string) => void;
+  moods: string[];
+  addMood: (mood: string) => void;
+  deleteMood: (mood: string) => void;
   clearAllData: () => void;
 }
 
@@ -194,6 +200,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [standaloneEntries, setStandaloneEntries] = useState<StandaloneJournalEntry[]>([]);
   const [libraryRituals, setLibraryRituals] = useState<LibraryRitual[]>([]);
   const [journalEntryTypes, setJournalEntryTypes] = useState<JournalEntryType[]>(DEFAULT_JOURNAL_TYPES);
+  const [moods, setMoods] = useState<string[]>(DEFAULT_MOODS);
   const [isLoaded, setIsLoaded] = useState(false);
   const hasRequestedPermissions = useRef(false);
 
@@ -240,6 +247,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (libraryData) { try { setLibraryRituals(JSON.parse(libraryData)); } catch {} }
         const journalTypesData = await AsyncStorage.getItem(JOURNAL_TYPES_KEY);
         if (journalTypesData) { try { setJournalEntryTypes(JSON.parse(journalTypesData)); } catch {} }
+        const moodsData = await AsyncStorage.getItem(MOODS_KEY);
+        if (moodsData) { try { setMoods(JSON.parse(moodsData)); } catch {} }
       } catch {}
       setIsLoaded(true);
     })();
@@ -263,6 +272,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(STANDALONE_KEY, JSON.stringify(standaloneEntries)); }, [standaloneEntries, isLoaded]);
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(LIBRARY_KEY, JSON.stringify(libraryRituals)); }, [libraryRituals, isLoaded]);
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(JOURNAL_TYPES_KEY, JSON.stringify(journalEntryTypes)); }, [journalEntryTypes, isLoaded]);
+  useEffect(() => { if (isLoaded) AsyncStorage.setItem(MOODS_KEY, JSON.stringify(moods)); }, [moods, isLoaded]);
 
   const addRitual = (ritual: Omit<Ritual, 'id' | 'createdAt' | 'timesPerformed' | 'journal'> & { status?: Ritual['status'] }) => {
     const id = Date.now().toString();
@@ -524,6 +534,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setJournalEntryTypes(prev => prev.filter(t => t.id !== id));
   };
 
+  const addMood = (mood: string) => {
+    const trimmed = mood.trim();
+    if (!trimmed || moods.includes(trimmed)) return;
+    setMoods(prev => [...prev, trimmed]);
+  };
+
+  const deleteMood = (mood: string) => {
+    setMoods(prev => prev.filter(m => m !== mood));
+  };
+
   const addToPractice = (libraryId: string, overrides?: { scheduledDate?: string; schedule?: LibraryRitual['schedule']; consecutiveDays?: number }) => {
     const libRitual = libraryRituals.find(r => r.id === libraryId);
     if (!libRitual) return;
@@ -555,7 +575,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setStandaloneEntries([]);
     setLibraryRituals([]);
     setJournalEntryTypes(DEFAULT_JOURNAL_TYPES);
-    await AsyncStorage.multiRemove([STORAGE_KEY, MANIFESTATIONS_KEY, STANDALONE_KEY, NOTIF_IDS_KEY, LIBRARY_KEY, JOURNAL_TYPES_KEY]);
+    setMoods(DEFAULT_MOODS);
+    await AsyncStorage.multiRemove([STORAGE_KEY, MANIFESTATIONS_KEY, STANDALONE_KEY, NOTIF_IDS_KEY, LIBRARY_KEY, JOURNAL_TYPES_KEY, MOODS_KEY]);
     await Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
   };
 
@@ -567,7 +588,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addCategory, deleteCategory,
       addStandaloneEntry, deleteStandaloneEntry, updateStatus,
       addLibraryRitual, updateLibraryRitual, deleteLibraryRitual, addToPractice,
-      journalEntryTypes, addJournalEntryType, deleteJournalEntryType, clearAllData,
+      journalEntryTypes, addJournalEntryType, deleteJournalEntryType,
+      moods, addMood, deleteMood, clearAllData,
     }}>
       {children}
     </AppContext.Provider>

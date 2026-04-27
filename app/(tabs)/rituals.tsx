@@ -107,7 +107,7 @@ function getStatusStyle(status: string) {
 export default function RitualsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { rituals, libraryRituals, categories, categoryColors, manifestations, updateStatus, updateRitual, deleteRitual, deleteLibraryRitual, deleteFutureInSeries, stopSchedule, addJournalEntry } = useApp();
+  const { rituals, libraryRituals, categories, categoryColors, manifestations, updateStatus, updateRitual, deleteRitual, deleteLibraryRitual, deleteFutureInSeries, stopSchedule, addJournalEntry, moods, addMood, deleteMood } = useApp();
   const { showAlert } = useAlert();
 
   const [tabMode, setTabMode] = useState<TabMode>('library');
@@ -131,6 +131,8 @@ export default function RitualsScreen() {
   const [quickLogNotes, setQuickLogNotes] = useState('');
   const [quickLogDate, setQuickLogDate] = useState<Date>(new Date());
   const [showQuickDatePicker, setShowQuickDatePicker] = useState(false);
+  const [isAddingMood, setIsAddingMood] = useState(false);
+  const [newMoodText, setNewMoodText] = useState('');
 
   const today = useMemo(() => new Date(), []);
   const monthDays = useMemo(() => getMonthDays(), []);
@@ -487,7 +489,6 @@ export default function RitualsScreen() {
                 const todayPlanet = getTodayPlanet();
                 const currentHour = getCurrentPlanetaryHour();
                 const qlCanSave = quickLogMood.length > 0;
-                const MOODS = ['Connected', 'Peaceful', 'Grateful', 'Empowered', 'Focused', 'Reflective', 'Grounded', 'Centered', 'Soothed', 'Hopeful', 'Contemplative', 'Determined', 'Joyful', 'Elevated', 'Liberated', 'Radiant', 'Confident'];
                 return (
                   <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 32 }} keyboardShouldPersistTaps="handled">
                     <Text style={styles.qlRitualName}>{qlRitual?.name || 'Ritual'}</Text>
@@ -501,7 +502,7 @@ export default function RitualsScreen() {
                     <Pressable style={styles.qlDateField} onPress={() => setShowQuickDatePicker(true)}><MaterialIcons name="event-available" size={18} color={theme.primary} /><Text style={styles.qlDateText}>{quickLogDate.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' })}</Text><MaterialIcons name="edit-calendar" size={16} color={theme.textMuted} /></Pressable>
                     <Text style={styles.qlDateHint}>Defaults to today \u2014 change if logging a past practice</Text>
                     <Text style={styles.qlLabel}>How did it feel? *</Text>
-                    <View style={styles.qlMoodGrid}>{MOODS.map(m => <Pressable key={m} style={[styles.qlMoodChip, quickLogMood === m && styles.qlMoodChipActive]} onPress={() => { setQuickLogMood(m); Haptics.selectionAsync(); }}><Text style={[styles.qlMoodChipText, quickLogMood === m && styles.qlMoodChipTextActive]}>{m}</Text></Pressable>)}</View>
+                    <View style={styles.qlMoodGrid}>{moods.map(m => <Pressable key={m} style={[styles.qlMoodChip, quickLogMood === m && styles.qlMoodChipActive]} onPress={() => { setQuickLogMood(m); Haptics.selectionAsync(); }} onLongPress={() => { showAlert('Delete Mood?', `Remove "${m}" from your mood options?`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Delete', style: 'destructive', onPress: () => { deleteMood(m); if (quickLogMood === m) setQuickLogMood(''); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } }]); }} delayLongPress={500}><Text style={[styles.qlMoodChipText, quickLogMood === m && styles.qlMoodChipTextActive]}>{m}</Text></Pressable>)}{isAddingMood ? <View style={styles.qlMoodAddInline}><TextInput style={styles.qlMoodAddInput} value={newMoodText} onChangeText={setNewMoodText} placeholder="New mood..." placeholderTextColor={theme.textMuted} autoFocus onSubmitEditing={() => { if (newMoodText.trim()) { addMood(newMoodText.trim()); setNewMoodText(''); } setIsAddingMood(false); }} returnKeyType="done" /><Pressable onPress={() => { if (newMoodText.trim()) { addMood(newMoodText.trim()); setNewMoodText(''); } setIsAddingMood(false); }} hitSlop={8}><MaterialIcons name="check" size={18} color={theme.success} /></Pressable><Pressable onPress={() => { setIsAddingMood(false); setNewMoodText(''); }} hitSlop={8}><MaterialIcons name="close" size={18} color={theme.textMuted} /></Pressable></View> : <Pressable style={styles.qlMoodAddChip} onPress={() => { setIsAddingMood(true); Haptics.selectionAsync(); }}><MaterialIcons name="add" size={14} color={theme.accent} /><Text style={styles.qlMoodAddChipText}>Add</Text></Pressable>}</View>
                     <Text style={styles.qlLabel}>Notes</Text>
                     <TextInput style={styles.qlNotesInput} value={quickLogNotes} onChangeText={setQuickLogNotes} placeholder="What happened? Any signs or observations..." placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
                     <Pressable style={[styles.qlSaveBtn, !qlCanSave && styles.qlSaveBtnDisabled]} disabled={!qlCanSave} onPress={() => { if (!qlCanSave || !quickLogRitualId) return; addJournalEntry(quickLogRitualId, { date: quickLogDate.toISOString(), notes: quickLogNotes.trim(), mood: quickLogMood }); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); setShowQuickLog(false); }}><Text style={[styles.qlSaveBtnText, !qlCanSave && styles.qlSaveBtnTextDisabled]}>Mark Complete \u2713</Text></Pressable>
@@ -740,6 +741,10 @@ const styles = StyleSheet.create({
   qlSaveBtnDisabled: { backgroundColor: theme.surfaceLight },
   qlSaveBtnText: { fontSize: 16, fontWeight: '700', color: theme.background },
   qlSaveBtnTextDisabled: { color: theme.textMuted },
+  qlMoodAddChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 18, borderWidth: 1.5, borderColor: theme.accent + '40', borderStyle: 'dashed', backgroundColor: theme.accent + '08' },
+  qlMoodAddChipText: { fontSize: 12, fontWeight: '600', color: theme.accent },
+  qlMoodAddInline: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 18, backgroundColor: theme.surface, borderWidth: 1.5, borderColor: theme.primary + '40' },
+  qlMoodAddInput: { fontSize: 12, color: theme.textPrimary, minWidth: 80, padding: 0 },
   qlDateModal: { backgroundColor: '#231248', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingBottom: 32, maxHeight: '60%' },
   qlDateModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: theme.border },
   qlDateModalTitle: { fontSize: 17, fontWeight: '700', color: theme.textPrimary },
