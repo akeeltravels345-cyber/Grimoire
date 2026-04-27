@@ -16,7 +16,7 @@ const DEFAULT_JOURNAL_TYPES: JournalEntryType[] = [
   { id: 'dream', label: 'Dream', icon: '\u{1F319}' },
   { id: 'encounter', label: 'Encounter', icon: '\u{1F441}\uFE0F' },
   { id: 'insight', label: 'Insight', icon: '\u{1F4A1}' },
-  { id: 'reminder', label: 'Reminder', icon: '\u{1F514}' },
+  
 ];
 
 interface AppContextType {
