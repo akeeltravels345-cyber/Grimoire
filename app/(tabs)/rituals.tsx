@@ -388,9 +388,9 @@ export default function RitualsScreen() {
   </View>
 ) : null}
       <View style={styles.libChipStripContainer}><ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.libChipStripContent}>
-        <Pressable style={[styles.libCatChip, libCategory === 'all' ? { backgroundColor: theme.primary + '25', borderColor: theme.primary, shadowColor: theme.primary, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 0 }, elevation: 4 } : { backgroundColor: theme.primary + '10', borderColor: theme.primary + '25' }]} onPress={() => { setLibCategory('all'); Haptics.selectionAsync(); }}><View style={{ opacity: libCategory === 'all' ? 1 : 0.5 }}><Text style={[styles.libCatChipText, { color: theme.primary }]}>All</Text></View></Pressable>
+        <Pressable style={[styles.libCatChip, libCategory === 'all' ? { backgroundColor: 'rgba(245,213,224,0.15)', borderColor: 'rgba(245,213,224,0.4)' } : { backgroundColor: 'rgba(245,213,224,0.15)', borderColor: 'rgba(245,213,224,0.4)', opacity: 0.7 }]} onPress={() => { setLibCategory('all'); Haptics.selectionAsync(); }}><Text style={[styles.libCatChipText, { color: '#F5D5E0' }]}>All</Text></Pressable>
         {categories.map(cat => { const catColor = categoryColors[cat.id] || theme.accent; const isActive = libCategory === cat.id; return (
-          <Pressable key={cat.id} style={[styles.libCatChip, isActive ? { backgroundColor: catColor + '25', borderColor: catColor, shadowColor: catColor, shadowOpacity: 0.4, shadowRadius: 8, shadowOffset: { width: 0, height: 0 }, elevation: 4 } : { backgroundColor: catColor + '10', borderColor: catColor + '25' }]} onPress={() => { setLibCategory(isActive ? 'all' : cat.id); Haptics.selectionAsync(); }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 5, opacity: isActive ? 1 : 0.5 }}><MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={14} color={catColor} /><Text style={[styles.libCatChipText, { color: catColor }]}>{cat.name}</Text></View></Pressable>
+          <Pressable key={cat.id} style={[styles.libCatChip, isActive ? { backgroundColor: catColor + '25', borderColor: catColor + '60' } : { backgroundColor: catColor + '18', borderColor: catColor + '35', opacity: 0.7 }]} onPress={() => { setLibCategory(isActive ? 'all' : cat.id); Haptics.selectionAsync(); }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={14} color={catColor} /><Text style={[styles.libCatChipText, { color: catColor }]}>{cat.name}</Text></View></Pressable>
         ); })}
       </ScrollView></View>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 80 }} showsVerticalScrollIndicator={false}>
@@ -402,21 +402,62 @@ export default function RitualsScreen() {
           const inPractice = libraryInPractice.has(libR.id);
           return (
             <SwipeableRow key={libR.id} onDelete={() => { showAlert('Remove from Library?', `Remove "${libR.name}" from your grimoire?`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: () => { deleteLibraryRitual(libR.id); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } }]); }}>
-            <Pressable style={[styles.libCard, { borderColor: catColor + '25', borderLeftColor: catColor }]} onPress={() => router.push(`/library-ritual/${libR.id}`)}>
-              <View style={styles.libCardBody}>
-                <View style={styles.libCardTopRow}>
-                  <View style={[styles.libCatIconBox, { backgroundColor: catColor + '18', borderColor: catColor + '30' }]}><MaterialIcons name={(cat?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap} size={22} color={catColor} /></View>
-                  <View style={styles.libCardInfo}>
-                    <Text style={styles.libCardName} numberOfLines={1}>{libR.name}</Text>
-                    <View style={styles.libCardTags}>
-                      <View style={[styles.libTag, { backgroundColor: catColor + '12', borderColor: catColor + '25' }]}><Text style={[styles.libTagText, { color: catColor }]}>{scheduleLabels[libR.schedule] || libR.schedule}</Text></View>
-                      {inPractice ? <View style={[styles.libTag, { backgroundColor: theme.success + '18', borderColor: theme.success + '35' }]}><Text style={[styles.libTagText, { color: theme.success }]}>In Practice</Text></View> : null}
-                    </View>
-                  </View>
-                  {inPractice ? <View style={styles.libActiveCheck}><MaterialIcons name="check" size={16} color={theme.success} /></View> : <Pressable style={[styles.libPracticeBtn, { borderColor: catColor + '60', backgroundColor: catColor + '12' }]} onPress={(e) => { e.stopPropagation?.(); router.push({ pathname: '/add-to-practice', params: { libraryId: libR.id } }); }} hitSlop={8}><MaterialIcons name="add" size={14} color={catColor} /><Text style={[styles.libPracticeBtnText, { color: catColor }]}>Practice</Text></Pressable>}
+              <Pressable
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 14,
+                  backgroundColor: catColor + '12',
+                  borderRadius: 18,
+                  borderWidth: 0.5,
+                  borderColor: catColor + '30',
+                  borderLeftWidth: 3,
+                  borderLeftColor: catColor + 'B0',
+                  padding: 16,
+                  marginBottom: 12,
+                  overflow: 'hidden' as const,
+                  position: 'relative' as const,
+                }}
+                onPress={() => router.push(`/library-ritual/${libR.id}`)}
+              >
+                {/* Background glow */}
+                <View style={{ position: 'absolute', top: -30, right: -20, width: 100, height: 100, borderRadius: 50, backgroundColor: catColor, opacity: 0.12 }} pointerEvents="none" />
+
+                {/* Category icon box */}
+                <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: catColor + '20', borderWidth: 0.5, borderColor: catColor + '40', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <MaterialIcons name={(cat?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap} size={24} color={catColor} />
                 </View>
-              </View>
-            </Pressable>
+
+                {/* Info */}
+                <View style={{ flex: 1, minWidth: 0 }}>
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#F5D5E0', marginBottom: 6, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' }} numberOfLines={1}>{libR.name}</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}>
+                    <View style={{ paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20, backgroundColor: catColor + '18', borderWidth: 0.5, borderColor: catColor + '40' }}>
+                      <Text style={{ fontSize: 11, fontWeight: '500', color: catColor }}>{scheduleLabels[libR.schedule] || libR.schedule}</Text>
+                    </View>
+                    {inPractice ? (
+                      <View style={{ paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20, backgroundColor: 'rgba(94,189,138,0.18)', borderWidth: 0.5, borderColor: 'rgba(94,189,138,0.5)' }}>
+                        <Text style={{ fontSize: 11, fontWeight: '500', color: '#7ED4A8' }}>{"\u2713 Active"}</Text>
+                      </View>
+                    ) : null}
+                  </View>
+                </View>
+
+                {/* Action */}
+                {inPractice ? (
+                  <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(94,189,138,0.15)', borderWidth: 0.5, borderColor: 'rgba(94,189,138,0.4)', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <MaterialIcons name="check" size={18} color="#7ED4A8" />
+                  </View>
+                ) : (
+                  <Pressable
+                    style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, backgroundColor: catColor + '18', borderWidth: 0.5, borderColor: catColor + '50', flexShrink: 0 }}
+                    onPress={(e) => { e.stopPropagation?.(); router.push({ pathname: '/add-to-practice', params: { libraryId: libR.id } }); }}
+                    hitSlop={8}
+                  >
+                    <Text style={{ fontSize: 12, fontWeight: '500', color: catColor }}>+ Practice</Text>
+                  </Pressable>
+                )}
+              </Pressable>
             </SwipeableRow>
           );
         })}
@@ -552,18 +593,7 @@ const styles = StyleSheet.create({
   libCatChipActive: { backgroundColor: theme.primary + '18', borderColor: theme.primary },
   libCatChipText: { fontSize: 12, fontWeight: '600', color: theme.textMuted },
   libCatChipTextActive: { color: theme.primary },
-  libCard: { backgroundColor: theme.surface, borderRadius: 16, marginBottom: 12, borderWidth: 1, borderColor: theme.border, borderLeftWidth: 3, borderLeftColor: theme.accent, borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' },
-  libCardBody: { flex: 1, padding: 14 },
-  libCardTopRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  libCatIconBox: { width: 46, height: 46, borderRadius: 13, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: 'transparent' },
-  libCardInfo: { flex: 1 },
-  libCardName: { fontSize: 15, fontWeight: '700', color: theme.textPrimary, marginBottom: 5, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
-  libCardTags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  libTag: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, borderWidth: 1, borderColor: 'transparent' },
-  libTagText: { fontSize: 10, fontWeight: '600' },
-  libActiveCheck: { width: 32, height: 32, borderRadius: 16, backgroundColor: theme.success + '15', borderWidth: 1, borderColor: theme.success + '30', alignItems: 'center', justifyContent: 'center' },
-  libPracticeBtn: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1.5 },
-  libPracticeBtnText: { fontSize: 11, fontWeight: '700' },
+
   libEmptyState: { alignItems: 'center', paddingVertical: 50 },
   libEmptyTitle: { fontSize: 17, fontWeight: '700', color: theme.textPrimary, marginTop: 12, marginBottom: 4 },
   libEmptyText: { fontSize: 13, color: theme.textSecondary, textAlign: 'center', lineHeight: 18, paddingHorizontal: 24, marginBottom: 16 },
