@@ -9,11 +9,12 @@ import { theme, getCurrentMoonPhase } from '../../constants/theme';
 import { getTodayPlanet } from '../../constants/planetaryData';
 import { getCurrentPlanetaryHour, formatHourTime, PlanetaryHourInfo } from '../../services/planetaryHours';
 import { useApp } from '../../contexts/AppContext';
-import { getComputedStatus, getDaysUntil, getUniqueRitualCounts } from '../../services/mockData';
+import { getComputedStatus, getDaysUntil } from '../../services/mockData';
 
 import StarField from '../../components/StarField';
 import MoonVisual from '../../components/MoonVisual';
 import PlanetVisual from '../../components/PlanetVisual';
+import PracticeOverview from '../../components/PracticeOverview';
 
 function getMoonPhaseIndex(): number {
   const now = new Date();
@@ -55,85 +56,7 @@ export default function DashboardScreen() {
       });
   }, [rituals]);
 
-  const VITAL_CATEGORIES = ['Money Work', 'Glamour', 'Unblocking', 'Protection'];
 
-  const { vitalStats, otherStats } = useMemo(() => {
-    const now = new Date();
-    const currentMonth = now.getMonth();
-    const currentYear = now.getFullYear();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-    const vitalCatIds = new Set<string>();
-    const vitalResults: { catId: string; name: string; icon: string; color: string; completedCount: number; totalCount: number; neglected: boolean }[] = [];
-
-    VITAL_CATEGORIES.forEach(vitalName => {
-      const catObj = categories.find(c => c.name === vitalName);
-      if (!catObj) {
-        vitalResults.push({ catId: '', name: vitalName, icon: 'auto-fix-high', color: theme.accent, completedCount: 0, totalCount: 0, neglected: true });
-        return;
-      }
-      vitalCatIds.add(catObj.id);
-      const catColor = categoryColors[catObj.id] || theme.accent;
-      const catRituals = rituals.filter(r => r.category === catObj.id);
-      const monthRituals = catRituals.filter(r => {
-        if (!r.scheduledDate) return false;
-        const d = new Date(r.scheduledDate);
-        return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
-      });
-      const totalCount = monthRituals.length;
-      const completedCount = monthRituals.filter(r => r.status === 'completed').length;
-
-      let neglected = false;
-      if (completedCount === 0) {
-        neglected = true;
-      } else {
-        const performedDates = catRituals
-          .filter(r => r.lastPerformed)
-          .map(r => new Date(r.lastPerformed!).getTime());
-        if (performedDates.length === 0) {
-          neglected = true;
-        } else {
-          const mostRecent = new Date(Math.max(...performedDates));
-          neglected = mostRecent < thirtyDaysAgo;
-        }
-      }
-      vitalResults.push({ catId: catObj.id, name: catObj.name, icon: catObj.icon || 'auto-fix-high', color: catColor, completedCount, totalCount, neglected });
-    });
-
-    // Other categories (non-vital with rituals)
-    const otherCatMap = new Map<string, { total: number; completed: number; color: string; name: string; icon: string }>();
-    categories.forEach(cat => {
-      if (vitalCatIds.has(cat.id)) return;
-      otherCatMap.set(cat.id, { total: 0, completed: 0, color: categoryColors[cat.id] || theme.accent, name: cat.name, icon: cat.icon || 'auto-fix-high' });
-    });
-    const catGroups = new Map<string, Map<string, typeof rituals>>();
-    rituals.forEach(r => {
-      if (vitalCatIds.has(r.category)) return;
-      if (!catGroups.has(r.category)) catGroups.set(r.category, new Map());
-      const groupMap = catGroups.get(r.category)!;
-      const key = r.seriesId || r.groupId || r.id;
-      if (!groupMap.has(key)) groupMap.set(key, []);
-      groupMap.get(key)!.push(r);
-    });
-    catGroups.forEach((groupMap, catId) => {
-      const entry = otherCatMap.get(catId);
-      if (!entry) return;
-      groupMap.forEach(group => {
-        entry.total++;
-        const allCompleted = group.every(r => getComputedStatus(r) === 'completed');
-        if (allCompleted) entry.completed++;
-      });
-    });
-    const otherResults = Array.from(otherCatMap.values()).filter(c => c.total > 0);
-    return { vitalStats: vitalResults, otherStats: otherResults };
-  }, [rituals, categories, categoryColors]);
-
-  const uniqueCounts = useMemo(() => getUniqueRitualCounts(rituals), [rituals]);
-  const totalRituals = uniqueCounts.total;
-  const completedCount = uniqueCounts.completed;
-  const overallPct = totalRituals > 0 ? Math.round((completedCount / totalRituals) * 100) : 0;
-  const manifestedCount = manifestations.filter(m => m.status === 'manifested').length;
-  const signsCount = manifestations.filter(m => m.status === 'partial').length;
 
   const recentEntries = useMemo(() => {
     const entries: { id: string; ritualName: string; ritualId: string; category: string; date: string; notes: string; mood: string }[] = [];
@@ -297,109 +220,7 @@ export default function DashboardScreen() {
           ) : null}
 
           {/* ═══ PRACTICE OVERVIEW ═══ */}
-          <View style={styles.overviewCard}>
-            <View style={styles.overviewHeader}>
-              <Text style={styles.overviewTitle}>Practice Overview</Text>
-              <View style={styles.overviewPctChip}>
-                <Text style={styles.overviewPctText}>{overallPct}%</Text>
-              </View>
-            </View>
-
-            {/* Overall progress bar */}
-            <View style={styles.overallBarBg}>
-              <View style={[styles.overallBarFill, { width: `${Math.max(overallPct, 2)}%` }]}>
-                <LinearGradient
-                  colors={[theme.primaryDark, theme.primary, '#E0A8C0']}
-                  start={{ x: 0, y: 0.5 }}
-                  end={{ x: 1, y: 0.5 }}
-                  style={{ flex: 1, borderRadius: 4 }}
-                />
-              </View>
-            </View>
-            <View style={styles.overallBarLabels}>
-              <Text style={styles.overallBarLabel}>{completedCount} completed</Text>
-              <Text style={styles.overallBarLabel}>{totalRituals} total</Text>
-            </View>
-
-            {/* Vital category bars */}
-            {vitalStats.map((cat, i) => {
-              const pct = cat.totalCount > 0 ? Math.round((cat.completedCount / cat.totalCount) * 100) : 0;
-              const displayColor = cat.neglected ? theme.warning : cat.color;
-              const isEmpty = cat.totalCount === 0;
-              return (
-                <View key={`vital-${i}`} style={styles.catProgressRow}>
-                  <View style={styles.catProgressLabel}>
-                    <MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={14} color={displayColor} />
-                    <Text style={[styles.catProgressName, cat.neglected ? { color: theme.warning } : null]} numberOfLines={1}>{cat.name}</Text>
-                    {cat.neglected && cat.totalCount > 0 ? (
-                      <View style={styles.neglectedBadge}>
-                        <Text style={styles.neglectedBadgeText}>30d+</Text>
-                      </View>
-                    ) : null}
-                    {isEmpty ? (
-                      <Text style={[styles.catProgressCount, { color: theme.textMuted, fontStyle: 'italic' }]}>0 scheduled</Text>
-                    ) : (
-                      <Text style={[styles.catProgressCount, cat.neglected ? { color: theme.warning } : null]}>{cat.completedCount}/{cat.totalCount}</Text>
-                    )}
-                  </View>
-                  {isEmpty ? (
-                    <View style={styles.catBarEmpty} />
-                  ) : (
-                    <View style={styles.catBarBg}>
-                      <View style={[styles.catBarFill, { width: `${Math.max(pct, 2)}%`, backgroundColor: displayColor }]} />
-                    </View>
-                  )}
-                </View>
-              );
-            })}
-
-            {/* Other practice categories */}
-            {otherStats.length > 0 ? (
-              <>
-                <View style={styles.otherDivider}>
-                  <View style={styles.otherDividerLine} />
-                  <Text style={styles.otherDividerText}>Other Practice</Text>
-                  <View style={styles.otherDividerLine} />
-                </View>
-                {otherStats.map((cat, i) => {
-                  const pct = cat.total > 0 ? Math.round((cat.completed / cat.total) * 100) : 0;
-                  return (
-                    <View key={`other-${i}`} style={styles.catProgressRow}>
-                      <View style={styles.catProgressLabel}>
-                        <MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={14} color={cat.color} />
-                        <Text style={styles.catProgressName} numberOfLines={1}>{cat.name}</Text>
-                        <Text style={styles.catProgressCount}>{cat.completed}/{cat.total}</Text>
-                      </View>
-                      <View style={styles.catBarBg}>
-                        <View style={[styles.catBarFill, { width: `${Math.max(pct, 2)}%`, backgroundColor: cat.color }]} />
-                      </View>
-                    </View>
-                  );
-                })}
-              </>
-            ) : null}
-
-            {/* Manifestation mini-stats */}
-            <View style={styles.manifRow}>
-              <View style={styles.manifStat}>
-                <MaterialIcons name="star" size={14} color={theme.success} />
-                <Text style={[styles.manifStatValue, { color: theme.success }]}>{manifestedCount}</Text>
-                <Text style={styles.manifStatLabel}>Manifested</Text>
-              </View>
-              <View style={styles.manifDivider} />
-              <View style={styles.manifStat}>
-                <MaterialIcons name="eco" size={14} color="#4EA8DE" />
-                <Text style={[styles.manifStatValue, { color: '#4EA8DE' }]}>{signsCount}</Text>
-                <Text style={styles.manifStatLabel}>Signs</Text>
-              </View>
-              <View style={styles.manifDivider} />
-              <View style={styles.manifStat}>
-                <MaterialIcons name="hourglass-top" size={14} color={theme.primary} />
-                <Text style={[styles.manifStatValue, { color: theme.primary }]}>{manifestations.filter(m => m.status === 'pending').length}</Text>
-                <Text style={styles.manifStatLabel}>Awaiting</Text>
-              </View>
-            </View>
-          </View>
+          <PracticeOverview />
 
           {/* ═══ RECENT ACTIVITY ═══ */}
           {recentEntries.length > 0 ? (
@@ -521,46 +342,7 @@ const styles = StyleSheet.create({
   },
   alertDateText: { fontSize: 10, fontWeight: '700', color: theme.error },
 
-  // ═══ Practice Overview ═══
-  overviewCard: {
-    backgroundColor: theme.surface, borderRadius: theme.radius.lg,
-    padding: 16, marginBottom: 20, borderWidth: 1, borderColor: theme.border, borderTopColor: 'rgba(255,255,255,0.15)',
-    overflow: 'hidden',
-  },
-  overviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  overviewTitle: { fontSize: 16, fontWeight: '700', color: theme.textPrimary },
-  overviewPctChip: { backgroundColor: theme.primary + '18', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10 },
-  overviewPctText: { fontSize: 13, fontWeight: '700', color: theme.primary },
 
-  // Overall bar
-  overallBarBg: { height: 8, backgroundColor: 'rgba(255,255,255,0.10)', borderRadius: 4, marginBottom: 4, overflow: 'hidden' },
-  overallBarFill: { height: 8, borderRadius: 4, overflow: 'hidden' },
-  overallBarLabels: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
-  overallBarLabel: { fontSize: 10, fontWeight: '500', color: theme.textMuted },
-
-  // Category bars
-  catProgressRow: { marginBottom: 10 },
-  catProgressLabel: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  catProgressName: { flex: 1, fontSize: 12, fontWeight: '600', color: theme.textSecondary },
-  catProgressCount: { fontSize: 11, fontWeight: '600', color: theme.textMuted },
-  catBarBg: { height: 5, backgroundColor: 'rgba(255,255,255,0.10)', borderRadius: 3, overflow: 'hidden' },
-  catBarFill: { height: 5, borderRadius: 3 },
-  catBarEmpty: { height: 5, borderRadius: 3, borderWidth: 1, borderStyle: 'dashed', borderColor: theme.textMuted + '40' },
-  neglectedBadge: { backgroundColor: theme.warning + '20', paddingHorizontal: 6, paddingVertical: 1, borderRadius: 6, marginLeft: 4 },
-  neglectedBadgeText: { fontSize: 9, fontWeight: '700', color: theme.warning },
-  otherDivider: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12, marginBottom: 10 },
-  otherDividerLine: { flex: 1, height: 1, backgroundColor: theme.border },
-  otherDividerText: { fontSize: 9, fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.8 },
-
-  // Manifestation mini-stats
-  manifRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
-    marginTop: 14, paddingTop: 14, borderTopWidth: 1, borderTopColor: theme.border,
-  },
-  manifStat: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  manifStatValue: { fontSize: 15, fontWeight: '700' },
-  manifStatLabel: { fontSize: 10, fontWeight: '500', color: theme.textMuted },
-  manifDivider: { width: 1, height: 18, backgroundColor: theme.border },
 
   // ═══ Sections ═══
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },

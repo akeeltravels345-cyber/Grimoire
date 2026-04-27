@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../constants/theme';
 import { useApp } from '../contexts/AppContext';
@@ -26,8 +26,12 @@ export default function AddRitualScreen() {
   const { addRitual, addLibraryRitual, libraryRituals, categories, categoryColors, deleteCategory } = useApp();
   const { showAlert } = useAlert();
 
+  const params = useLocalSearchParams<{ category?: string }>();
+
   const [name, setName] = useState('');
-  const [category, setCategory] = useState<string>(categories[0]?.id || '');
+  const [category, setCategory] = useState<string>(
+    params.category && categories.some(c => c.id === params.category) ? params.category : (categories[0]?.id || '')
+  );
   const [description, setDescription] = useState('');
   const [intention, setIntention] = useState('');
   const [tangibleOutcome, setTangibleOutcome] = useState('');
