@@ -110,7 +110,6 @@ export default function JournalScreen() {
   };
 
   const handleLongPressType = (typeId: string) => {
-    if (DEFAULT_TYPE_IDS.includes(typeId)) return;
     const typeObj = journalEntryTypes.find(t => t.id === typeId);
     showAlert(
       'Delete Type?',
@@ -328,7 +327,7 @@ export default function JournalScreen() {
                       key={et.id}
                       style={[styles.typeChip, newType === et.id && styles.typeChipActive]}
                       onPress={() => { setNewType(et.id); Haptics.selectionAsync(); }}
-                      onLongPress={isCustom ? () => handleLongPressType(et.id) : undefined}
+                      onLongPress={() => handleLongPressType(et.id)}
                       delayLongPress={500}
                     >
                       <Text style={{ fontSize: 14 }}>{et.icon}</Text>
