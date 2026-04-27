@@ -255,7 +255,7 @@ function CategoryRow({ stat, index, isCore }: { stat: CategoryStat; index: numbe
   }));
 
   const lastText = stat.lastPerformedDaysAgo === null
-    ? '\u2014'
+    ? '—'
     : stat.lastPerformedDaysAgo === 0
       ? 'Today'
       : `${stat.lastPerformedDaysAgo}d ago`;
@@ -297,7 +297,7 @@ function CategoryRow({ stat, index, isCore }: { stat: CategoryStat; index: numbe
             </View>
             <View style={s.catRowRight}>
               {isEmpty ? (
-                <Text style={s.catRowEmptyText}>\u2014</Text>
+                <Text style={s.catRowEmptyText}> — </Text>
               ) : (
                 <Text style={[s.catRowCount, stat.neglected ? { color: theme.warning } : { color: stat.color }]}>
                   {stat.completedCount}/{stat.totalCount}
