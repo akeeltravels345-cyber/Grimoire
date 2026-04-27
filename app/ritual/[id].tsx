@@ -342,6 +342,22 @@ for (let i = 0; i < 90; i++) {
           </View>
         </View>
 
+         {/* Intention */}
+        {isEditing ? (
+          <View style={styles.editSection}>
+            <Text style={styles.editFieldLabel}>Intention</Text>
+            <TextInput style={[styles.editInput, styles.editTextArea]} value={editIntention} onChangeText={setEditIntention} placeholder="What is the purpose of this ritual?" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
+          </View>
+        ) : (
+          <View style={styles.intentionCard}>
+            <MaterialIcons name="auto-awesome" size={18} color={theme.primary} />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.intentionLabel}>INTENTION</Text>
+              <Text style={styles.intentionText}>{ritual.intention}</Text>
+            </View>
+          </View>
+        )}
+
         {/* Tangible Outcome */}
         {isEditing ? (
           <View style={styles.editSection}>
@@ -388,21 +404,6 @@ for (let i = 0; i < 90; i++) {
           </View>
         )}
 
-        {/* Intention */}
-        {isEditing ? (
-          <View style={styles.editSection}>
-            <Text style={styles.editFieldLabel}>Intention</Text>
-            <TextInput style={[styles.editInput, styles.editTextArea]} value={editIntention} onChangeText={setEditIntention} placeholder="What is the purpose of this ritual?" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
-          </View>
-        ) : (
-          <View style={styles.intentionCard}>
-            <MaterialIcons name="auto-awesome" size={18} color={theme.primary} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.intentionLabel}>INTENTION</Text>
-              <Text style={styles.intentionText}>{ritual.intention}</Text>
-            </View>
-          </View>
-        )}
 
         {/* Ingredients */}
 {isEditing ? (
