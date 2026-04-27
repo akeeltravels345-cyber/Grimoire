@@ -9,12 +9,14 @@ import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../constants/theme';
 import { useApp } from '../contexts/AppContext';
+import { useAlert } from '@/template';
 import GradientScreen from '../components/GradientScreen';
 
 export default function AddLibraryRitualScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { addLibraryRitual, categories, categoryColors } = useApp();
+  const { addLibraryRitual, categories, categoryColors, deleteCategory } = useApp();
+  const { showAlert } = useAlert();
 
   const [name, setName] = useState('');
   const [category, setCategory] = useState<string>(categories[0]?.id || '');
@@ -77,6 +79,25 @@ export default function AddLibraryRitualScreen() {
                     category === cat.id && { backgroundColor: catColor + '20', borderColor: catColor },
                   ]}
                   onPress={() => { setCategory(cat.id); Haptics.selectionAsync(); }}
+                  onLongPress={() => {
+                    showAlert(
+                      'Delete Category?',
+                      `Remove "${cat.name}" from your categories? This cannot be undone.`,
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        {
+                          text: 'Delete',
+                          style: 'destructive',
+                          onPress: () => {
+                            deleteCategory(cat.id);
+                            if (category === cat.id) setCategory(categories[0]?.id || '');
+                            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+                          },
+                        },
+                      ]
+                    );
+                  }}
+                  delayLongPress={500}
                 >
                   <MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={22} color={category === cat.id ? catColor : theme.textMuted} />
                   <Text style={[styles.categoryOptionText, category === cat.id && { color: catColor }]}>{cat.name}</Text>
