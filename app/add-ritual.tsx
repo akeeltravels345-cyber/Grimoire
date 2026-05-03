@@ -20,7 +20,7 @@ const scheduleOptions = [
   { id: 'weekly', label: 'Weekly', icon: 'date-range' },
   { id: 'monthly', label: 'Monthly', icon: 'calendar-month' },
   { id: 'moon_phase', label: 'Moon Phase', icon: 'nightlight-round' },
-  { id: 'as_needed', label: 'As Needed', icon: 'more-time' },
+  { id: 'as_needed', label: 'One Time', icon: 'more-time' },
 ] as const;
 
 export default function AddRitualScreen() {
