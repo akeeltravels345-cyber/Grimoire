@@ -1,11 +1,12 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, KeyboardAvoidingView, Platform, Modal } from 'react-native';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, KeyboardAvoidingView, Platform, Modal, Animated as RNAnimated } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
-import { theme } from '../../constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { theme, getCurrentMoonPhase } from '../../constants/theme';
 import GradientScreen from '../../components/GradientScreen';
 import { useApp } from '../../contexts/AppContext';
 import { useAlert } from '@/template';
@@ -350,6 +351,9 @@ export default function JournalScreen() {
         ) : null}
       </View>
 
+      {/* ═══ IMMERSIVE ANIMATED HEADER ═══ */}
+      <JournalAnimatedHeader entryCount={allItems.length} />
+
       {/* Summary Cards */}
       <View style={styles.summaryStripWrap}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.summaryStripContent}>
@@ -539,6 +543,317 @@ export default function JournalScreen() {
     </GradientScreen>
   );
 }
+
+// ═══════════════════════════════════════════
+// ANIMATED HEADER COMPONENT
+// ═══════════════════════════════════════════
+
+interface StarObj {
+  x: number;
+  y: number;
+  size: number;
+  opacity: RNAnimated.Value;
+  color: string;
+}
+
+interface ParticleObj {
+  x: number;
+  size: number;
+  opacity: number;
+  translateY: RNAnimated.Value;
+}
+
+function JournalAnimatedHeader({ entryCount }: { entryCount: number }) {
+  const moonPhase = getCurrentMoonPhase();
+  const now = new Date();
+  const monthYear = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const serifFont = Platform.OS === 'ios' ? 'Georgia' : 'serif';
+
+  // Moon phase index for shadow calculation
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const day = now.getDate();
+  const c = Math.floor(365.25 * year);
+  const e = Math.floor(30.6 * month);
+  const jd = c + e + day - 694039.09;
+  const phase = jd / 29.53058867;
+  const phaseIndex = Math.round((phase - Math.floor(phase)) * 8) % 8;
+
+  // Generate stars
+  const starsRef = useRef<StarObj[]>([]);
+  if (starsRef.current.length === 0) {
+    for (let i = 0; i < 60; i++) {
+      const size = 0.8 + Math.random() * 2.2;
+      starsRef.current.push({
+        x: Math.random() * 100,
+        y: Math.random() * 100,
+        size,
+        opacity: new RNAnimated.Value(0),
+        color: size > 2 ? '#F5D5E0' : size > 1.4 ? '#E8F0FF' : '#FFFFFF',
+      });
+    }
+  }
+
+  // Generate particles
+  const particlesRef = useRef<ParticleObj[]>([]);
+  if (particlesRef.current.length === 0) {
+    for (let i = 0; i < 8; i++) {
+      particlesRef.current.push({
+        x: 5 + Math.random() * 90,
+        size: 4 + Math.random() * 4,
+        opacity: 0.08 + Math.random() * 0.07,
+        translateY: new RNAnimated.Value(0),
+      });
+    }
+  }
+
+  useEffect(() => {
+    // Animate stars
+    starsRef.current.forEach((star) => {
+      const duration = 1200 + Math.random() * 2400;
+      const delay = Math.random() * 3000;
+      star.opacity.setValue(0.05 + Math.random() * 0.2);
+      RNAnimated.loop(
+        RNAnimated.sequence([
+          RNAnimated.timing(star.opacity, {
+            toValue: 0.6 + Math.random() * 0.4,
+            duration,
+            delay,
+            useNativeDriver: true,
+          }),
+          RNAnimated.timing(star.opacity, {
+            toValue: 0.05 + Math.random() * 0.15,
+            duration: duration + 400,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    });
+
+    // Animate particles
+    particlesRef.current.forEach((p) => {
+      const dur = 8000 + Math.random() * 4000;
+      const delay = Math.random() * 5000;
+      RNAnimated.loop(
+        RNAnimated.sequence([
+          RNAnimated.timing(p.translateY, {
+            toValue: -180,
+            duration: dur,
+            delay,
+            useNativeDriver: true,
+          }),
+          RNAnimated.timing(p.translateY, {
+            toValue: 0,
+            duration: 0,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    });
+  }, []);
+
+  // Moon shadow offset based on phase (0=new, 4=full)
+  const getMoonShadow = () => {
+    // phaseIndex: 0=new(all dark), 1=wax crescent, 2=first quarter, 3=wax gib, 4=full(no shadow), 5=wan gib, 6=last quarter, 7=wan crescent
+    switch (phaseIndex) {
+      case 0: return { left: 0, width: 70 }; // fully dark
+      case 1: return { left: 0, width: 52 };
+      case 2: return { left: 0, width: 35 };
+      case 3: return { left: 0, width: 18 };
+      case 4: return { left: 0, width: 0 }; // full
+      case 5: return { right: 0, width: 18 };
+      case 6: return { right: 0, width: 35 };
+      case 7: return { right: 0, width: 52 };
+      default: return { left: 0, width: 35 };
+    }
+  };
+  const shadow = getMoonShadow();
+
+  const energyWords = moonPhase.energy.split(',').map(s => s.trim()).join(' \u00B7 ');
+
+  return (
+    <View style={hStyles.container}>
+      {/* Base gradient */}
+      <LinearGradient
+        colors={['#0C1A28', '#162038', '#1A2744', '#0F2030']}
+        start={{ x: 0.2, y: 0 }}
+        end={{ x: 0.8, y: 1 }}
+        style={hStyles.bgGradient}
+      />
+      {/* Atmospheric overlay */}
+      <LinearGradient
+        colors={['rgba(20,80,60,0.4)', 'transparent', 'rgba(30,20,80,0.3)']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={hStyles.bgGradient}
+      />
+
+      {/* Stars */}
+      {starsRef.current.map((star, i) => (
+        <RNAnimated.View
+          key={`s${i}`}
+          style={{
+            position: 'absolute',
+            left: `${star.x}%` as any,
+            top: `${star.y}%` as any,
+            width: star.size,
+            height: star.size,
+            borderRadius: star.size / 2,
+            backgroundColor: star.color,
+            opacity: star.opacity,
+          }}
+        />
+      ))}
+
+      {/* Drifting particles */}
+      {particlesRef.current.map((p, i) => (
+        <RNAnimated.View
+          key={`p${i}`}
+          style={{
+            position: 'absolute',
+            left: `${p.x}%` as any,
+            bottom: 10,
+            width: p.size,
+            height: p.size,
+            borderRadius: p.size / 2,
+            backgroundColor: `rgba(245,213,224,${p.opacity})`,
+            transform: [{ translateY: p.translateY }],
+          }}
+        />
+      ))}
+
+      {/* Content row: moon + text */}
+      <View style={hStyles.contentRow}>
+        {/* Moon */}
+        <View style={hStyles.moonOuter}>
+          <LinearGradient
+            colors={['#F5D5E0', '#E0C8F0']}
+            style={hStyles.moonCircle}
+            start={{ x: 0.3, y: 0 }}
+            end={{ x: 0.7, y: 1 }}
+          />
+          {/* Shadow overlay */}
+          {shadow.width > 0 ? (
+            <View
+              style={[
+                hStyles.moonShadow,
+                { width: shadow.width },
+                'left' in shadow ? { left: 0 } : { right: 0 },
+              ]}
+            />
+          ) : null}
+        </View>
+
+        {/* Text */}
+        <View style={hStyles.textCol}>
+          <Text style={[hStyles.monthText, { fontFamily: serifFont }]}>{monthYear}</Text>
+          <Text style={[hStyles.phaseText, { fontFamily: serifFont }]}>{moonPhase.name}</Text>
+          <Text style={hStyles.energyText}>{energyWords}</Text>
+          <View style={hStyles.textDivider} />
+          <Text style={hStyles.countText}>{entryCount} entries recorded</Text>
+        </View>
+      </View>
+
+      {/* Bottom fade */}
+      <LinearGradient
+        colors={['transparent', '#0F2030']}
+        style={hStyles.bottomFade}
+      />
+    </View>
+  );
+}
+
+const hStyles = StyleSheet.create({
+  container: {
+    height: 180,
+    position: 'relative',
+    overflow: 'hidden',
+    marginBottom: 8,
+    borderRadius: 16,
+    marginHorizontal: 16,
+  },
+  bgGradient: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+  },
+  contentRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    paddingTop: 16,
+    paddingBottom: 40,
+    gap: 20,
+    zIndex: 2,
+  },
+  moonOuter: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    shadowColor: '#F5D5E0',
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 0 },
+    elevation: 12,
+  },
+  moonCircle: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+  },
+  moonShadow: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    backgroundColor: '#0C1A28',
+    borderRadius: 35,
+    opacity: 0.85,
+  },
+  textCol: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  monthText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#F5D5E0',
+    marginBottom: 3,
+  },
+  phaseText: {
+    fontSize: 14,
+    fontStyle: 'italic',
+    color: '#C4B0D8',
+    marginBottom: 3,
+  },
+  energyText: {
+    fontSize: 11,
+    color: '#8878A8',
+    fontWeight: '500',
+    marginBottom: 8,
+  },
+  textDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.10)',
+    marginBottom: 8,
+    width: '80%',
+  },
+  countText: {
+    fontSize: 11,
+    color: '#C4B0D8',
+    fontWeight: '600',
+  },
+  bottomFade: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 40,
+    zIndex: 3,
+  },
+});
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 },
