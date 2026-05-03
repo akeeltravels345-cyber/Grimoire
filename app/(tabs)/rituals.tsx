@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, Dimensions, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, ScrollView, FlatList, Pressable, StyleSheet, Dimensions, Modal, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -394,72 +394,77 @@ export default function RitualsScreen() {
           <Pressable key={cat.id} style={[styles.libCatChip, isActive ? { backgroundColor: catColor + '25', borderColor: catColor + '60' } : { backgroundColor: catColor + '18', borderColor: catColor + '35', opacity: 0.7 }]} onPress={() => { setLibCategory(isActive ? 'all' : cat.id); Haptics.selectionAsync(); }}><View style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}><MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={14} color={catColor} /><Text style={[styles.libCatChipText, { color: catColor }]}>{cat.name}</Text></View></Pressable>
         ); })}
       </ScrollView></View>
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 80 }} showsVerticalScrollIndicator={false}>
-        {filteredLibrary.length === 0 ? (
-          <View style={styles.libEmptyState}><MaterialIcons name="auto-stories" size={52} color={theme.textMuted} /><Text style={styles.libEmptyTitle}>{libSearch.trim() || libCategory !== 'all' ? 'No spells found' : 'Your grimoire is empty'}</Text><Text style={styles.libEmptyText}>{libSearch.trim() || libCategory !== 'all' ? 'Try adjusting your search or filter' : 'Add your first spell to build your personal grimoire'}</Text>{!libSearch.trim() && libCategory === 'all' ? <Pressable style={styles.libEmptyCta} onPress={() => router.push('/add-library-ritual')}><MaterialIcons name="add" size={18} color={theme.background} /><Text style={styles.libEmptyCtaText}>Add Spell</Text></Pressable> : null}</View>
-        ) : filteredLibrary.map(libR => {
+      <FlatList
+        data={filteredLibrary}
+        numColumns={2}
+        keyExtractor={item => item.id}
+        contentContainerStyle={{ paddingHorizontal: 12, paddingBottom: insets.bottom + 80 }}
+        columnWrapperStyle={{ gap: 10, marginBottom: 10 }}
+        showsVerticalScrollIndicator={false}
+        renderItem={({ item: libR }) => {
           const cat = resolveCategory(libR.category, categories);
           const catColor = resolveCategoryColor(libR.category, categoryColors, categories);
           const inPractice = libraryInPractice.has(libR.id);
           return (
-            <SwipeableRow key={libR.id} onDelete={() => { showAlert('Remove from Library?', `Remove "${libR.name}" from your grimoire?`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: () => { deleteLibraryRitual(libR.id); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } }]); }}>
+            <SwipeableRow onDelete={() => { showAlert('Remove from Library?', `Remove "${libR.name}" from your grimoire?`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: () => { deleteLibraryRitual(libR.id); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } }]); }}>
               <Pressable
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 14,
-                  backgroundColor: 'rgba(255,255,255,0.12)',
-                  borderRadius: 18,
+                  flex: 1,
+                  aspectRatio: 1,
+                  backgroundColor: 'rgba(255,255,255,0.06)',
+                  borderRadius: 16,
                   borderWidth: 0.5,
-                  borderColor: 'rgba(255,255,255,0.18)',
-                  borderLeftWidth: 3,
-                  borderLeftColor: catColor + 'B0',
-                  padding: 16,
-                  marginBottom: 12,
-                  overflow: 'hidden' as const,
-                  position: 'relative' as const,
+                  borderColor: 'rgba(255,255,255,0.10)',
+                  borderTopWidth: 3,
+                  borderTopColor: catColor,
+                  padding: 14,
+                  justifyContent: 'space-between',
                 }}
                 onPress={() => router.push(`/library-ritual/${libR.id}`)}
               >
-                {/* Category icon box */}
-                <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.14)', borderWidth: 0.5, borderColor: catColor + '60', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <MaterialIcons name={(cat?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap} size={24} color={catColor} />
+                {/* Top row — icon and action */}
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: catColor + '20', borderWidth: 0.5, borderColor: catColor + '50', alignItems: 'center', justifyContent: 'center' }}>
+                    <MaterialIcons name={(cat?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap} size={20} color={catColor} />
+                  </View>
+                  {inPractice ? (
+                    <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: 'rgba(94,189,138,0.15)', borderWidth: 0.5, borderColor: 'rgba(94,189,138,0.4)', alignItems: 'center', justifyContent: 'center' }}>
+                      <MaterialIcons name="check" size={14} color="#7ED4A8" />
+                    </View>
+                  ) : null}
                 </View>
 
-                {/* Info */}
-                <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text style={{ fontSize: 16, fontWeight: '600', color: '#F5D5E0', marginBottom: 6, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' }} numberOfLines={1}>{libR.name}</Text>
-                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 5 }}>
-                    <View style={{ paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20, backgroundColor: catColor + '18', borderWidth: 0.5, borderColor: catColor + '40' }}>
-                      <Text style={{ fontSize: 11, fontWeight: '500', color: catColor }}>{scheduleLabels[libR.schedule] || libR.schedule}</Text>
+                {/* Ritual name */}
+                <View style={{ flex: 1, justifyContent: 'flex-end', paddingTop: 8 }}>
+                  <Text style={{ fontSize: 14, fontWeight: '600', color: '#F5D5E0', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', lineHeight: 20, marginBottom: 6 }} numberOfLines={3}>{libR.name}</Text>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
+                    <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20, backgroundColor: catColor + '18', borderWidth: 0.5, borderColor: catColor + '40' }}>
+                      <Text style={{ fontSize: 10, fontWeight: '500', color: catColor }}>{scheduleLabels[libR.schedule] || libR.schedule}</Text>
                     </View>
-                    {inPractice ? (
-                      <View style={{ paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20, backgroundColor: 'rgba(94,189,138,0.18)', borderWidth: 0.5, borderColor: 'rgba(94,189,138,0.5)' }}>
-                        <Text style={{ fontSize: 11, fontWeight: '500', color: '#7ED4A8' }}>{"Active"}</Text>
-                      </View>
+                    {!inPractice ? (
+                      <Pressable
+                        style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20, backgroundColor: catColor + '12', borderWidth: 0.5, borderColor: catColor + '50' }}
+                        onPress={(e) => { e.stopPropagation?.(); router.push({ pathname: '/add-to-practice', params: { libraryId: libR.id } }); }}
+                        hitSlop={8}
+                      >
+                        <Text style={{ fontSize: 10, fontWeight: '600', color: catColor }}>+ Practice</Text>
+                      </Pressable>
                     ) : null}
                   </View>
                 </View>
-
-                {/* Action */}
-                {inPractice ? (
-                  <View style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: 'rgba(94,189,138,0.15)', borderWidth: 0.5, borderColor: 'rgba(94,189,138,0.4)', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <MaterialIcons name="check" size={18} color="#7ED4A8" />
-                  </View>
-                ) : (
-                  <Pressable
-                    style={{ paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, backgroundColor: catColor + '18', borderWidth: 0.5, borderColor: catColor + '50', flexShrink: 0 }}
-                    onPress={(e) => { e.stopPropagation?.(); router.push({ pathname: '/add-to-practice', params: { libraryId: libR.id } }); }}
-                    hitSlop={8}
-                  >
-                    <Text style={{ fontSize: 12, fontWeight: '500', color: catColor }}>+ Practice</Text>
-                  </Pressable>
-                )}
               </Pressable>
             </SwipeableRow>
           );
-        })}
-      </ScrollView>
+        }}
+        ListEmptyComponent={
+          <View style={styles.libEmptyState}>
+            <MaterialIcons name="auto-stories" size={52} color={theme.textMuted} />
+            <Text style={styles.libEmptyTitle}>{libSearch.trim() || libCategory !== 'all' ? 'No spells found' : 'Your grimoire is empty'}</Text>
+            <Text style={styles.libEmptyText}>{libSearch.trim() || libCategory !== 'all' ? 'Try adjusting your search or filter' : 'Add your first spell to build your personal grimoire'}</Text>
+            {!libSearch.trim() && libCategory === 'all' ? <Pressable style={styles.libEmptyCta} onPress={() => router.push('/add-library-ritual')}><MaterialIcons name="add" size={18} color={theme.background} /><Text style={styles.libEmptyCtaText}>Add Spell</Text></Pressable> : null}
+          </View>
+        }
+      />
     </View>
   );
 
