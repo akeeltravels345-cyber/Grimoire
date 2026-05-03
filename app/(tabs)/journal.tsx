@@ -20,6 +20,33 @@ const SPIRITUAL_EMOJIS = [
 
 const DEFAULT_TYPE_IDS = ['reflection', 'dream', 'encounter', 'insight'];
 
+const MOOD_COLORS: Record<string, string> = {
+  Connected: '#6667AB',
+  Empowered: '#7B337E',
+  Peaceful: '#5EBD8A',
+  Grateful: '#C9A84C',
+  Reflective: '#4EA8DE',
+  Contemplative: '#8B5CF6',
+  Hopeful: '#5EBDAA',
+  Grounded: '#5EBD8A',
+  Centered: '#6667AB',
+  Elevated: '#C9847A',
+  Determined: '#E85D6F',
+  Mystified: '#7C5CBF',
+  Aware: '#4EA8DE',
+  Radiant: '#C9A84C',
+  Joyful: '#F59E0B',
+};
+
+const TYPE_COLORS: Record<string, string> = {
+  reflection: '#5EBDAA',
+  dream: '#6667AB',
+  encounter: '#C9847A',
+  insight: '#C9A84C',
+  reminder: '#E85D6F',
+};
+const getTypeColor = (type?: string) => TYPE_COLORS[type || ''] || theme.accent;
+
 type JournalTab = 'all' | 'rituals' | 'personal';
 
 export default function JournalScreen() {
@@ -262,16 +289,17 @@ export default function JournalScreen() {
   const renderEntryCard = (item: TimelineItem) => {
     const catColor = item.category ? (categoryColors[item.category] || theme.accent) : theme.accent;
     const isPersonal = item.kind === 'personal';
+    const moodColor = MOOD_COLORS[item.mood || ''] || theme.accent;
 
     const card = (
-      <Pressable style={styles.entryCard}
+      <Pressable style={[styles.entryCard, { borderLeftWidth: 3, borderLeftColor: isPersonal ? getTypeColor(item.type) : catColor }]}
         onPress={item.kind === 'ritual' && item.ritualId ? () => router.push(`/ritual/${item.ritualId}`) : undefined}>
         <View style={styles.entryTop}>
           {item.kind === 'ritual' ? (
-            <View style={[styles.categoryDot, { backgroundColor: catColor }]} />
+            <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: catColor, shadowColor: catColor, shadowOpacity: 0.6, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } }} />
           ) : (
-            <View style={[styles.personalIcon, { backgroundColor: theme.accent + '20' }]}>
-              <Text style={{ fontSize: 14 }}>{getTypeIcon(item.type)}</Text>
+            <View style={{ width: 30, height: 30, borderRadius: 10, backgroundColor: getTypeColor(item.type) + '20', borderWidth: 0.5, borderColor: getTypeColor(item.type) + '40', alignItems: 'center', justifyContent: 'center' }}>
+              <Text style={{ fontSize: 16 }}>{getTypeIcon(item.type)}</Text>
             </View>
           )}
           <View style={{ flex: 1 }}>
@@ -281,7 +309,9 @@ export default function JournalScreen() {
             ) : null}
           </View>
           {item.mood ? (
-            <View style={styles.moodBadge}><Text style={styles.moodBadgeText}>{item.mood}</Text></View>
+            <View style={{ backgroundColor: moodColor + '20', borderWidth: 0.5, borderColor: moodColor + '50', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 }}>
+              <Text style={{ fontSize: 11, fontWeight: '600', color: moodColor }}>{item.mood}</Text>
+            </View>
           ) : null}
           {isPersonal ? (
             <Pressable style={styles.editEntryBtn}
@@ -480,7 +510,11 @@ export default function JournalScreen() {
           {/* Timeline */}
           {sections.map(([dateKey, items]) => (
             <View key={dateKey} style={styles.dateSection}>
-              <Text style={styles.dateHeader}>{dateKey}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10, marginTop: 4 }}>
+                <View style={{ flex: 1, height: 0.5, backgroundColor: theme.border }} />
+                <Text style={{ fontSize: 10, fontWeight: '600', color: theme.textMuted, letterSpacing: 1.5, textTransform: 'uppercase' }}>{dateKey}</Text>
+                <View style={{ flex: 1, height: 0.5, backgroundColor: theme.border }} />
+              </View>
               {items.map(item => renderEntryCard(item))}
             </View>
           ))}
@@ -579,7 +613,7 @@ const styles = StyleSheet.create({
   swipeHintText: { fontSize: 10, color: theme.textMuted, fontStyle: 'italic' },
 
   // Add Form
-  addForm: { backgroundColor: theme.surface, borderRadius: theme.radius.lg, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: theme.primary + '30', ...theme.shadows.card },
+  addForm: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 20, marginBottom: 20, borderWidth: 0.5, borderColor: 'rgba(201,160,220,0.2)', borderTopColor: 'rgba(255,255,255,0.10)', borderTopWidth: 0.5 },
   addFormTitle: { fontSize: 16, fontWeight: '700', color: theme.textPrimary, marginBottom: 14 },
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
   typeChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16, backgroundColor: theme.surfaceLight, borderWidth: 1.5, borderColor: theme.border },
@@ -609,16 +643,14 @@ const styles = StyleSheet.create({
 
   // Timeline
   dateSection: { marginBottom: 20 },
-  dateHeader: { fontSize: 13, fontWeight: '600', color: theme.textSecondary, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
-  entryCard: { backgroundColor: theme.surface, borderRadius: 12, padding: 16, ...theme.shadows.card },
+
+  entryCard: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 16, borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.08)', borderTopColor: 'rgba(255,255,255,0.10)', borderTopWidth: 0.5 },
   entryTop: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
-  categoryDot: { width: 8, height: 8, borderRadius: 4 },
-  personalIcon: { width: 26, height: 26, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
-  entryTitle: { fontSize: 14, fontWeight: '600', color: theme.textPrimary },
+
+  entryTitle: { fontSize: 15, fontWeight: '600', color: theme.textPrimary, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
   entryType: { fontSize: 11, color: theme.accent, fontWeight: '500', marginTop: 1 },
-  moodBadge: { backgroundColor: theme.surfaceLight, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8 },
-  moodBadgeText: { fontSize: 11, fontWeight: '600', color: theme.textSecondary },
-  entryNotes: { fontSize: 14, color: theme.textSecondary, lineHeight: 20, marginBottom: 4 },
+
+  entryNotes: { fontSize: 15, color: theme.textSecondary, lineHeight: 22, marginBottom: 4, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', fontStyle: 'italic' },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   tagChip: { backgroundColor: theme.surfaceLight, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   tagText: { fontSize: 11, color: theme.accent, fontWeight: '500' },
