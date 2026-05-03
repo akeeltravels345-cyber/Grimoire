@@ -231,8 +231,8 @@ export default function RitualsScreen() {
 
   const renderRitualCard = (ritual: RitualWithComputed) => {
     const cfg = STATUS_CONFIG[ritual.computedStatus];
-    const catColor = categoryColors[ritual.category] || theme.accent;
-    const cat = categories.find(c => c.id === ritual.category);
+    const cat = categories.find(c => c.id === ritual.category || c.name === ritual.category || c.name.toLowerCase() === ritual.category?.toLowerCase());
+    const catColor = categoryColors[ritual.category] || categoryColors[ritual.category?.toLowerCase().replace(/\s+/g, '_')] || categoryColors[ritual.category?.toLowerCase().replace(/\s+/g, '-')] || (cat ? categoryColors[cat.id] : undefined) || theme.accent;
     const days = ritual.scheduledDate ? getDaysUntil(ritual.scheduledDate) : null;
     const daysLabel = days !== null ? getDaysLabel(days) : null;
     const isOverdue = days !== null && days < 0;
@@ -279,8 +279,8 @@ export default function RitualsScreen() {
 
   const renderCompactRitual = (ritual: RitualWithComputed) => {
     const cfg = STATUS_CONFIG[ritual.computedStatus];
-    const catColor = categoryColors[ritual.category] || theme.accent;
-    const cat = categories.find(c => c.id === ritual.category);
+    const cat = categories.find(c => c.id === ritual.category || c.name === ritual.category || c.name.toLowerCase() === ritual.category?.toLowerCase());
+    const catColor = categoryColors[ritual.category] || categoryColors[ritual.category?.toLowerCase().replace(/\s+/g, '_')] || categoryColors[ritual.category?.toLowerCase().replace(/\s+/g, '-')] || (cat ? categoryColors[cat.id] : undefined) || theme.accent;
     const dimmed = ritual.computedStatus === 'completed';
     return (
       <SwipeableRow key={ritual.id} onDelete={() => handleDeleteRitual(ritual)}>
@@ -397,8 +397,8 @@ export default function RitualsScreen() {
         {filteredLibrary.length === 0 ? (
           <View style={styles.libEmptyState}><MaterialIcons name="auto-stories" size={52} color={theme.textMuted} /><Text style={styles.libEmptyTitle}>{libSearch.trim() || libCategory !== 'all' ? 'No spells found' : 'Your grimoire is empty'}</Text><Text style={styles.libEmptyText}>{libSearch.trim() || libCategory !== 'all' ? 'Try adjusting your search or filter' : 'Add your first spell to build your personal grimoire'}</Text>{!libSearch.trim() && libCategory === 'all' ? <Pressable style={styles.libEmptyCta} onPress={() => router.push('/add-library-ritual')}><MaterialIcons name="add" size={18} color={theme.background} /><Text style={styles.libEmptyCtaText}>Add Spell</Text></Pressable> : null}</View>
         ) : filteredLibrary.map(libR => {
-          const catColor = categoryColors[libR.category] || '#C9A0DC';
-          const cat = categories.find(c => c.id === libR.category);
+          const cat = categories.find(c => c.id === libR.category || c.name === libR.category || c.name.toLowerCase() === libR.category?.toLowerCase());
+          const catColor = categoryColors[libR.category] || categoryColors[libR.category?.toLowerCase().replace(/\s+/g, '_')] || categoryColors[libR.category?.toLowerCase().replace(/\s+/g, '-')] || (cat ? categoryColors[cat.id] : undefined) || theme.accent;
           const inPractice = libraryInPractice.has(libR.id);
           return (
             <SwipeableRow key={libR.id} onDelete={() => { showAlert('Remove from Library?', `Remove "${libR.name}" from your grimoire?`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: () => { deleteLibraryRitual(libR.id); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } }]); }}>
