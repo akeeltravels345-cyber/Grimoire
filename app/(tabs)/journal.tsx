@@ -541,7 +541,6 @@ export default function JournalScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 },
   title: { fontSize: 28, fontWeight: '700', color: theme.textPrimary },
   headerCount: { fontSize: 13, color: theme.textSecondary, fontWeight: '500', marginTop: 2 },

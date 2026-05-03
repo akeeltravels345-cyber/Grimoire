@@ -3,7 +3,7 @@ import React, { useMemo, useState } from 'react';
 import {
   View, Text, ScrollView, Pressable, StyleSheet, Platform, TextInput,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -373,8 +373,6 @@ export default function LibraryRitualDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
-
   // Header
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 8,

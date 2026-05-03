@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../constants/theme';
-import { AVAILABLE_ICONS, AVAILABLE_COLORS } from '../constants/config';
 import { useApp } from '../contexts/AppContext';
 import GradientScreen from '../components/GradientScreen';
+import { resolveCategoryColor } from '../utils/categoryHelpers';
+
+import { AVAILABLE_ICONS, AVAILABLE_COLORS } from '../constants/config';
 
 export default function ManageCategoriesScreen() {
   const router = useRouter();
@@ -55,7 +57,7 @@ export default function ManageCategoriesScreen() {
           <Text style={styles.sectionTitle}>Your Categories</Text>
 
           {categories.map(cat => {
-            const catColor = categoryColors[cat.id] || theme.accent;
+            const catColor = resolveCategoryColor(cat.id, categoryColors, categories);
             return (
               <View key={cat.id} style={styles.categoryItem}>
                 <View style={[styles.categoryIconBox, { backgroundColor: catColor + '20' }]}>
@@ -126,7 +128,6 @@ export default function ManageCategoriesScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border },
   headerBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '600', color: theme.textPrimary },

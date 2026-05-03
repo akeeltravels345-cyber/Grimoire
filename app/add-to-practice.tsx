@@ -3,12 +3,13 @@ import {
   View, Text, ScrollView, Pressable, TextInput, StyleSheet,
   KeyboardAvoidingView, Platform, Modal,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../constants/theme';
 import { useApp } from '../contexts/AppContext';
+import { resolveCategoryColor, resolveCategory } from '../utils/categoryHelpers';
 import { useAlert } from '@/template';
 import GradientScreen from '../components/GradientScreen';
 
@@ -83,8 +84,8 @@ export default function AddToPracticeScreen() {
     );
   }
 
-  const catObj = categories.find(c => c.id === libRitual.category);
-  const catColor = categoryColors[libRitual.category] || theme.accent;
+  const catObj = resolveCategory(libRitual.category, categories);
+  const catColor = resolveCategoryColor(libRitual.category, categoryColors, categories);
 
   return (
     <GradientScreen>
@@ -209,7 +210,6 @@ export default function AddToPracticeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border },
   closeBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '600', color: theme.textPrimary },
@@ -243,9 +243,6 @@ const styles = StyleSheet.create({
   scheduleOptionActive: { backgroundColor: theme.primary + '15', borderColor: theme.primary },
   scheduleOptionText: { fontSize: 13, fontWeight: '600', color: theme.textMuted },
   scheduleOptionTextActive: { color: theme.primary },
-
-  asNeededNote: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 12, paddingHorizontal: 4 },
-  asNeededNoteText: { flex: 1, fontSize: 12, color: theme.textMuted, fontStyle: 'italic', lineHeight: 16 },
 
   // Date Field
   dateField: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 14, borderWidth: 1, borderColor: theme.border },

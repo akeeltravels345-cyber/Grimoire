@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, ScrollView, Pressable, TextInput, StyleSheet,
   KeyboardAvoidingView, Platform, Modal,
 } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
@@ -37,19 +37,6 @@ export default function LogRitualScreen() {
   const [energyLevel, setEnergyLevel] = useState(0);
   const [isAddingMood, setIsAddingMood] = useState(false);
   const [newMoodText, setNewMoodText] = useState('');
-
-  // Generate date options for picker (next 90 days)
-  const nextDateOptions = useMemo(() => {
-    const dates: Date[] = [];
-    const start = new Date();
-    start.setDate(start.getDate() + 1);
-    for (let i = 0; i < 90; i++) {
-      const d = new Date(start);
-      d.setDate(d.getDate() + i);
-      dates.push(d);
-    }
-    return dates;
-  }, []);
 
   const moonPhase = getCurrentMoonPhase();
   const todayPlanet = getTodayPlanet();
@@ -223,7 +210,6 @@ export default function LogRitualScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 12, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: theme.border },
   closeBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '600', color: theme.textPrimary },
@@ -262,12 +248,6 @@ const styles = StyleSheet.create({
   moodAddInline: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, backgroundColor: theme.surface, borderWidth: 1.5, borderColor: theme.primary + '40' },
   moodAddInput: { fontSize: 13, color: theme.textPrimary, minWidth: 80, padding: 0 },
 
-  // Energy
-  energyRow: { flexDirection: 'row', gap: 10 },
-  energyOption: { flex: 1, alignItems: 'center', gap: 4, paddingVertical: 12, backgroundColor: theme.surface, borderRadius: theme.radius.md, borderWidth: 1.5, borderColor: theme.border },
-  energyOptionActive: { backgroundColor: theme.primary + '15', borderColor: theme.primary },
-  energyText: { fontSize: 11, fontWeight: '600', color: theme.textMuted },
-
   input: { backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 14, fontSize: 15, color: theme.textPrimary, borderWidth: 1, borderColor: theme.border },
   textArea: { minHeight: 120, paddingTop: 14, lineHeight: 22 },
 
@@ -281,13 +261,6 @@ const styles = StyleSheet.create({
   },
   dateModalTitle: { fontSize: 17, fontWeight: '700', color: theme.textPrimary },
   dateModalClose: { width: 36, height: 36, borderRadius: 18, backgroundColor: theme.surfaceLight, alignItems: 'center', justifyContent: 'center' },
-  suggestedRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 20, paddingVertical: 12,
-    backgroundColor: theme.primary + '0C',
-    borderBottomWidth: 1, borderBottomColor: theme.border + '40',
-  },
-  suggestedText: { fontSize: 14, fontWeight: '600', color: theme.primary },
   dateOption: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14,
     borderBottomWidth: 1, borderBottomColor: theme.border + '40',

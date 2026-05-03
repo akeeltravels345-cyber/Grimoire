@@ -574,7 +574,6 @@ export default function RitualsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: 'transparent' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
   title: { fontSize: 26, fontWeight: '700', color: theme.textPrimary },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -591,16 +590,13 @@ const styles = StyleSheet.create({
   libChipStripContainer: { marginBottom: 10 },
   libChipStripContent: { paddingHorizontal: 16, gap: 8 },
   libCatChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, backgroundColor: theme.surface, borderWidth: 1.5, borderColor: theme.border },
-  libCatChipActive: { backgroundColor: theme.primary + '18', borderColor: theme.primary },
   libCatChipText: { fontSize: 12, fontWeight: '600', color: theme.textMuted },
-  libCatChipTextActive: { color: theme.primary },
 
   libEmptyState: { alignItems: 'center', paddingVertical: 50 },
   libEmptyTitle: { fontSize: 17, fontWeight: '700', color: theme.textPrimary, marginTop: 12, marginBottom: 4 },
   libEmptyText: { fontSize: 13, color: theme.textSecondary, textAlign: 'center', lineHeight: 18, paddingHorizontal: 24, marginBottom: 16 },
   libEmptyCta: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: theme.primary, paddingHorizontal: 20, paddingVertical: 10, borderRadius: theme.radius.full },
   libEmptyCtaText: { fontSize: 14, fontWeight: '600', color: theme.background },
-  libFab: { position: 'absolute', right: 20, width: 52, height: 52, borderRadius: 26, backgroundColor: theme.primary, alignItems: 'center', justifyContent: 'center', ...theme.shadows.elevated },
   toolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 10 },
   timelinePill: { flexDirection: 'row', backgroundColor: theme.surfaceLight, borderRadius: 10, padding: 3 },
   timelineBtn: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 8 },
@@ -623,13 +619,6 @@ const styles = StyleSheet.create({
   dayNumSelected: { color: theme.accent },
   dotRow: { flexDirection: 'row', gap: 3, marginTop: 3, minHeight: 5 },
   dot: { width: 5, height: 5, borderRadius: 3 },
-  statusBar: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingBottom: 10 },
-  statusPillAll: { flexDirection: 'row', alignItems: 'center', gap: 3, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, backgroundColor: theme.surfaceLight, borderWidth: 1, borderColor: theme.border },
-  statusPillAllText: { fontSize: 11, fontWeight: '600', color: theme.textSecondary },
-  statusPill: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 6, borderRadius: 10, backgroundColor: theme.surface, borderWidth: 1, borderColor: 'transparent' },
-  statusPillDot: { width: 6, height: 6, borderRadius: 3 },
-  statusPillCount: { fontSize: 13, fontWeight: '700', color: theme.textSecondary },
-  statusPillLabel: { fontSize: 10, fontWeight: '600', color: theme.textMuted },
   filterBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingBottom: 6 },
   filterText: { fontSize: 12, fontWeight: '500', color: theme.textSecondary },
   filterClear: { fontSize: 12, fontWeight: '700', color: theme.primary },

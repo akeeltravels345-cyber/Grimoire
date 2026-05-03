@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, KeyboardAvoidingView, Platform, Modal } from 'react-native';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
@@ -623,7 +623,6 @@ for (let i = 0; i < 90; i++) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1 },
   errorContainer: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   errorText: { fontSize: 18, color: theme.textSecondary, marginBottom: 16 },
   backLink: { paddingHorizontal: 20, paddingVertical: 10, backgroundColor: theme.surface, borderRadius: theme.radius.md },
