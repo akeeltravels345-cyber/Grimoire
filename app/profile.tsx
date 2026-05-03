@@ -472,15 +472,16 @@ const styles = StyleSheet.create({
   headerBtn: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontSize: 17, fontWeight: '600', color: theme.textPrimary },
 
+
   // Profile Card
   profileCard: { backgroundColor: theme.surface, borderRadius: theme.radius.lg, padding: 24, marginTop: 16, alignItems: 'center', ...theme.shadows.card },
   avatarContainer: { marginBottom: 16 },
   avatar: { width: 80, height: 80, borderRadius: 40, backgroundColor: theme.primary + '20', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: theme.primary + '50' },
   avatarText: { fontSize: 28, fontWeight: '700', color: theme.primary },
-  craftName: { fontSize: 22, fontWeight: '700', color: theme.textPrimary, marginBottom: 4, textAlign: 'center' },
-  tradition: { fontSize: 14, fontWeight: '600', color: theme.accent, marginBottom: 4 },
-  practicing: { fontSize: 13, color: theme.textSecondary, marginBottom: 8 },
-  bio: { fontSize: 14, color: theme.textSecondary, lineHeight: 20, textAlign: 'center', marginBottom: 12, paddingHorizontal: 8 },
+  craftName: { fontSize: 22, fontWeight: '700', color: theme.textPrimary, marginBottom: 4, textAlign: 'center', fontFamily: theme.fonts.serif },
+  tradition: { fontSize: 13, fontWeight: '600', color: theme.accent, marginBottom: 4 },
+  practicing: { fontSize: 13, color: theme.textSecondary, marginBottom: 8, fontWeight: '500' },
+  bio: { fontSize: 14, color: theme.textSecondary, lineHeight: 20, textAlign: 'center', marginBottom: 12, paddingHorizontal: 8, fontFamily: theme.fonts.serif, fontStyle: 'italic' as const },
   editBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: theme.primary + '40', marginTop: 8 },
   editBtnText: { fontSize: 13, fontWeight: '600', color: theme.primary },
 
@@ -498,20 +499,21 @@ const styles = StyleSheet.create({
   // Section
   sectionTitle: { fontSize: 18, fontWeight: '700', color: theme.textPrimary, marginTop: 28, marginBottom: 12 },
 
+
   // Stats Card
   statsCard: { backgroundColor: theme.surface, borderRadius: theme.radius.lg, padding: 20, ...theme.shadows.card },
   statsGrid: { flexDirection: 'row', justifyContent: 'space-around' },
   statsDivider: { height: 1, backgroundColor: theme.border, marginVertical: 16 },
   statsDetailRow: { flexDirection: 'row', justifyContent: 'space-around' },
   statsDetailItem: { alignItems: 'center' },
-  statsDetailValue: { fontSize: 20, fontWeight: '700', color: theme.textPrimary, marginBottom: 2 },
-  statsDetailLabel: { fontSize: 10, fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase' },
+  statsDetailValue: { fontSize: 18, fontWeight: '700', color: theme.textPrimary, marginBottom: 2 },
+  statsDetailLabel: { fontSize: 10, fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase' as const, letterSpacing: 0.5 },
 
   // Settings Card
   settingsCard: { backgroundColor: theme.surface, borderRadius: theme.radius.lg, ...theme.shadows.card, overflow: 'hidden' },
   settingRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 16 },
   settingInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
   settingLabel: { fontSize: 15, fontWeight: '600', color: theme.textPrimary },
-  settingDesc: { fontSize: 12, color: theme.textMuted, marginTop: 1 },
+  settingDesc: { fontSize: 12, color: theme.textMuted, marginTop: 2, fontWeight: '500' },
   settingDivider: { height: 1, backgroundColor: theme.border, marginHorizontal: 16 },
 });

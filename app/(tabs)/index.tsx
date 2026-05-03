@@ -643,7 +643,7 @@ const msStyles = StyleSheet.create({
   },
   headerTitle: {
     fontSize: 20, fontWeight: '700', color: theme.textPrimary,
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    fontFamily: theme.fonts.serif,
   },
   headerSub: {
     fontSize: 12, color: theme.textMuted, fontWeight: '500', marginTop: 3,
@@ -661,6 +661,7 @@ const msStyles = StyleSheet.create({
   completionLabel: {
     fontSize: 13, fontWeight: '600', color: theme.textSecondary, marginBottom: 8,
   },
+
   completionBarBg: {
     height: 8, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 4, overflow: 'hidden',
   },
@@ -695,6 +696,7 @@ const msStyles = StyleSheet.create({
   coreCatName: {
     fontSize: 13, fontWeight: '600', color: theme.textPrimary,
   },
+
   coreCatLast: {
     fontSize: 10, color: theme.textMuted, fontWeight: '500', marginTop: 1,
   },
@@ -725,7 +727,7 @@ const msStyles = StyleSheet.create({
   },
   intentionTeaserText: {
     fontSize: 14, color: '#F5D5E0', fontStyle: 'italic', lineHeight: 20,
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    fontFamily: theme.fonts.serif,
   },
   // Footer
   footer: {
@@ -734,6 +736,7 @@ const msStyles = StyleSheet.create({
   },
   footerItem: { alignItems: 'center' },
   footerValue: { fontSize: 18, fontWeight: '700' },
+
   footerLabel: {
     fontSize: 9, fontWeight: '600', color: theme.textMuted,
     textTransform: 'uppercase', marginTop: 2, letterSpacing: 0.3,
@@ -748,7 +751,7 @@ const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 8, marginBottom: 16 },
   dateText: { fontSize: 13, color: theme.textSecondary, fontWeight: '500' },
   greeting: {
-    fontSize: 26, fontWeight: '700', color: theme.textPrimary, marginTop: 2,
+    fontSize: 24, fontWeight: '700', color: theme.textPrimary, marginTop: 2,
     textShadowColor: 'rgba(245,213,224,0.3)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 20,
@@ -829,6 +832,7 @@ const styles = StyleSheet.create({
   // ═══ Sections ═══
   sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: theme.textPrimary },
+
   seeAll: { fontSize: 14, fontWeight: '600', color: theme.primary },
 
   // ═══ Activity ═══
@@ -838,8 +842,8 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   activityDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },
-  activityRitual: { fontSize: 14, fontWeight: '600', color: theme.textPrimary, marginBottom: 3 },
-  activityNotes: { fontSize: 13, color: theme.textSecondary, lineHeight: 18, marginBottom: 6 },
+  activityRitual: { fontSize: 15, fontWeight: '600', color: theme.textPrimary, marginBottom: 3 },
+  activityNotes: { fontSize: 13, color: theme.textSecondary, lineHeight: 18, marginBottom: 6, fontFamily: theme.fonts.serif, fontStyle: 'italic' as const },
   activityMeta: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   activityDate: { fontSize: 12, color: theme.textMuted },
   activityMoodBadge: { backgroundColor: 'rgba(255,255,255,0.10)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },

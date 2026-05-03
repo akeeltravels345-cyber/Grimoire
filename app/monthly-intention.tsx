@@ -186,7 +186,7 @@ export default function MonthlyIntentionScreen() {
   );
 }
 
-const serifFont = Platform.OS === 'ios' ? 'Georgia' : 'serif';
+const serifFont = theme.fonts.serif;
 
 const styles = StyleSheet.create({
   topRow: {
@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
 
   // Header
   monthTitle: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '700',
     color: '#F5D5E0',
     textAlign: 'center',
@@ -278,11 +278,11 @@ const styles = StyleSheet.create({
 
   // Question
   question: {
-    fontSize: 22,
+    fontSize: 20,
     color: '#F5D5E0',
     fontFamily: serifFont,
     fontStyle: 'italic',
-    lineHeight: 32,
+    lineHeight: 30,
     textAlign: 'center',
     marginBottom: 24,
     paddingHorizontal: 8,
@@ -298,10 +298,10 @@ const styles = StyleSheet.create({
     minHeight: 160,
   },
   diaryInput: {
-    fontSize: 18,
+    fontSize: 16,
     color: '#F5D5E0',
     fontFamily: serifFont,
-    lineHeight: 28,
+    lineHeight: 26,
     minHeight: 140,
     padding: 0,
   },
@@ -318,7 +318,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.surfaceLight,
   },
   continueBtnText: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '700',
     color: theme.background,
     fontFamily: serifFont,
@@ -354,7 +354,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
   },
   finishBtnText: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '700',
     color: '#1C0E3A',
     fontFamily: serifFont,

@@ -1,6 +1,8 @@
 // Grimoire - Witchcraft Practice Tracker
 // Emotional: Q2 (Calm + Serious) with mystical warmth
 
+import { Platform } from 'react-native';
+
 export const theme = {
   // Primary - Moon Lavender
   primary: '#C9A0DC',
@@ -59,16 +61,45 @@ export const theme = {
     full: 9999,
   },
 
-  // Typography
+  // Typography — unified scale (base 16, ratio ~1.2)
+  // Serif: Georgia (iOS) / serif (Android) — for ritual names, intentions, journal notes
+  // System: default — for UI labels, badges, controls
+  fonts: {
+    serif: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    system: undefined as string | undefined,  // default system font
+  },
   typography: {
-    heroData: { fontSize: 48, fontWeight: '700' as const },
-    heroLabel: { fontSize: 11, fontWeight: '600' as const, textTransform: 'uppercase' as const, letterSpacing: 1 },
-    sectionHeader: { fontSize: 18, fontWeight: '700' as const },
-    cardTitle: { fontSize: 16, fontWeight: '600' as const },
-    cardValue: { fontSize: 24, fontWeight: '700' as const },
-    body: { fontSize: 15, fontWeight: '400' as const },
-    caption: { fontSize: 13, fontWeight: '400' as const },
-    small: { fontSize: 11, fontWeight: '500' as const },
+    // Page-level
+    pageTitle: { fontSize: 24, fontWeight: '700' as const },            // e.g. "Rituals", "Journal"
+    pageSubtitle: { fontSize: 13, fontWeight: '500' as const },         // e.g. date, entry count
+    // Sections
+    sectionHeader: { fontSize: 18, fontWeight: '700' as const },        // e.g. "Recent Activity"
+    sectionLabel: { fontSize: 10, fontWeight: '700' as const, textTransform: 'uppercase' as const, letterSpacing: 1.2 }, // e.g. "CORE PRACTICE"
+    // Cards
+    cardTitle: { fontSize: 15, fontWeight: '600' as const },            // card heading
+    cardBody: { fontSize: 14, fontWeight: '400' as const, lineHeight: 20 }, // card description
+    // Content
+    body: { fontSize: 15, fontWeight: '400' as const, lineHeight: 22 }, // main readable text
+    bodySmall: { fontSize: 13, fontWeight: '400' as const, lineHeight: 18 }, // secondary text
+    // Emphasis
+    heroData: { fontSize: 48, fontWeight: '700' as const },             // large stat numbers
+    dataLarge: { fontSize: 22, fontWeight: '700' as const },            // stat ring values, summary counts
+    dataMedium: { fontSize: 18, fontWeight: '700' as const },           // medium stat values
+    // UI controls
+    button: { fontSize: 15, fontWeight: '600' as const },               // primary CTA text
+    buttonSmall: { fontSize: 13, fontWeight: '600' as const },          // small buttons/links
+    badge: { fontSize: 11, fontWeight: '600' as const },                // chips, tags, badges
+    badgeSmall: { fontSize: 10, fontWeight: '600' as const },           // tiny status labels
+    // Form
+    formLabel: { fontSize: 12, fontWeight: '600' as const, textTransform: 'uppercase' as const, letterSpacing: 0.5 },
+    formInput: { fontSize: 15, fontWeight: '400' as const },
+    formHint: { fontSize: 12, fontWeight: '400' as const },
+    // Navigation
+    tabLabel: { fontSize: 13, fontWeight: '600' as const },
+    headerTitle: { fontSize: 17, fontWeight: '600' as const },
+    // Captions
+    caption: { fontSize: 12, fontWeight: '500' as const },
+    tiny: { fontSize: 10, fontWeight: '600' as const },
   },
 
   shadows: {

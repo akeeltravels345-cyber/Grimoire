@@ -433,10 +433,10 @@ const styles = StyleSheet.create({
 
   // Name
   ritualName: {
-    fontSize: 26, fontWeight: '700', color: theme.textPrimary,
+    fontSize: 24, fontWeight: '700', color: theme.textPrimary,
     textAlign: 'center', marginTop: 28, marginBottom: 14,
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    lineHeight: 34,
+    fontFamily: theme.fonts.serif,
+    lineHeight: 32,
   },
 
   // Badges
@@ -473,9 +473,9 @@ const styles = StyleSheet.create({
     marginRight: 14,
   },
   intentionText: {
-    flex: 1, fontSize: 17, color: theme.textPrimary,
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
-    fontStyle: 'italic', lineHeight: 26,
+    flex: 1, fontSize: 15, color: theme.textPrimary,
+    fontFamily: theme.fonts.serif,
+    fontStyle: 'italic', lineHeight: 24,
   },
 
   // Outcome
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
 
   // Description
   descriptionText: {
-    fontSize: 15, color: theme.textSecondary, lineHeight: 24,
+    fontSize: 15, color: theme.textSecondary, lineHeight: 22,
   },
 
   // Ingredients
@@ -516,7 +516,7 @@ const styles = StyleSheet.create({
   },
   historyRow: { flexDirection: 'row', alignItems: 'center' },
   historyStat: { flex: 1, alignItems: 'center', gap: 4 },
-  historyValue: { fontSize: 24, fontWeight: '700', color: theme.textPrimary },
+  historyValue: { fontSize: 22, fontWeight: '700', color: theme.textPrimary },
   historyLabel: { fontSize: 10, fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 },
   historyDivider: { width: 1, height: 32, backgroundColor: theme.border },
   historyEmpty: {

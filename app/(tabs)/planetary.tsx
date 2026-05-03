@@ -374,14 +374,14 @@ export default function PlanetaryScreen() {
 const styles = StyleSheet.create({
   topbar: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
   topbarTitle: { fontSize: 24, fontWeight: '700', color: theme.textPrimary },
-  topbarSub: { fontSize: 12, color: theme.textSecondary, marginTop: 2 },
+  topbarSub: { fontSize: 13, color: theme.textSecondary, marginTop: 2, fontWeight: '500' },
 
   // Screen-level segment
   screenSegWrap: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 },
   screenSegPill: { flexDirection: 'row', backgroundColor: theme.surfaceLight, borderRadius: 14, padding: 3 },
   screenSegBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 10, borderRadius: 12 },
   screenSegBtnActive: { backgroundColor: theme.surface },
-  screenSegText: { fontSize: 14, fontWeight: '500', color: theme.textMuted },
+  screenSegText: { fontSize: 13, fontWeight: '600', color: theme.textMuted },
   screenSegTextActive: { color: theme.textPrimary, fontWeight: '700' },
 
   // Planets tab
@@ -398,8 +398,8 @@ const styles = StyleSheet.create({
   dayPlanetVisual: { width: 68, height: 68, alignItems: 'center', justifyContent: 'center', marginRight: 4 },
   dayLabel: { fontSize: 10, fontWeight: '700', color: theme.textSecondary, letterSpacing: 1, marginBottom: 4 },
   dayNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  daySymbol: { fontSize: 24, fontWeight: '700' },
-  dayName: { fontSize: 22, fontWeight: '700', color: theme.textPrimary },
+  daySymbol: { fontSize: 22, fontWeight: '700' },
+  dayName: { fontSize: 20, fontWeight: '700', color: theme.textPrimary },
   dayEnergy: { fontSize: 14, color: theme.textSecondary, lineHeight: 21, marginBottom: 18 },
   detailLabel: { fontSize: 10, fontWeight: '700', color: theme.textMuted, letterSpacing: 1, marginTop: 14, marginBottom: 8 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
@@ -409,7 +409,7 @@ const styles = StyleSheet.create({
   subtleChipText: { fontSize: 12, fontWeight: '500', color: theme.textSecondary },
   sectionHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   sectionTitle: { fontSize: 18, fontWeight: '700', color: theme.textPrimary },
-  timezoneText: { fontSize: 11, color: theme.textMuted },
+  timezoneText: { fontSize: 12, color: theme.textMuted, fontWeight: '500' },
   phTabs: { flexDirection: 'row', backgroundColor: theme.surfaceLight, borderRadius: theme.radius.md, padding: 3, marginBottom: 14 },
   phTab: { flex: 1, paddingVertical: 8, borderRadius: 10, alignItems: 'center' },
   phTabActive: { backgroundColor: theme.surface },
@@ -450,10 +450,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   moonHeroName: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     color: '#F5D5E0',
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    fontFamily: theme.fonts.serif,
     marginBottom: 14,
     textShadowColor: 'rgba(245,213,224,0.4)',
     textShadowOffset: { width: 0, height: 0 },
@@ -467,6 +467,7 @@ const styles = StyleSheet.create({
   },
   moonHeroStat: { alignItems: 'center' },
   moonHeroStatValue: { fontSize: 22, fontWeight: '700', color: theme.textPrimary },
+
   moonHeroStatLabel: { fontSize: 10, fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 },
   moonHeroStatDivider: { width: 1, height: 28, backgroundColor: theme.border },
   moonHeroEnergy: {
@@ -475,6 +476,7 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     textAlign: 'center',
     fontStyle: 'italic',
+    fontFamily: theme.fonts.serif,
     marginBottom: 18,
     paddingHorizontal: 8,
   },
@@ -561,8 +563,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   lunarEventIcon: { fontSize: 22 },
-  lunarEventName: { fontSize: 14, fontWeight: '700' },
-  lunarEventDate: { fontSize: 12, color: theme.textSecondary, marginTop: 1 },
+  lunarEventName: { fontSize: 15, fontWeight: '700' },
+  lunarEventDate: { fontSize: 12, color: theme.textSecondary, marginTop: 1, fontWeight: '500' },
   lunarEventDays: { fontSize: 13, fontWeight: '700', color: theme.textMuted },
   lunarEventDivider: { height: 1, backgroundColor: theme.border + '60', marginLeft: 54 },
 
@@ -584,7 +586,7 @@ const styles = StyleSheet.create({
   },
   eclipseIcon: { fontSize: 24 },
   eclipseType: { fontSize: 15, fontWeight: '700', color: theme.textPrimary },
-  eclipseDate: { fontSize: 13, fontWeight: '600', color: theme.accent, marginTop: 1 },
+  eclipseDate: { fontSize: 13, fontWeight: '600', color: theme.accent, marginTop: 2 },
   eclipseVisRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginLeft: 36 },
   eclipseVisText: { fontSize: 12, color: theme.textMuted },
 
@@ -611,7 +613,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   magicIcon: { fontSize: 20 },
-  magicPhase: { fontSize: 14, fontWeight: '700', marginBottom: 3 },
-  magicWorks: { fontSize: 13, color: theme.textSecondary, lineHeight: 19 },
+  magicPhase: { fontSize: 15, fontWeight: '700', marginBottom: 3 },
+  magicWorks: { fontSize: 13, color: theme.textSecondary, lineHeight: 19, fontFamily: theme.fonts.serif },
   magicDivider: { height: 1, backgroundColor: theme.border + '60', marginLeft: 52 },
 });

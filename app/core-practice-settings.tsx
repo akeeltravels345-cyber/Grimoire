@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.textSecondary,
     lineHeight: 21,
-    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    fontFamily: theme.fonts.serif,
     fontStyle: 'italic',
   },
 

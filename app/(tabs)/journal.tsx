@@ -569,7 +569,7 @@ export default function JournalScreen() {
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 12 },
-  title: { fontSize: 28, fontWeight: '700', color: theme.textPrimary },
+  title: { fontSize: 24, fontWeight: '700', color: theme.textPrimary },
   headerCount: { fontSize: 13, color: theme.textSecondary, fontWeight: '500', marginTop: 2 },
   addBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: theme.primary, alignItems: 'center', justifyContent: 'center' },
 
@@ -578,6 +578,7 @@ const styles = StyleSheet.create({
   tabChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: theme.surface },
   tabChipActive: { backgroundColor: theme.surfaceLight, borderWidth: 1, borderColor: theme.primary + '40' },
   tabChipText: { fontSize: 13, fontWeight: '600', color: theme.textMuted },
+
   tabChipTextActive: { color: theme.textPrimary },
 
   // Type Filter Chip
@@ -590,7 +591,7 @@ const styles = StyleSheet.create({
   summaryCard: { backgroundColor: theme.surface, borderRadius: theme.radius.lg, borderWidth: 1, borderColor: theme.border, borderLeftWidth: 3, padding: 14 },
   summaryCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
   summaryLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 1 },
-  summaryNumber: { fontSize: 28, fontWeight: '700', lineHeight: 32 },
+  summaryNumber: { fontSize: 22, fontWeight: '700', lineHeight: 26 },
   summarySub: { fontSize: 10, fontWeight: '500', color: theme.textMuted, marginTop: 1 },
   summaryDivider: { height: 1, backgroundColor: theme.border, marginVertical: 8 },
   summaryFooter: { fontSize: 10, fontWeight: '500', color: theme.textSecondary },
@@ -607,7 +608,7 @@ const styles = StyleSheet.create({
 
   // Add Form
   addForm: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 20, marginBottom: 20, borderWidth: 0.5, borderColor: 'rgba(201,160,220,0.2)', borderTopColor: 'rgba(255,255,255,0.10)', borderTopWidth: 0.5 },
-  addFormTitle: { fontSize: 16, fontWeight: '700', color: theme.textPrimary, marginBottom: 14 },
+  addFormTitle: { fontSize: 18, fontWeight: '700', color: theme.textPrimary, marginBottom: 14 },
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
   typeChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16, backgroundColor: theme.surfaceLight, borderWidth: 1.5, borderColor: theme.border },
   typeChipActive: { backgroundColor: theme.primary + '15', borderColor: theme.primary },
@@ -620,8 +621,8 @@ const styles = StyleSheet.create({
   },
   newTypeBtnText: { fontSize: 12, fontWeight: '600', color: theme.accent },
   input: { backgroundColor: theme.backgroundSecondary, borderRadius: theme.radius.sm, padding: 12, fontSize: 15, color: theme.textPrimary, borderWidth: 1, borderColor: theme.border, marginBottom: 10 },
-  textArea: { minHeight: 100, paddingTop: 12, lineHeight: 21 },
-  formLabel: { fontSize: 11, fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 4, marginBottom: 8 },
+  textArea: { minHeight: 100, paddingTop: 12, lineHeight: 22 },
+  formLabel: { fontSize: 12, fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase' as const, letterSpacing: 0.5, marginTop: 4, marginBottom: 8 },
   moodRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 14 },
   moodChip: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, backgroundColor: theme.surfaceLight, borderWidth: 1, borderColor: theme.border },
   moodChipActive: { backgroundColor: theme.primary + '20', borderColor: theme.primary },
@@ -632,7 +633,7 @@ const styles = StyleSheet.create({
   moodAddInline: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 16, backgroundColor: theme.surface, borderWidth: 1.5, borderColor: theme.primary + '40' },
   moodAddInput: { fontSize: 12, color: theme.textPrimary, minWidth: 80, padding: 0 },
   saveEntryBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: theme.primary, paddingVertical: 14, borderRadius: theme.radius.md, marginTop: 8 },
-  saveEntryBtnText: { fontSize: 15, fontWeight: '600', color: theme.background },
+  saveEntryBtnText: { fontSize: 15, fontWeight: '700', color: theme.background },
 
   // Timeline
   dateSection: { marginBottom: 20, marginTop: 8 },
@@ -640,10 +641,10 @@ const styles = StyleSheet.create({
   entryCard: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 16, borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.08)', borderTopColor: 'rgba(255,255,255,0.10)', borderTopWidth: 0.5 },
   entryTop: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
 
-  entryTitle: { fontSize: 15, fontWeight: '600', color: theme.textPrimary, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' },
+  entryTitle: { fontSize: 15, fontWeight: '600', color: theme.textPrimary, fontFamily: theme.fonts.serif },
   entryType: { fontSize: 11, color: theme.accent, fontWeight: '500', marginTop: 1 },
 
-  entryNotes: { fontSize: 15, color: theme.textSecondary, lineHeight: 22, marginBottom: 4, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', fontStyle: 'italic' },
+  entryNotes: { fontSize: 14, color: theme.textSecondary, lineHeight: 20, marginBottom: 4, fontFamily: theme.fonts.serif, fontStyle: 'italic' },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 8 },
   tagChip: { backgroundColor: theme.surfaceLight, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
   tagText: { fontSize: 11, color: theme.accent, fontWeight: '500' },
@@ -652,7 +653,7 @@ const styles = StyleSheet.create({
   // Empty
   emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
   emptyImage: { width: 200, height: 200, marginBottom: 24 },
-  emptyTitle: { fontSize: 20, fontWeight: '700', color: theme.textPrimary, marginBottom: 8 },
+  emptyTitle: { fontSize: 18, fontWeight: '700', color: theme.textPrimary, marginBottom: 8 },
   emptyText: { fontSize: 14, color: theme.textSecondary, textAlign: 'center', lineHeight: 20, marginBottom: 24 },
   emptyCta: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: theme.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: theme.radius.full },
   emptyCtaText: { fontSize: 15, fontWeight: '600', color: theme.background },

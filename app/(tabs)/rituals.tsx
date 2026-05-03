@@ -425,7 +425,7 @@ export default function RitualsScreen() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 }}>
                   <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: catColor, shadowColor: catColor, shadowOpacity: 0.6, shadowRadius: 4, shadowOffset: { width: 0, height: 0 } }} />
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 15, fontWeight: '600', color: '#F5D5E0', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif' }} numberOfLines={1}>{libR.name}</Text>
+                    <Text style={{ fontSize: 15, fontWeight: '600', color: '#F5D5E0', fontFamily: theme.fonts.serif }} numberOfLines={1}>{libR.name}</Text>
                     <Text style={{ fontSize: 11, color: theme.accent, fontWeight: '500', marginTop: 1 }}>{cat?.name || libR.category}</Text>
                   </View>
                   <View style={{ backgroundColor: catColor + '20', borderWidth: 0.5, borderColor: catColor + '50', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 }}>
@@ -438,7 +438,7 @@ export default function RitualsScreen() {
                   ) : null}
                 </View>
                 {libR.intention ? (
-                  <Text style={{ fontSize: 15, color: theme.textSecondary, lineHeight: 22, fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', fontStyle: 'italic', marginBottom: 4 }} numberOfLines={2}>{libR.intention}</Text>
+                  <Text style={{ fontSize: 14, color: theme.textSecondary, lineHeight: 20, fontFamily: theme.fonts.serif, fontStyle: 'italic', marginBottom: 4 }} numberOfLines={2}>{libR.intention}</Text>
                 ) : null}
                 {!inPractice ? (
                   <View style={{ flexDirection: 'row', marginTop: 6 }}>
@@ -568,7 +568,7 @@ export default function RitualsScreen() {
 
 const styles = StyleSheet.create({
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingTop: 8, paddingBottom: 4 },
-  title: { fontSize: 26, fontWeight: '700', color: theme.textPrimary },
+  title: { fontSize: 24, fontWeight: '700', color: theme.textPrimary },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   headerIconBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: theme.surface, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.border },
   addButton: { width: 38, height: 38, borderRadius: 19, backgroundColor: theme.primary, alignItems: 'center', justifyContent: 'center' },
@@ -576,7 +576,7 @@ const styles = StyleSheet.create({
   segmentPill: { flexDirection: 'row', backgroundColor: theme.surfaceLight, borderRadius: 14, padding: 3 },
   segmentBtn: { flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center' },
   segmentBtnActive: { backgroundColor: theme.surface },
-  segmentText: { fontSize: 13, fontWeight: '500', color: theme.textMuted },
+  segmentText: { fontSize: 13, fontWeight: '600', color: theme.textMuted },
   segmentTextActive: { color: theme.textPrimary, fontWeight: '700' },
   libSearchWrap: { flexDirection: 'row', alignItems: 'center', gap: 8, marginHorizontal: 16, marginBottom: 10, backgroundColor: theme.surface, borderRadius: theme.radius.md, paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, borderColor: theme.border },
   libSearchInput: { flex: 1, fontSize: 14, color: theme.textPrimary, padding: 0 },
@@ -624,7 +624,7 @@ const styles = StyleSheet.create({
   catIconBox: { width: 44, height: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   cardInfo: { flex: 1, paddingTop: 2 },
   cardName: { fontSize: 15, fontWeight: '600', color: theme.textPrimary, marginBottom: 3 },
-  cardIntention: { fontSize: 13, color: theme.textSecondary, fontStyle: 'italic', lineHeight: 18 },
+  cardIntention: { fontSize: 13, color: theme.textSecondary, fontStyle: 'italic', lineHeight: 18, fontFamily: theme.fonts.serif },
   cardActions: { alignItems: 'flex-end', gap: 6, paddingTop: 2 },
   daysBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8, borderWidth: 1 },
   daysBadgeText: { fontSize: 10, fontWeight: '700' },
@@ -636,16 +636,17 @@ const styles = StyleSheet.create({
   cardBadgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginLeft: 54 },
   cardBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: theme.surfaceLight },
   cardBadgeText: { fontSize: 11, fontWeight: '600', color: theme.textMuted },
+
   compactRow: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(245,213,224,0.06)', borderRadius: 10, padding: 10, minHeight: 44, overflow: 'hidden', borderWidth: 0.5, borderColor: 'rgba(245,213,224,0.10)' },
   compactStrip: { width: 3, height: 28, borderRadius: 2 },
   compactIcon: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   compactName: { fontSize: 13, fontWeight: '600', color: theme.textPrimary },
-  compactCategory: { fontSize: 10, fontWeight: '500', color: theme.textMuted },
+  compactCategory: { fontSize: 10, fontWeight: '600', color: theme.textMuted },
   compactCheck: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: theme.success + '40', backgroundColor: theme.success + '08' },
   timelineNav: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 10 },
   navArrow: { width: 34, height: 34, borderRadius: 17, backgroundColor: theme.surface, alignItems: 'center', justifyContent: 'center' },
   navCenter: { flex: 1, alignItems: 'center' },
-  navLabel: { fontSize: 16, fontWeight: '700', color: theme.textPrimary },
+  navLabel: { fontSize: 15, fontWeight: '700', color: theme.textPrimary },
   navToday: { fontSize: 12, fontWeight: '600', color: theme.primary, marginTop: 2 },
   weekSummary: { flexDirection: 'row', alignItems: 'center', gap: 10, marginHorizontal: 16, marginBottom: 12 },
   weekSummaryText: { fontSize: 13, fontWeight: '500' },
@@ -736,26 +737,26 @@ const styles = StyleSheet.create({
   qlOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.55)', justifyContent: 'flex-end' },
   qlSheet: { backgroundColor: '#1C0E3A', borderTopLeftRadius: 24, borderTopRightRadius: 24, maxHeight: '88%', paddingTop: 8, paddingBottom: 16 },
   qlHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: theme.surfaceLight, alignSelf: 'center', marginBottom: 12 },
-  qlRitualName: { fontSize: 20, fontWeight: '700', color: theme.textPrimary, textAlign: 'center', fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif', marginBottom: 16 },
+  qlRitualName: { fontSize: 18, fontWeight: '700', color: theme.textPrimary, textAlign: 'center', fontFamily: theme.fonts.serif, marginBottom: 16 },
   qlCosmicCard: { backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 14, borderWidth: 1, borderColor: theme.primary + '20', marginBottom: 4 },
   qlCosmicRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 4 },
   qlCosmicEmoji: { fontSize: 20 },
   qlCosmicLabel: { fontSize: 13, fontWeight: '600', color: theme.textPrimary },
   qlCosmicSub: { fontSize: 11, color: theme.textSecondary },
   qlCosmicDivider: { height: 1, backgroundColor: theme.border + '60', marginVertical: 6 },
-  qlLabel: { fontSize: 12, fontWeight: '600', color: theme.textSecondary, marginTop: 18, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  qlLabel: { fontSize: 12, fontWeight: '600', color: theme.textSecondary, marginTop: 18, marginBottom: 8, textTransform: 'uppercase' as const, letterSpacing: 0.5 },
   qlDateField: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 12, borderWidth: 1, borderColor: theme.primary + '30' },
   qlDateText: { flex: 1, fontSize: 14, color: theme.textPrimary, fontWeight: '500' },
   qlDateHint: { fontSize: 11, color: theme.textMuted, marginTop: 4, fontStyle: 'italic' },
   qlMoodGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 7 },
   qlMoodChip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 18, backgroundColor: theme.surface, borderWidth: 1.5, borderColor: theme.border },
   qlMoodChipActive: { backgroundColor: theme.primary + '20', borderColor: theme.primary },
-  qlMoodChipText: { fontSize: 12, fontWeight: '500', color: theme.textMuted },
-  qlMoodChipTextActive: { color: theme.primary, fontWeight: '600' },
-  qlNotesInput: { backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 12, fontSize: 14, color: theme.textPrimary, borderWidth: 1, borderColor: theme.border, minHeight: 80, lineHeight: 20 },
+  qlMoodChipText: { fontSize: 12, fontWeight: '600', color: theme.textMuted },
+  qlMoodChipTextActive: { color: theme.primary, fontWeight: '700' },
+  qlNotesInput: { backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 12, fontSize: 15, color: theme.textPrimary, borderWidth: 1, borderColor: theme.border, minHeight: 80, lineHeight: 22 },
   qlSaveBtn: { backgroundColor: theme.primary, borderRadius: theme.radius.md, paddingVertical: 16, alignItems: 'center', marginTop: 20 },
   qlSaveBtnDisabled: { backgroundColor: theme.surfaceLight },
-  qlSaveBtnText: { fontSize: 16, fontWeight: '700', color: theme.background },
+  qlSaveBtnText: { fontSize: 15, fontWeight: '700', color: theme.background },
   qlSaveBtnTextDisabled: { color: theme.textMuted },
   qlMoodAddChip: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 18, borderWidth: 1.5, borderColor: theme.accent + '40', borderStyle: 'dashed', backgroundColor: theme.accent + '08' },
   qlMoodAddChipText: { fontSize: 12, fontWeight: '600', color: theme.accent },
