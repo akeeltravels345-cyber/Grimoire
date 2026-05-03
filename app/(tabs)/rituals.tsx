@@ -34,7 +34,7 @@ const DAY_PILL_HEIGHT = 64;
 const DAY_PILL_GAP = 6;
 
 const scheduleLabels: Record<string, string> = {
-  daily: 'Daily', weekly: 'Weekly', moon_phase: 'Moon', as_needed: 'As Needed', monthly: 'Monthly',
+  daily: 'Daily', weekly: 'Weekly', moon_phase: 'Moon', as_needed: 'One-Time', monthly: 'Monthly',
 };
 
 function getMonthDays(): Date[] {
