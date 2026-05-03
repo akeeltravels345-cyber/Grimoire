@@ -588,7 +588,7 @@ const styles = StyleSheet.create({
   // Summary Cards
   summaryStripWrap: { marginBottom: 8 },
   summaryStripContent: { paddingHorizontal: 16, gap: 8 },
-  summaryCard: { backgroundColor: theme.surface, borderRadius: theme.radius.lg, borderWidth: 1, borderColor: theme.border, borderLeftWidth: 3, padding: 14 },
+  summaryCard: { backgroundColor: theme.surface, borderRadius: theme.radius.lg, borderWidth: 1, borderColor: theme.border, borderLeftWidth: 3, padding: 14, overflow: 'hidden' },
   summaryCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
   summaryLabel: { fontSize: 10, fontWeight: '700', letterSpacing: 1 },
   summaryNumber: { fontSize: 22, fontWeight: '700', lineHeight: 26 },
@@ -607,7 +607,7 @@ const styles = StyleSheet.create({
   swipeHintText: { fontSize: 10, color: theme.textMuted, fontStyle: 'italic' },
 
   // Add Form
-  addForm: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 16, padding: 20, marginBottom: 20, borderWidth: 0.5, borderColor: 'rgba(201,160,220,0.2)', borderTopColor: 'rgba(255,255,255,0.10)', borderTopWidth: 0.5 },
+  addForm: { backgroundColor: theme.surface, borderRadius: 16, padding: 20, marginBottom: 20, borderWidth: 1, borderColor: theme.border },
   addFormTitle: { fontSize: 18, fontWeight: '700', color: theme.textPrimary, marginBottom: 14 },
   typeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
   typeChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16, backgroundColor: theme.surfaceLight, borderWidth: 1.5, borderColor: theme.border },
@@ -638,7 +638,7 @@ const styles = StyleSheet.create({
   // Timeline
   dateSection: { marginBottom: 20, marginTop: 8 },
 
-  entryCard: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 16, borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.08)', borderTopColor: 'rgba(255,255,255,0.10)', borderTopWidth: 0.5 },
+  entryCard: { backgroundColor: theme.surface, borderRadius: 14, padding: 16, borderWidth: 1, borderColor: theme.border },
   entryTop: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
 
   entryTitle: { fontSize: 15, fontWeight: '600', color: theme.textPrimary, fontFamily: theme.fonts.serif },

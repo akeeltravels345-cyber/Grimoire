@@ -292,13 +292,13 @@ locations={[0, 0.35, 0.65, 1]}
               ) : null}
             </Pressable>
 
-            <View style={styles.moonCard}>
+            <Pressable style={styles.moonCard} onPress={() => router.push({ pathname: '/(tabs)/planetary', params: {} })}>
               <View style={styles.moonVisualWrap}>
                 <MoonVisual phaseIndex={moonPhaseIndex} size={62} />
               </View>
               <Text style={styles.moonPhaseName}>{moonPhase.name}</Text>
               <Text style={styles.moonEnergy} numberOfLines={2}>{moonPhase.energy}</Text>
-            </View>
+            </Pressable>
           </View>
 
           {/* ═══ OVERDUE ALERTS ═══ */}
@@ -771,7 +771,7 @@ const styles = StyleSheet.create({
   },
   planetCard: {
     flex: 1.4, backgroundColor: theme.surface, borderRadius: theme.radius.lg,
-    padding: 14, borderWidth: 1, borderColor: theme.border, borderTopColor: 'rgba(255,255,255,0.15)',
+    padding: 14, borderWidth: 1, borderColor: theme.border,
     justifyContent: 'space-between', minHeight: 155, overflow: 'hidden',
   },
   planetCardTop: {
@@ -799,7 +799,7 @@ const styles = StyleSheet.create({
   moonCard: {
     flex: 1, backgroundColor: theme.surface, borderRadius: theme.radius.lg,
     padding: 14, alignItems: 'center', justifyContent: 'center',
-    minHeight: 155, borderWidth: 1, borderColor: theme.border, borderTopColor: 'rgba(255,255,255,0.15)',
+    minHeight: 155, borderWidth: 1, borderColor: theme.border,
     overflow: 'hidden',
   },
   moonVisualWrap: {
@@ -838,7 +838,7 @@ const styles = StyleSheet.create({
   // ═══ Activity ═══
   activityCard: {
     flexDirection: 'row', backgroundColor: theme.surface, borderRadius: theme.radius.md,
-    padding: 14, marginBottom: 8, gap: 12, borderWidth: 1, borderColor: theme.border, borderTopColor: 'rgba(255,255,255,0.15)',
+    padding: 14, marginBottom: 8, gap: 12, borderWidth: 1, borderColor: theme.border,
     overflow: 'hidden',
   },
   activityDot: { width: 8, height: 8, borderRadius: 4, marginTop: 6 },

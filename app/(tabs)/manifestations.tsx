@@ -169,11 +169,11 @@ const styles = StyleSheet.create({
   filterTabTextActive: { color: theme.textPrimary, fontWeight: '700' },
 
   summaryRow: { flexDirection: 'row', gap: 10, marginTop: 12, marginBottom: 18 },
-  summaryCard: { flex: 1, backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 14, alignItems: 'center', ...theme.shadows.card },
+  summaryCard: { flex: 1, backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 14, alignItems: 'center', borderWidth: 1, borderColor: theme.border },
   summaryValue: { fontSize: 22, fontWeight: '700', marginBottom: 2 },
   summaryLabel: { fontSize: 10, fontWeight: '700', color: theme.textSecondary, letterSpacing: 0.8 },
 
-  manifCard: { backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, borderRadius: theme.radius.lg, padding: 16, marginBottom: 12, ...theme.shadows.card },
+  manifCard: { backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, borderRadius: theme.radius.lg, padding: 16, marginBottom: 12, overflow: 'hidden' },
   manifCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
   manifCatEmoji: { fontSize: 24 },
   manifRitualName: { fontSize: 15, fontWeight: '600', color: theme.textPrimary },
