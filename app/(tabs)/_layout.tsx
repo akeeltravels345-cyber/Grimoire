@@ -1,4 +1,4 @@
-import { MaterialIcons } from '@expo/vector-icons';
+import { MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Platform } from 'react-native';
@@ -43,7 +43,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="auto-awesome" size={size} color={color} />
+            <MaterialIcons name="menu-book" size={size} color={color} />
           ),
         }}
       />
@@ -52,7 +52,7 @@ export default function TabLayout() {
         options={{
           title: 'Rituals',
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="menu-book" size={size} color={color} />
+            <MaterialCommunityIcons name="candle" size={size} color={color} />
           ),
         }}
       />

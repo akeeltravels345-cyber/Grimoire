@@ -410,12 +410,12 @@ export default function RitualsScreen() {
             <SwipeableRow key={libR.id} onDelete={() => { showAlert('Remove from Library?', `Remove "${libR.name}" from your grimoire?`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Remove', style: 'destructive', onPress: () => { deleteLibraryRitual(libR.id); Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning); } }]); }}>
               <Pressable
                 style={{
-                  backgroundColor: 'rgba(255,255,255,0.05)',
+                  backgroundColor: 'rgba(245,213,224,0.07)',
                   borderRadius: 14,
                   padding: 16,
                   borderWidth: 0.5,
-                  borderColor: 'rgba(255,255,255,0.08)',
-                  borderTopColor: 'rgba(255,255,255,0.10)',
+                  borderColor: 'rgba(245,213,224,0.12)',
+                  borderTopColor: 'rgba(245,213,224,0.16)',
                   borderTopWidth: 0.5,
                   borderLeftWidth: 3,
                   borderLeftColor: catColor,
@@ -617,7 +617,7 @@ const styles = StyleSheet.create({
   filterClear: { fontSize: 12, fontWeight: '700', color: theme.primary },
   swipeHint: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 4, paddingHorizontal: 16, paddingBottom: 6 },
   swipeHintText: { fontSize: 10, color: theme.textMuted, fontStyle: 'italic' },
-  ritualCard: { flexDirection: 'row', backgroundColor: theme.surface, borderRadius: 12, overflow: 'hidden' },
+  ritualCard: { flexDirection: 'row', backgroundColor: 'rgba(245,213,224,0.06)', borderRadius: 12, overflow: 'hidden', borderWidth: 0.5, borderColor: 'rgba(245,213,224,0.10)' },
   cardLeftBorder: { width: 3 },
   cardBody: { flex: 1, padding: 14, gap: 10 },
   cardTopRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
@@ -636,7 +636,7 @@ const styles = StyleSheet.create({
   cardBadgeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginLeft: 54 },
   cardBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, backgroundColor: theme.surfaceLight },
   cardBadgeText: { fontSize: 11, fontWeight: '600', color: theme.textMuted },
-  compactRow: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: theme.surface, borderRadius: 10, padding: 10, minHeight: 44, overflow: 'hidden' },
+  compactRow: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: 'rgba(245,213,224,0.06)', borderRadius: 10, padding: 10, minHeight: 44, overflow: 'hidden', borderWidth: 0.5, borderColor: 'rgba(245,213,224,0.10)' },
   compactStrip: { width: 3, height: 28, borderRadius: 2 },
   compactIcon: { width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
   compactName: { fontSize: 13, fontWeight: '600', color: theme.textPrimary },
