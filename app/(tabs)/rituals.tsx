@@ -397,7 +397,7 @@ export default function RitualsScreen() {
         {filteredLibrary.length === 0 ? (
           <View style={styles.libEmptyState}><MaterialIcons name="auto-stories" size={52} color={theme.textMuted} /><Text style={styles.libEmptyTitle}>{libSearch.trim() || libCategory !== 'all' ? 'No spells found' : 'Your grimoire is empty'}</Text><Text style={styles.libEmptyText}>{libSearch.trim() || libCategory !== 'all' ? 'Try adjusting your search or filter' : 'Add your first spell to build your personal grimoire'}</Text>{!libSearch.trim() && libCategory === 'all' ? <Pressable style={styles.libEmptyCta} onPress={() => router.push('/add-library-ritual')}><MaterialIcons name="add" size={18} color={theme.background} /><Text style={styles.libEmptyCtaText}>Add Spell</Text></Pressable> : null}</View>
         ) : filteredLibrary.map(libR => {
-          const catColor = categoryColors[libR.category] || theme.accent;
+          const catColor = categoryColors[libR.category] || '#C9A0DC';
           const cat = categories.find(c => c.id === libR.category);
           const inPractice = libraryInPractice.has(libR.id);
           return (
