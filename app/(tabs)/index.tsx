@@ -16,6 +16,7 @@ import MoonVisual from '../../components/MoonVisual';
 import PlanetVisual from '../../components/PlanetVisual';
 import PracticeOverview from '../../components/PracticeOverview';
 import { resolveCategoryColor, resolveCategory } from '../../utils/categoryHelpers';
+import SwipeableRow from '../../components/SwipeableRow';
 
 function getMoonPhaseIndex(): number {
   const now = new Date();
@@ -32,7 +33,7 @@ function getMoonPhaseIndex(): number {
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { rituals, categories, categoryColors, manifestations } = useApp();
+  const { rituals, categories, categoryColors, manifestations, updateRitual } = useApp();
   const moonPhase = getCurrentMoonPhase();
   const moonPhaseIndex = getMoonPhaseIndex();
   const todayPlanet = getTodayPlanet();
@@ -193,28 +194,29 @@ locations={[0, 0.35, 0.65, 1]}
                 const catColor = resolveCategoryColor(r.category, categoryColors, categories);
                 const days = r.scheduledDate ? getDaysUntil(r.scheduledDate) : null;
                 return (
-                  <Pressable
-                    key={r.id}
-                    style={styles.alertBanner}
-                    onPress={() => router.push(`/ritual/${r.id}`)}
-                  >
-                    <View style={[styles.alertIcon, { backgroundColor: catColor + '20' }]}>
-                      <MaterialIcons
-                        name={(cat?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap}
-                        size={18}
-                        color={catColor}
-                      />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.alertName} numberOfLines={1}>{r.name}</Text>
-                      {r.intention ? <Text style={styles.alertIntention} numberOfLines={1}>{r.intention}</Text> : null}
-                    </View>
-                    {days !== null ? (
-                      <View style={styles.alertDatePill}>
-                        <Text style={styles.alertDateText}>{getOverduePill(days)}</Text>
+                  <SwipeableRow key={r.id} onDelete={() => updateRitual(r.id, { status: 'dismissed' as any, scheduledDate: undefined })}>
+                    <Pressable
+                      style={styles.alertBanner}
+                      onPress={() => router.push(`/ritual/${r.id}`)}
+                    >
+                      <View style={[styles.alertIcon, { backgroundColor: catColor + '20' }]}>
+                        <MaterialIcons
+                          name={(cat?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap}
+                          size={18}
+                          color={catColor}
+                        />
                       </View>
-                    ) : null}
-                  </Pressable>
+                      <View style={{ flex: 1 }}>
+                        <Text style={styles.alertName} numberOfLines={1}>{r.name}</Text>
+                        {r.intention ? <Text style={styles.alertIntention} numberOfLines={1}>{r.intention}</Text> : null}
+                      </View>
+                      {days !== null ? (
+                        <View style={styles.alertDatePill}>
+                          <Text style={styles.alertDateText}>{getOverduePill(days)}</Text>
+                        </View>
+                      ) : null}
+                    </Pressable>
+                  </SwipeableRow>
                 );
               })}
             </View>
