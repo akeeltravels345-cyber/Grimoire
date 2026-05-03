@@ -46,6 +46,19 @@ export const DEFAULT_CATEGORY_COLORS: Record<string, string> = {
   love_work: '#E85D6F',
   glamour_magick: '#C9A84C',
   protection_work: '#7C5CBF',
+  'Money Work': '#5EBD8A',
+  'Love Work': '#E85D6F',
+  'Glamour Magick': '#C9A84C',
+  'Glamour': '#C9A84C',
+  'Protection Work': '#7C5CBF',
+  'Protection': '#7C5CBF',
+  'General': '#4EA8DE',
+  spellwork: '#7C5CBF',
+  divination: '#4EA8DE',
+  meditation: '#5EBD8A',
+  devotional: '#C9A84C',
+  herbalism: '#5EBD8A',
+  ancestral: '#E85D6F',
 };
 
 export const AVAILABLE_ICONS = [
