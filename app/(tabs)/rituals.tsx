@@ -408,10 +408,10 @@ export default function RitualsScreen() {
                   flexDirection: 'row',
                   alignItems: 'center',
                   gap: 14,
-                  backgroundColor: catColor + '12',
+                  backgroundColor: 'rgba(255,255,255,0.06)',
                   borderRadius: 18,
                   borderWidth: 0.5,
-                  borderColor: catColor + '30',
+                  borderColor: 'rgba(255,255,255,0.10)',
                   borderLeftWidth: 3,
                   borderLeftColor: catColor + 'B0',
                   padding: 16,
@@ -421,11 +421,8 @@ export default function RitualsScreen() {
                 }}
                 onPress={() => router.push(`/library-ritual/${libR.id}`)}
               >
-                {/* Background glow */}
-                <View style={{ position: 'absolute', top: -30, right: -20, width: 100, height: 100, borderRadius: 50, backgroundColor: catColor, opacity: 0.12 }} pointerEvents="none" />
-
                 {/* Category icon box */}
-                <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: catColor + '20', borderWidth: 0.5, borderColor: catColor + '40', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <View style={{ width: 52, height: 52, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.08)', borderWidth: 0.5, borderColor: catColor + '60', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <MaterialIcons name={(cat?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap} size={24} color={catColor} />
                 </View>
 
