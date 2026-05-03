@@ -78,7 +78,7 @@ function StatRing({ value, max, size = 64, color = theme.primary, label }: {
 export default function ProfileScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { rituals, categories, manifestations, clearAllData } = useApp();
+  const { rituals, categories, manifestations, coreCategories, clearAllData } = useApp();
   const { showAlert } = useAlert();
 
   const [profile, setProfile] = useState<ProfileData>(DEFAULT_PROFILE);
@@ -392,6 +392,19 @@ export default function ProfileScreen() {
               thumbColor={settings.hapticFeedback ? theme.primary : theme.textMuted}
             />
           </View>
+
+          <View style={styles.settingDivider} />
+
+          <Pressable style={styles.settingRow} onPress={() => router.push('/core-practice-settings')}>
+            <View style={styles.settingInfo}>
+              <MaterialIcons name="auto-awesome" size={20} color={theme.primary} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.settingLabel}>Core Practice</Text>
+                <Text style={styles.settingDesc}>{coreCategories.length} categories tracking monthly</Text>
+              </View>
+            </View>
+            <MaterialIcons name="chevron-right" size={24} color={theme.textMuted} />
+          </Pressable>
 
           <View style={styles.settingDivider} />
 
