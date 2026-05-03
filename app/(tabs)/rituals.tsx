@@ -418,7 +418,7 @@ export default function RitualsScreen() {
                   borderTopColor: 'rgba(255,255,255,0.10)',
                   borderTopWidth: 0.5,
                   borderLeftWidth: 3,
-                  borderLeftColor: '#C9A84C',
+                  borderLeftColor: catColor,
                 }}
                 onPress={() => router.push(`/library-ritual/${libR.id}`)}
               >

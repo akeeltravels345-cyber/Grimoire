@@ -405,22 +405,15 @@ export default function JournalScreen() {
             <Text style={styles.summaryFooter}>Last: {formatLastDate(summaryData.lastEncounterDate)}</Text>
           </Pressable>
 
-          <View style={[styles.summaryCard, { width: 155, borderLeftColor: '#5EBD8A' }]}>
+          <View style={[styles.summaryCard, { width: 140, borderLeftColor: '#C9A84C' }]}>
             <View style={styles.summaryCardHeader}>
-              <MaterialIcons name="auto-awesome" size={18} color="#5EBD8A" />
-              <Text style={[styles.summaryLabel, { color: '#5EBD8A' }]}>TOP MOODS</Text>
+              <MaterialIcons name="auto-stories" size={18} color="#C9A84C" />
+              <Text style={[styles.summaryLabel, { color: '#C9A84C' }]}>ALL ENTRIES</Text>
             </View>
-            <View style={[styles.summaryDivider, { marginTop: 6 }]} />
-            {summaryData.topMoods.length > 0 ? summaryData.topMoods.map((m, i) => {
-              const barColors = ['#5EBD8A', '#6667AB', '#C9847A', '#7B337E'];
-              const barWidth = Math.max(8, (m.count / summaryData.maxMoodCount) * 60);
-              return (
-                <View key={m.mood} style={styles.moodBarRow}>
-                  <Text style={styles.moodBarLabel} numberOfLines={1}>{m.mood}</Text>
-                  <View style={[styles.moodBar, { width: barWidth, backgroundColor: barColors[i] || barColors[0] }]} />
-                </View>
-              );
-            }) : <Text style={styles.summaryFooter}>No mood data</Text>}
+            <Text style={[styles.summaryNumber, { color: '#C9A84C' }]}>{allItems.length}</Text>
+            <Text style={styles.summarySub}>total entries</Text>
+            <View style={styles.summaryDivider} />
+            <Text style={styles.summaryFooter}>{ritualEntries.length} ritual {"\u00B7"} {standaloneEntries.length} personal</Text>
           </View>
         </ScrollView>
       </View>
