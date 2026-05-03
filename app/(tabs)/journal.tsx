@@ -292,7 +292,7 @@ export default function JournalScreen() {
     const moodColor = MOOD_COLORS[item.mood || ''] || theme.accent;
 
     const card = (
-      <Pressable style={[styles.entryCard, { borderLeftWidth: 3, borderLeftColor: isPersonal ? getTypeColor(item.type) : catColor }]}
+      <Pressable style={[styles.entryCard, { borderLeftWidth: 3, borderLeftColor: '#C9A84C' }]}
         onPress={item.kind === 'ritual' && item.ritualId ? () => router.push(`/ritual/${item.ritualId}`) : undefined}>
         <View style={styles.entryTop}>
           {item.kind === 'ritual' ? (
@@ -581,7 +581,7 @@ const styles = StyleSheet.create({
   addBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: theme.primary, alignItems: 'center', justifyContent: 'center' },
 
   // Tabs
-  tabRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingBottom: 8 },
+  tabRow: { flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingBottom: 16 },
   tabChip: { flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: theme.surface },
   tabChipActive: { backgroundColor: theme.surfaceLight, borderWidth: 1, borderColor: theme.primary + '40' },
   tabChipText: { fontSize: 13, fontWeight: '600', color: theme.textMuted },
@@ -642,7 +642,7 @@ const styles = StyleSheet.create({
   saveEntryBtnText: { fontSize: 15, fontWeight: '600', color: theme.background },
 
   // Timeline
-  dateSection: { marginBottom: 20 },
+  dateSection: { marginBottom: 20, marginTop: 8 },
 
   entryCard: { backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: 14, padding: 16, borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.08)', borderTopColor: 'rgba(255,255,255,0.10)', borderTopWidth: 0.5 },
   entryTop: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
