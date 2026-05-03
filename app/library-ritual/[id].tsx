@@ -16,7 +16,7 @@ import StarField from '../../components/StarField';
 import { resolveCategoryColor, resolveCategory } from '../../utils/categoryHelpers';
 
 const scheduleLabels: Record<string, string> = {
-  daily: 'Daily', weekly: 'Weekly', moon_phase: 'Moon Phase', as_needed: 'One-Time', monthly: 'Monthly',
+  daily: 'Daily', weekly: 'Weekly', moon_phase: 'Moon Phase', as_needed: 'As Needed', monthly: 'Monthly',
 };
 
 export default function LibraryRitualDetailScreen() {

@@ -1,10 +1,14 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, Platform } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
+import Animated, {
+  useSharedValue, useAnimatedStyle, withTiming, withRepeat, withSequence,
+  withDelay, Easing, interpolate,
+} from 'react-native-reanimated';
 import { theme, getCurrentMoonPhase } from '../../constants/theme';
 import { getTodayPlanet } from '../../constants/planetaryData';
 import { getCurrentPlanetaryHour, formatHourTime, PlanetaryHourInfo } from '../../services/planetaryHours';
@@ -14,7 +18,6 @@ import { getComputedStatus, getDaysUntil } from '../../services/mockData';
 import StarField from '../../components/StarField';
 import MoonVisual from '../../components/MoonVisual';
 import PlanetVisual from '../../components/PlanetVisual';
-import PracticeOverview from '../../components/PracticeOverview';
 import { resolveCategoryColor, resolveCategory } from '../../utils/categoryHelpers';
 import SwipeableRow from '../../components/SwipeableRow';
 
@@ -33,7 +36,7 @@ function getMoonPhaseIndex(): number {
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { rituals, categories, categoryColors, manifestations, updateRitual, currentMonthIntention } = useApp();
+  const { rituals, categories, categoryColors, manifestations, updateRitual, currentMonthIntention, coreCategories, monthlyStreak } = useApp();
   const moonPhase = getCurrentMoonPhase();
   const moonPhaseIndex = getMoonPhaseIndex();
   const todayPlanet = getTodayPlanet();
@@ -85,6 +88,69 @@ export default function DashboardScreen() {
         return da - db;
       });
   }, [rituals]);
+
+  // ═══ Monthly Snapshot Data ═══
+  const monthlyData = useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const dayOfMonth = now.getDate();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysRemaining = daysInMonth - dayOfMonth;
+    const monthStart = new Date(year, month, 1);
+    const monthEnd = new Date(year, month + 1, 0, 23, 59, 59);
+    const monthName = now.toLocaleDateString('en-US', { month: 'long' });
+
+    const monthRituals = rituals.filter(r => {
+      if (!r.scheduledDate) return false;
+      const d = new Date(r.scheduledDate);
+      return d >= monthStart && d <= monthEnd;
+    });
+
+    const completed = monthRituals.filter(r => r.status === 'completed').length;
+    const total = monthRituals.length;
+    const missed = monthRituals.filter(r => {
+      if (r.status === 'completed' || r.status === 'dismissed') return false;
+      if (!r.scheduledDate) return false;
+      return new Date(r.scheduledDate) < new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    }).length;
+    const completionPct = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+    const warningLevel: 'none' | 'soft' | 'amber' | 'red' =
+      dayOfMonth <= 7 ? 'none' : dayOfMonth <= 14 ? 'soft' : dayOfMonth <= 21 ? 'amber' : 'red';
+
+    const coreCatData = coreCategories.map(catId => {
+      const cat = categories.find(c => c.id === catId);
+      const catColor = resolveCategoryColor(catId, categoryColors, categories);
+      const catRituals = monthRituals.filter(r => r.category === catId);
+      const scheduledCount = catRituals.length;
+      const completedCount = catRituals.filter(r => r.status === 'completed').length;
+
+      let lastPerformed: string | null = null;
+      const allCatRituals = rituals.filter(r => r.category === catId && r.lastPerformed);
+      if (allCatRituals.length > 0) {
+        const dates = allCatRituals.map(r => new Date(r.lastPerformed!).getTime());
+        const recentDate = new Date(Math.max(...dates));
+        const daysAgo = Math.floor((now.getTime() - recentDate.getTime()) / (24 * 60 * 60 * 1000));
+        lastPerformed = daysAgo === 0 ? 'Today' : daysAgo === 1 ? 'Yesterday' : `${daysAgo}d ago`;
+      }
+
+      return {
+        catId,
+        name: cat?.name || catId,
+        icon: cat?.icon || 'auto-fix-high',
+        color: catColor,
+        scheduledCount,
+        completedCount,
+        lastPerformed,
+        pct: scheduledCount > 0 ? Math.round((completedCount / scheduledCount) * 100) : 0,
+      };
+    });
+
+    const manifestedCount = manifestations.filter(m => m.status === 'manifested').length;
+
+    return { monthName, daysRemaining, daysInMonth, completed, total, missed, completionPct, warningLevel, coreCatData, manifestedCount };
+  }, [rituals, categories, categoryColors, coreCategories, manifestations]);
 
 
 
@@ -275,8 +341,12 @@ locations={[0, 0.35, 0.65, 1]}
             </View>
           ) : null}
 
-          {/* ═══ PRACTICE OVERVIEW ═══ */}
-          <PracticeOverview />
+          {/* ═══ MONTHLY SNAPSHOT ═══ */}
+          <MonthlySnapshotCard
+            data={monthlyData}
+            monthlyStreak={monthlyStreak}
+            currentMonthIntention={currentMonthIntention}
+          />
 
           {/* ═══ RECENT ACTIVITY ═══ */}
           {recentEntries.length > 0 ? (
@@ -314,6 +384,362 @@ locations={[0, 0.35, 0.65, 1]}
     </LinearGradient>
   );
 }
+
+// ═══ PULSING BORDER for urgent core categories ═══
+function PulsingCoreCatRow({ children }: { children: React.ReactNode }) {
+  const pulse = useSharedValue(0);
+  useEffect(() => {
+    pulse.value = withRepeat(
+      withSequence(
+        withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0, { duration: 1600, easing: Easing.inOut(Easing.ease) })
+      ),
+      -1,
+      false
+    );
+  }, []);
+  const animStyle = useAnimatedStyle(() => ({
+    borderColor: `rgba(232,136,152,${interpolate(pulse.value, [0, 1], [0.15, 0.5])})`,
+  }));
+  return (
+    <Animated.View style={[msStyles.coreCatRow, msStyles.coreCatRowRed, animStyle]}>
+      {children}
+    </Animated.View>
+  );
+}
+
+// ═══ ANIMATED PROGRESS BAR ═══
+function AnimatedProgressBar({ progress, color, delayMs = 0, isGradient = false }: {
+  progress: number; color: string; delayMs?: number; isGradient?: boolean;
+}) {
+  const [containerWidth, setContainerWidth] = useState(0);
+  const barWidth = useSharedValue(0);
+  useEffect(() => {
+    if (containerWidth > 0) {
+      const target = Math.max((progress / 100) * containerWidth, progress > 0 ? 3 : 0);
+      barWidth.value = withDelay(delayMs, withTiming(target, { duration: 900, easing: Easing.out(Easing.cubic) }));
+    }
+  }, [progress, containerWidth]);
+  const animStyle = useAnimatedStyle(() => ({ width: barWidth.value }));
+  return (
+    <View
+      style={isGradient ? msStyles.completionBarBg : msStyles.coreCatBarBg}
+      onLayout={(e) => setContainerWidth(e.nativeEvent.layout.width)}
+    >
+      {isGradient ? (
+        <Animated.View style={[{ height: 8, borderRadius: 4, overflow: 'hidden' }, animStyle]}>
+          <LinearGradient
+            colors={[theme.primaryDark, theme.primary, '#DFC4EB']}
+            start={{ x: 0, y: 0.5 }}
+            end={{ x: 1, y: 0.5 }}
+            style={{ flex: 1, borderRadius: 4 }}
+          />
+        </Animated.View>
+      ) : (
+        <Animated.View style={[msStyles.coreCatBarFill, { backgroundColor: color }, animStyle]} />
+      )}
+    </View>
+  );
+}
+
+// ═══ MONTHLY SNAPSHOT CARD ═══
+interface MonthlySnapshotProps {
+  data: {
+    monthName: string;
+    daysRemaining: number;
+    completed: number;
+    total: number;
+    missed: number;
+    completionPct: number;
+    warningLevel: 'none' | 'soft' | 'amber' | 'red';
+    coreCatData: {
+      catId: string; name: string; icon: string; color: string;
+      scheduledCount: number; completedCount: number;
+      lastPerformed: string | null; pct: number;
+    }[];
+    manifestedCount: number;
+  };
+  monthlyStreak: number;
+  currentMonthIntention: { intention: string; ritualIntention: string; intentionSet: boolean; month: string };
+}
+
+function MonthlySnapshotCard({ data, monthlyStreak, currentMonthIntention }: MonthlySnapshotProps) {
+  const router = useRouter();
+  const { monthName, daysRemaining, completed, total, missed, completionPct, warningLevel, coreCatData, manifestedCount } = data;
+
+  return (
+    <View style={msStyles.card}>
+      {/* Top glow */}
+      <LinearGradient
+        colors={[theme.primary + '20', 'transparent']}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={msStyles.cardTopGlow}
+        pointerEvents="none"
+      />
+
+      {/* ═══ Header ═══ */}
+      <View style={msStyles.header}>
+        <View style={{ flex: 1 }}>
+          <Text style={msStyles.headerTitle}>{monthName}&#39;s Practice</Text>
+          <Text style={msStyles.headerSub}>{daysRemaining} day{daysRemaining !== 1 ? 's' : ''} remaining</Text>
+        </View>
+        {monthlyStreak > 0 ? (
+          <View style={msStyles.streakBadge}>
+            <Text style={msStyles.streakText}>{"\uD83D\uDD25"} {monthlyStreak} month streak</Text>
+          </View>
+        ) : null}
+      </View>
+
+      {/* ═══ Completion Bar ═══ */}
+      <View style={msStyles.completionSection}>
+        <Text style={msStyles.completionLabel}>
+          {completed} of {total} rituals completed
+        </Text>
+        <AnimatedProgressBar progress={completionPct} color={theme.primary} delayMs={200} isGradient />
+        <Text style={msStyles.completionSub}>
+          {missed} missed {"\u00B7"} {daysRemaining} days to go
+        </Text>
+      </View>
+
+      {/* ═══ Core Practice ═══ */}
+      <View style={msStyles.coreDivider}>
+        <View style={msStyles.coreDividerLine} />
+        <Text style={msStyles.coreDividerText}>CORE PRACTICE</Text>
+        <View style={msStyles.coreDividerLine} />
+      </View>
+
+      {coreCatData.map((cat, i) => {
+        const isCompleted = cat.completedCount > 0;
+        const isScheduled = cat.scheduledCount > 0 && cat.completedCount === 0;
+        const notScheduled = cat.scheduledCount === 0;
+
+        // Determine row state
+        let statusElement: React.ReactNode = null;
+        let rowBg = cat.color + '08';
+        let nameColor = theme.textPrimary;
+
+        if (isCompleted) {
+          statusElement = (
+            <View style={[msStyles.coreCatStatus, { backgroundColor: theme.success + '18' }]}>
+              <MaterialIcons name="check" size={12} color={theme.success} />
+              <Text style={[msStyles.coreCatStatusText, { color: theme.success }]}>{cat.completedCount}/{cat.scheduledCount}</Text>
+            </View>
+          );
+        } else if (isScheduled) {
+          statusElement = (
+            <Text style={[msStyles.coreCatCount, { color: cat.color }]}>0/{cat.scheduledCount}</Text>
+          );
+        } else if (notScheduled && warningLevel === 'none') {
+          statusElement = <Text style={msStyles.coreCatNeutral}>{"\u2014"}</Text>;
+          rowBg = 'rgba(255,255,255,0.04)';
+          nameColor = theme.textMuted;
+        } else if (notScheduled && warningLevel === 'soft') {
+          statusElement = <Text style={msStyles.coreCatSoftHint}>Not scheduled yet</Text>;
+          rowBg = 'rgba(78,168,222,0.06)';
+        } else if (notScheduled && warningLevel === 'amber') {
+          statusElement = (
+            <Pressable onPress={() => router.push(`/add-ritual?category=${encodeURIComponent(cat.catId)}`)} hitSlop={8}>
+              <Text style={msStyles.coreCatAmberCta}>Schedule soon {"\u2192"}</Text>
+            </Pressable>
+          );
+          rowBg = 'rgba(232,200,122,0.08)';
+          nameColor = theme.warning;
+        }
+
+        // Red urgent gets pulsing wrapper
+        if (notScheduled && warningLevel === 'red') {
+          return (
+            <PulsingCoreCatRow key={cat.catId}>
+              <Pressable style={msStyles.coreCatRowInner} onPress={() => router.push('/(tabs)/rituals')}>
+                <View style={[msStyles.coreCatIcon, { backgroundColor: theme.error + '18' }]}>
+                  <MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={15} color={theme.error} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[msStyles.coreCatName, { color: theme.error }]}>{cat.name}</Text>
+                  {cat.lastPerformed ? <Text style={msStyles.coreCatLast}>{cat.lastPerformed}</Text> : null}
+                </View>
+                <Pressable onPress={() => router.push(`/add-ritual?category=${encodeURIComponent(cat.catId)}`)} hitSlop={8}>
+                  <Text style={msStyles.coreCatRedCta}>Schedule now {"\u2192"}</Text>
+                </Pressable>
+              </Pressable>
+            </PulsingCoreCatRow>
+          );
+        }
+
+        return (
+          <Pressable
+            key={cat.catId}
+            style={[msStyles.coreCatRow, { backgroundColor: rowBg }]}
+            onPress={() => router.push('/(tabs)/rituals')}
+          >
+            <View style={msStyles.coreCatRowInner}>
+              <View style={[msStyles.coreCatIcon, { backgroundColor: cat.color + '1A' }]}>
+                <MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={15} color={isCompleted ? theme.success : cat.color} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[msStyles.coreCatName, { color: nameColor }]}>{cat.name}</Text>
+                {cat.lastPerformed ? <Text style={msStyles.coreCatLast}>{cat.lastPerformed}</Text> : null}
+              </View>
+              {statusElement}
+            </View>
+            {cat.scheduledCount > 0 ? (
+              <AnimatedProgressBar
+                progress={cat.pct}
+                color={isCompleted ? theme.success : cat.color}
+                delayMs={300 + i * 100}
+              />
+            ) : null}
+          </Pressable>
+        );
+      })}
+
+      {/* ═══ Monthly Intention Teaser ═══ */}
+      {currentMonthIntention.intentionSet ? (
+        <Pressable style={msStyles.intentionTeaser} onPress={() => router.push('/monthly-intention')}>
+          <Text style={msStyles.intentionTeaserLabel}>This month&#39;s intention</Text>
+          <Text style={msStyles.intentionTeaserText} numberOfLines={2}>{currentMonthIntention.intention}</Text>
+        </Pressable>
+      ) : null}
+
+      {/* ═══ Footer Stats ═══ */}
+      <View style={msStyles.footer}>
+        <View style={msStyles.footerItem}>
+          <Text style={[msStyles.footerValue, { color: theme.success }]}>{completed}</Text>
+          <Text style={msStyles.footerLabel}>Completed</Text>
+        </View>
+        <View style={msStyles.footerDivider} />
+        <View style={msStyles.footerItem}>
+          <Text style={[msStyles.footerValue, { color: missed > 0 ? theme.error : theme.textMuted }]}>{missed}</Text>
+          <Text style={msStyles.footerLabel}>Missed</Text>
+        </View>
+        <View style={msStyles.footerDivider} />
+        <View style={msStyles.footerItem}>
+          <Text style={[msStyles.footerValue, { color: '#4EA8DE' }]}>{manifestedCount}</Text>
+          <Text style={msStyles.footerLabel}>Manifested</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// ═══ Monthly Snapshot Styles ═══
+const msStyles = StyleSheet.create({
+  card: {
+    backgroundColor: theme.surface,
+    borderRadius: theme.radius.lg,
+    padding: 18,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: theme.border,
+    borderTopColor: 'rgba(255,255,255,0.18)',
+    overflow: 'hidden',
+  },
+  cardTopGlow: {
+    position: 'absolute', top: 0, left: 0, right: 0, height: 60,
+  },
+  header: {
+    flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 18,
+  },
+  headerTitle: {
+    fontSize: 20, fontWeight: '700', color: theme.textPrimary,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+  },
+  headerSub: {
+    fontSize: 12, color: theme.textMuted, fontWeight: '500', marginTop: 3,
+  },
+  streakBadge: {
+    backgroundColor: 'rgba(232,200,122,0.12)', borderRadius: 12,
+    paddingHorizontal: 10, paddingVertical: 5,
+    borderWidth: 1, borderColor: 'rgba(232,200,122,0.25)',
+  },
+  streakText: {
+    fontSize: 11, fontWeight: '700', color: '#E8C87A',
+  },
+  // Completion
+  completionSection: { marginBottom: 16 },
+  completionLabel: {
+    fontSize: 13, fontWeight: '600', color: theme.textSecondary, marginBottom: 8,
+  },
+  completionBarBg: {
+    height: 8, backgroundColor: 'rgba(255,255,255,0.08)', borderRadius: 4, overflow: 'hidden',
+  },
+  completionSub: {
+    fontSize: 11, color: theme.textMuted, fontWeight: '500', marginTop: 6,
+  },
+  // Core divider
+  coreDivider: {
+    flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 10,
+  },
+  coreDividerLine: {
+    flex: 1, height: 1, backgroundColor: theme.border,
+  },
+  coreDividerText: {
+    fontSize: 9, fontWeight: '700', color: theme.textMuted, letterSpacing: 1.2,
+  },
+  // Core category rows
+  coreCatRow: {
+    borderRadius: 12, padding: 12, marginBottom: 7,
+    borderWidth: 1, borderColor: 'transparent',
+  },
+  coreCatRowRed: {
+    backgroundColor: 'rgba(232,136,152,0.06)',
+    borderWidth: 1.5,
+  },
+  coreCatRowInner: {
+    flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 6,
+  },
+  coreCatIcon: {
+    width: 28, height: 28, borderRadius: 8, alignItems: 'center', justifyContent: 'center',
+  },
+  coreCatName: {
+    fontSize: 13, fontWeight: '600', color: theme.textPrimary,
+  },
+  coreCatLast: {
+    fontSize: 10, color: theme.textMuted, fontWeight: '500', marginTop: 1,
+  },
+  coreCatBarBg: {
+    height: 4, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 2, overflow: 'hidden',
+  },
+  coreCatBarFill: {
+    height: 4, borderRadius: 2,
+  },
+  coreCatStatus: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10,
+  },
+  coreCatStatusText: { fontSize: 11, fontWeight: '700' },
+  coreCatCount: { fontSize: 12, fontWeight: '700' },
+  coreCatNeutral: { fontSize: 12, color: theme.textMuted },
+  coreCatSoftHint: { fontSize: 11, color: '#4EA8DE', fontWeight: '600', fontStyle: 'italic' },
+  coreCatAmberCta: { fontSize: 11, fontWeight: '700', color: theme.warning },
+  coreCatRedCta: { fontSize: 11, fontWeight: '700', color: theme.error },
+  // Intention teaser
+  intentionTeaser: {
+    marginTop: 10, padding: 14, borderRadius: theme.radius.md,
+    backgroundColor: 'rgba(201,168,76,0.06)',
+    borderWidth: 1, borderColor: 'rgba(201,168,76,0.15)',
+  },
+  intentionTeaserLabel: {
+    fontSize: 9, fontWeight: '700', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 5,
+  },
+  intentionTeaserText: {
+    fontSize: 14, color: '#F5D5E0', fontStyle: 'italic', lineHeight: 20,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+  },
+  // Footer
+  footer: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
+    marginTop: 16, paddingTop: 14, borderTopWidth: 1, borderTopColor: theme.border,
+  },
+  footerItem: { alignItems: 'center' },
+  footerValue: { fontSize: 18, fontWeight: '700' },
+  footerLabel: {
+    fontSize: 9, fontWeight: '600', color: theme.textMuted,
+    textTransform: 'uppercase', marginTop: 2, letterSpacing: 0.3,
+  },
+  footerDivider: { width: 1, height: 24, backgroundColor: theme.border },
+});
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: 'transparent' },
