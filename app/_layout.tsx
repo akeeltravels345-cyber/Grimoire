@@ -22,6 +22,7 @@ export default function RootLayout() {
             <Stack.Screen name="add-to-practice" options={{ presentation: 'modal' }} />
             <Stack.Screen name="library-ritual/[id]" options={{ presentation: 'card' }} />
             <Stack.Screen name="spell-research" options={{ presentation: 'card' }} />
+            <Stack.Screen name="monthly-intention" options={{ presentation: 'card' }} />
           </Stack>
         </AppProvider>
       </SafeAreaProvider>

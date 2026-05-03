@@ -33,18 +33,46 @@ function getMoonPhaseIndex(): number {
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { rituals, categories, categoryColors, manifestations, updateRitual } = useApp();
+  const { rituals, categories, categoryColors, manifestations, updateRitual, currentMonthIntention } = useApp();
   const moonPhase = getCurrentMoonPhase();
   const moonPhaseIndex = getMoonPhaseIndex();
   const todayPlanet = getTodayPlanet();
 
   const [currentHour, setCurrentHour] = useState<PlanetaryHourInfo | null>(null);
+  const [intentionBannerDismissed, setIntentionBannerDismissed] = useState(false);
 
   useEffect(() => {
     const update = () => setCurrentHour(getCurrentPlanetaryHour());
     update();
     const interval = setInterval(update, 60000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Monthly intention redirect: days 1-3 of new month
+  useEffect(() => {
+    const now = new Date();
+    const dayOfMonth = now.getDate();
+    const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const isEarlyMonth = dayOfMonth >= 1 && dayOfMonth <= 3;
+    const needsIntention = !currentMonthIntention.intentionSet || currentMonthIntention.month !== currentMonthStr;
+    if (isEarlyMonth && needsIntention && dayOfMonth === 1) {
+      router.replace('/monthly-intention');
+    }
+  }, [currentMonthIntention]);
+
+  // Show banner on days 2-3 if intention not set
+  const showIntentionBanner = useMemo(() => {
+    if (intentionBannerDismissed) return false;
+    const now = new Date();
+    const dayOfMonth = now.getDate();
+    const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const isDay2or3 = dayOfMonth === 2 || dayOfMonth === 3;
+    const needsIntention = !currentMonthIntention.intentionSet || currentMonthIntention.month !== currentMonthStr;
+    return isDay2or3 && needsIntention;
+  }, [currentMonthIntention, intentionBannerDismissed]);
+
+  const intentionMonthName = useMemo(() => {
+    return new Date().toLocaleDateString('en-US', { month: 'long' });
   }, []);
 
   const overdueRituals = useMemo(() => {
@@ -138,6 +166,31 @@ locations={[0, 0.35, 0.65, 1]}
               </Pressable>
             </View>
           </View>
+
+          {/* ═══ MONTHLY INTENTION BANNER ═══ */}
+          {showIntentionBanner ? (
+            <Pressable
+              style={styles.intentionBanner}
+              onPress={() => router.push('/monthly-intention')}
+            >
+              <View style={styles.intentionBannerContent}>
+                <Text style={styles.intentionBannerIcon}>✦</Text>
+                <Text style={styles.intentionBannerText}>
+                  Set your {intentionMonthName} intention →
+                </Text>
+              </View>
+              <Pressable
+                style={styles.intentionBannerClose}
+                onPress={(e) => {
+                  e.stopPropagation?.();
+                  setIntentionBannerDismissed(true);
+                }}
+                hitSlop={12}
+              >
+                <MaterialIcons name="close" size={16} color={theme.textMuted} />
+              </Pressable>
+            </Pressable>
+          ) : null}
 
           {/* ═══ COSMIC CONTEXT — Square Cards ═══ */}
           <View style={styles.cosmicGrid}>
@@ -365,4 +418,45 @@ const styles = StyleSheet.create({
   activityDate: { fontSize: 12, color: theme.textMuted },
   activityMoodBadge: { backgroundColor: 'rgba(255,255,255,0.10)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
   activityMood: { fontSize: 11, color: theme.textSecondary, fontWeight: '500' },
+
+  // Monthly Intention Banner
+  intentionBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(201,168,76,0.12)',
+    borderRadius: theme.radius.md,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(201,168,76,0.25)',
+    borderLeftWidth: 3,
+    borderLeftColor: '#C9A84C',
+  },
+  intentionBannerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  intentionBannerIcon: {
+    fontSize: 16,
+    color: '#C9A84C',
+  },
+  intentionBannerText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#C9A84C',
+    flex: 1,
+  },
+  intentionBannerClose: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.06)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
+  },
 });
