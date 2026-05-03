@@ -23,6 +23,29 @@ const DEFAULT_JOURNAL_TYPES: JournalEntryType[] = [
   
 ];
 
+export interface MonthlySnapshot {
+  month: string;
+  label: string;
+  intention: string;
+  ritualIntention: string;
+  intentionSet: boolean;
+  coreCategoryResults: {
+    categoryId: string;
+    categoryName: string;
+    completed: boolean;
+    ritualsCompleted: number;
+    ritualsScheduled: number;
+  }[];
+  totalScheduled: number;
+  totalCompleted: number;
+  totalMissed: number;
+  completionRate: number;
+  missedRituals: { id: string; name: string; scheduledDate: string; category: string; }[];
+  completedRituals: { id: string; name: string; category: string; completedDate: string; }[];
+  monthlyStreakCount: number;
+  createdAt: string;
+}
+
 interface AppContextType {
   rituals: Ritual[];
   libraryRituals: LibraryRitual[];
@@ -57,6 +80,10 @@ interface AppContextType {
   deleteMood: (mood: string) => void;
   coreCategories: string[];
   setCoreCategories: (ids: string[]) => void;
+  monthlySnapshots: MonthlySnapshot[];
+  currentMonthIntention: { intention: string; ritualIntention: string; intentionSet: boolean; month: string };
+  setMonthlyIntention: (intention: string, ritualIntention: string) => void;
+  monthlyStreak: number;
   clearAllData: () => void;
 }
 
@@ -71,6 +98,8 @@ const NOTIF_IDS_KEY = 'grimoire_notification_ids';
 const LIBRARY_KEY = 'grimoire_library';
 const JOURNAL_TYPES_KEY = 'grimoire_journal_types';
 const DATA_VERSION_KEY = 'grimoire_data_version';
+const SNAPSHOTS_KEY = 'grimoire_monthly_snapshots';
+const MONTHLY_INTENTION_KEY = 'grimoire_monthly_intention';
 
 const CURRENT_DATA_VERSION = '4';
 
@@ -205,6 +234,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [journalEntryTypes, setJournalEntryTypes] = useState<JournalEntryType[]>(DEFAULT_JOURNAL_TYPES);
   const [moods, setMoods] = useState<string[]>(DEFAULT_MOODS);
   const [coreCategories, setCoreCategoriesState] = useState<string[]>([]);
+  const [monthlySnapshots, setMonthlySnapshots] = useState<MonthlySnapshot[]>([]);
+  const [currentMonthIntention, setCurrentMonthIntention] = useState({ intention: '', ritualIntention: '', intentionSet: false, month: '' });
   const [isLoaded, setIsLoaded] = useState(false);
   const hasRequestedPermissions = useRef(false);
 
@@ -274,6 +305,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
           }
           setCoreCategoriesState(defaults);
         }
+
+        // Load monthly snapshots
+        const snapshotData = await AsyncStorage.getItem(SNAPSHOTS_KEY);
+        if (snapshotData) { try { setMonthlySnapshots(JSON.parse(snapshotData)); } catch {} }
+        const intentionData = await AsyncStorage.getItem(MONTHLY_INTENTION_KEY);
+        if (intentionData) { try { setCurrentMonthIntention(JSON.parse(intentionData)); } catch {} }
       } catch {}
       setIsLoaded(true);
     })();
@@ -299,6 +336,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(JOURNAL_TYPES_KEY, JSON.stringify(journalEntryTypes)); }, [journalEntryTypes, isLoaded]);
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(MOODS_KEY, JSON.stringify(moods)); }, [moods, isLoaded]);
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(CORE_CATEGORIES_KEY, JSON.stringify(coreCategories)); }, [coreCategories, isLoaded]);
+  useEffect(() => { if (isLoaded) AsyncStorage.setItem(SNAPSHOTS_KEY, JSON.stringify(monthlySnapshots)); }, [monthlySnapshots, isLoaded]);
+  useEffect(() => { if (isLoaded) AsyncStorage.setItem(MONTHLY_INTENTION_KEY, JSON.stringify(currentMonthIntention)); }, [currentMonthIntention, isLoaded]);
 
   const addRitual = (ritual: Omit<Ritual, 'id' | 'createdAt' | 'timesPerformed' | 'journal'> & { status?: Ritual['status'] }) => {
     const id = Date.now().toString();
@@ -576,6 +615,90 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCoreCategoriesState(valid);
   };
 
+  const setMonthlyIntention = (intention: string, ritualIntention: string) => {
+    const now = new Date();
+    const month = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    setCurrentMonthIntention({ intention, ritualIntention, intentionSet: true, month });
+  };
+
+  const createMonthlySnapshot = useCallback((year: number, month: number) => {
+    const monthStr = `${year}-${String(month + 1).padStart(2, '0')}`;
+    const alreadyArchived = monthlySnapshots.some(s => s.month === monthStr);
+    if (alreadyArchived) return;
+
+    const monthStart = new Date(year, month, 1);
+    const monthEnd = new Date(year, month + 1, 0, 23, 59, 59);
+
+    const monthRituals = rituals.filter(r => {
+      if (!r.scheduledDate) return false;
+      const d = new Date(r.scheduledDate);
+      return d >= monthStart && d <= monthEnd;
+    });
+
+    const completed = monthRituals.filter(r => r.status === 'completed');
+    const missed = monthRituals.filter(r => r.status !== 'completed' && r.status !== 'dismissed');
+
+    const coreCategoryResults = coreCategories.map(catId => {
+      const cat = categories.find(c => c.id === catId);
+      const catRituals = monthRituals.filter(r => r.category === catId);
+      const catCompleted = catRituals.filter(r => r.status === 'completed');
+      return {
+        categoryId: catId,
+        categoryName: cat?.name || catId,
+        completed: catCompleted.length > 0,
+        ritualsCompleted: catCompleted.length,
+        ritualsScheduled: catRituals.length,
+      };
+    });
+
+    const prevSnapshots = monthlySnapshots.filter(s => s.month < monthStr);
+    const streak = prevSnapshots.length > 0
+      ? prevSnapshots.reduce((count, s) => {
+          if (s.coreCategoryResults.every(c => c.completed)) return count + 1;
+          return 0;
+        }, 0)
+      : 0;
+
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    const snapshot: MonthlySnapshot = {
+      month: monthStr,
+      label: `${monthNames[month]} ${year}`,
+      intention: currentMonthIntention.month === monthStr ? currentMonthIntention.intention : '',
+      ritualIntention: currentMonthIntention.month === monthStr ? currentMonthIntention.ritualIntention : '',
+      intentionSet: currentMonthIntention.month === monthStr ? currentMonthIntention.intentionSet : false,
+      coreCategoryResults,
+      totalScheduled: monthRituals.length,
+      totalCompleted: completed.length,
+      totalMissed: missed.length,
+      completionRate: monthRituals.length > 0 ? Math.round((completed.length / monthRituals.length) * 100) : 0,
+      missedRituals: missed.map(r => ({ id: r.id, name: r.name, scheduledDate: r.scheduledDate || '', category: r.category })),
+      completedRituals: completed.map(r => ({ id: r.id, name: r.name, category: r.category, completedDate: r.lastPerformed || r.scheduledDate || '' })),
+      monthlyStreakCount: streak,
+      createdAt: new Date().toISOString(),
+    };
+
+    setMonthlySnapshots(prev => [snapshot, ...prev]);
+  }, [rituals, categories, coreCategories, monthlySnapshots, currentMonthIntention]);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+    const prevMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+    const prevYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+    const prevMonthStr = `${prevYear}-${String(prevMonth + 1).padStart(2, '0')}`;
+    const alreadyArchived = monthlySnapshots.some(s => s.month === prevMonthStr);
+    if (!alreadyArchived && rituals.length > 0) {
+      createMonthlySnapshot(prevYear, prevMonth);
+    }
+  }, [isLoaded]);
+
+  const monthlyStreak = monthlySnapshots.filter(s =>
+    s.coreCategoryResults.every(c => c.completed)
+  ).length;
+
   const addToPractice = (libraryId: string, overrides?: { scheduledDate?: string; schedule?: LibraryRitual['schedule']; consecutiveDays?: number }) => {
     const libRitual = libraryRituals.find(r => r.id === libraryId);
     if (!libRitual) return;
@@ -609,7 +732,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setJournalEntryTypes(DEFAULT_JOURNAL_TYPES);
     setMoods(DEFAULT_MOODS);
     setCoreCategoriesState([]);
-    await AsyncStorage.multiRemove([STORAGE_KEY, MANIFESTATIONS_KEY, STANDALONE_KEY, NOTIF_IDS_KEY, LIBRARY_KEY, JOURNAL_TYPES_KEY, MOODS_KEY, CORE_CATEGORIES_KEY]);
+    setMonthlySnapshots([]);
+    setCurrentMonthIntention({ intention: '', ritualIntention: '', intentionSet: false, month: '' });
+    await AsyncStorage.multiRemove([STORAGE_KEY, MANIFESTATIONS_KEY, STANDALONE_KEY, NOTIF_IDS_KEY, LIBRARY_KEY, JOURNAL_TYPES_KEY, MOODS_KEY, CORE_CATEGORIES_KEY, SNAPSHOTS_KEY, MONTHLY_INTENTION_KEY]);
     await Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
   };
 
@@ -624,6 +749,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       journalEntryTypes, addJournalEntryType, deleteJournalEntryType,
       moods, addMood, deleteMood,
       coreCategories, setCoreCategories: updateCoreCategories,
+      monthlySnapshots, currentMonthIntention, setMonthlyIntention, monthlyStreak,
       clearAllData,
     }}>
       {children}
