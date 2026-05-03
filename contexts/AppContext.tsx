@@ -13,6 +13,7 @@ export interface JournalEntryType {
 
 const DEFAULT_MOODS = ['Connected', 'Peaceful', 'Grateful', 'Reflective', 'Contemplative', 'Hopeful', 'Empowered', 'Joyful', 'Grounded', 'Centered', 'Elevated', 'Determined', 'Radiant', 'Mystified', 'Aware'];
 const MOODS_KEY = 'grimoire_moods';
+const CORE_CATEGORIES_KEY = 'grimoire_core_categories';
 
 const DEFAULT_JOURNAL_TYPES: JournalEntryType[] = [
   { id: 'reflection', label: 'Reflection', icon: '\u{1F4D6}' },
@@ -54,6 +55,8 @@ interface AppContextType {
   moods: string[];
   addMood: (mood: string) => void;
   deleteMood: (mood: string) => void;
+  coreCategories: string[];
+  setCoreCategories: (ids: string[]) => void;
   clearAllData: () => void;
 }
 
@@ -201,6 +204,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [libraryRituals, setLibraryRituals] = useState<LibraryRitual[]>([]);
   const [journalEntryTypes, setJournalEntryTypes] = useState<JournalEntryType[]>(DEFAULT_JOURNAL_TYPES);
   const [moods, setMoods] = useState<string[]>(DEFAULT_MOODS);
+  const [coreCategories, setCoreCategoriesState] = useState<string[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
   const hasRequestedPermissions = useRef(false);
 
@@ -249,6 +253,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (journalTypesData) { try { setJournalEntryTypes(JSON.parse(journalTypesData)); } catch {} }
         const moodsData = await AsyncStorage.getItem(MOODS_KEY);
         if (moodsData) { try { setMoods(JSON.parse(moodsData)); } catch {} }
+
+        // Load core categories
+        const loadedCats: PracticeCategory[] = catData ? JSON.parse(catData) : DEFAULT_CATEGORIES;
+        const coreCatData = await AsyncStorage.getItem(CORE_CATEGORIES_KEY);
+        if (coreCatData) {
+          try { setCoreCategoriesState(JSON.parse(coreCatData)); } catch {}
+        } else {
+          const coreNames = ['money work', 'glamour', 'unblocking', 'protection'];
+          const defaults = loadedCats
+            .filter(c => coreNames.some(n => c.name.toLowerCase().includes(n)))
+            .map(c => c.id)
+            .slice(0, 4);
+          if (defaults.length < 4 && loadedCats.length > 0) {
+            const remaining = loadedCats
+              .filter(c => !defaults.includes(c.id))
+              .map(c => c.id)
+              .slice(0, 4 - defaults.length);
+            defaults.push(...remaining);
+          }
+          setCoreCategoriesState(defaults);
+        }
       } catch {}
       setIsLoaded(true);
     })();
@@ -273,6 +298,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(LIBRARY_KEY, JSON.stringify(libraryRituals)); }, [libraryRituals, isLoaded]);
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(JOURNAL_TYPES_KEY, JSON.stringify(journalEntryTypes)); }, [journalEntryTypes, isLoaded]);
   useEffect(() => { if (isLoaded) AsyncStorage.setItem(MOODS_KEY, JSON.stringify(moods)); }, [moods, isLoaded]);
+  useEffect(() => { if (isLoaded) AsyncStorage.setItem(CORE_CATEGORIES_KEY, JSON.stringify(coreCategories)); }, [coreCategories, isLoaded]);
 
   const addRitual = (ritual: Omit<Ritual, 'id' | 'createdAt' | 'timesPerformed' | 'journal'> & { status?: Ritual['status'] }) => {
     const id = Date.now().toString();
@@ -544,6 +570,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setMoods(prev => prev.filter(m => m !== mood));
   };
 
+  const updateCoreCategories = (ids: string[]) => {
+    const valid = ids.slice(0, 6);
+    if (valid.length === 0) return;
+    setCoreCategoriesState(valid);
+  };
+
   const addToPractice = (libraryId: string, overrides?: { scheduledDate?: string; schedule?: LibraryRitual['schedule']; consecutiveDays?: number }) => {
     const libRitual = libraryRituals.find(r => r.id === libraryId);
     if (!libRitual) return;
@@ -576,7 +608,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLibraryRituals([]);
     setJournalEntryTypes(DEFAULT_JOURNAL_TYPES);
     setMoods(DEFAULT_MOODS);
-    await AsyncStorage.multiRemove([STORAGE_KEY, MANIFESTATIONS_KEY, STANDALONE_KEY, NOTIF_IDS_KEY, LIBRARY_KEY, JOURNAL_TYPES_KEY, MOODS_KEY]);
+    setCoreCategoriesState([]);
+    await AsyncStorage.multiRemove([STORAGE_KEY, MANIFESTATIONS_KEY, STANDALONE_KEY, NOTIF_IDS_KEY, LIBRARY_KEY, JOURNAL_TYPES_KEY, MOODS_KEY, CORE_CATEGORIES_KEY]);
     await Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
   };
 
@@ -589,7 +622,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
       addStandaloneEntry, deleteStandaloneEntry, updateStatus,
       addLibraryRitual, updateLibraryRitual, deleteLibraryRitual, addToPractice,
       journalEntryTypes, addJournalEntryType, deleteJournalEntryType,
-      moods, addMood, deleteMood, clearAllData,
+      moods, addMood, deleteMood,
+      coreCategories, setCoreCategories: updateCoreCategories,
+      clearAllData,
     }}>
       {children}
     </AppContext.Provider>
