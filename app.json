@@ -24,7 +24,7 @@
       "favicon": "./assets/images/logo.png"
     },
     "plugins": [
-  "expo-router",
+      "expo-router",
       [
         "expo-splash-screen",
         {
@@ -33,8 +33,7 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ],
-      "expo-web-browser"
+      ]
     ],
     "experiments": {
       "typedRoutes": true
