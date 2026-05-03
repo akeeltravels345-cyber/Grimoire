@@ -10,6 +10,7 @@ import { useApp } from '../../contexts/AppContext';
 import { useAlert } from '@/template';
 import { getComputedStatus, getDaysUntil as getDaysUntilCount } from '../../services/mockData';
 import GradientScreen from '../../components/GradientScreen';
+import { resolveCategoryColor, resolveCategory } from '../../utils/categoryHelpers';
 
 const scheduleLabels: Record<string, string> = {
   daily: 'Daily', weekly: 'Weekly', moon_phase: 'Moon Phase', as_needed: 'As Needed', monthly: 'Monthly',
@@ -53,8 +54,8 @@ for (let i = 0; i < 90; i++) {
     );
   }
 
-  const category = categories.find(c => c.id === ritual.category || c.name === ritual.category || c.name.toLowerCase() === ritual.category?.toLowerCase());
-  const catColor = categoryColors[ritual.category] || categoryColors[ritual.category?.toLowerCase().replace(/\s+/g, '_')] || categoryColors[ritual.category?.toLowerCase().replace(/\s+/g, '-')] || (category ? categoryColors[category.id] : undefined) || theme.accent;
+  const category = resolveCategory(ritual.category, categories);
+  const catColor = resolveCategoryColor(ritual.category, categoryColors, categories);
   const manif = manifestations.find(m => m.ritualId === ritual.id);
 
   const computedStatus = getComputedStatus(ritual);

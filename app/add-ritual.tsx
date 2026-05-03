@@ -11,6 +11,7 @@ import { theme } from '../constants/theme';
 import { useApp } from '../contexts/AppContext';
 import { useAlert } from '@/template';
 import GradientScreen from '../components/GradientScreen';
+import { resolveCategoryColor } from '../utils/categoryHelpers';
 
 const scheduleOptions = [
   { id: 'daily', label: 'Daily', icon: 'today' },
@@ -122,7 +123,7 @@ export default function AddRitualScreen() {
           <Text style={styles.label}>Category</Text>
           <View style={styles.categoryGrid}>
             {categories.map(cat => {
-              const catColor = categoryColors[cat.id] || categoryColors[cat.name] || categoryColors[cat.name.toLowerCase().replace(/\s+/g, '_')] || categoryColors[cat.name.toLowerCase().replace(/\s+/g, '-')] || theme.accent;
+              const catColor = resolveCategoryColor(cat.id, categoryColors, categories);
               return (
                 <Pressable
                   key={cat.id}

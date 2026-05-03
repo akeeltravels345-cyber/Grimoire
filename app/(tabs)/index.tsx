@@ -15,6 +15,7 @@ import StarField from '../../components/StarField';
 import MoonVisual from '../../components/MoonVisual';
 import PlanetVisual from '../../components/PlanetVisual';
 import PracticeOverview from '../../components/PracticeOverview';
+import { resolveCategoryColor, resolveCategory } from '../../utils/categoryHelpers';
 
 function getMoonPhaseIndex(): number {
   const now = new Date();
@@ -188,8 +189,8 @@ locations={[0, 0.35, 0.65, 1]}
                 <Text style={styles.alertsTitle}>{overdueRituals.length} Past Due</Text>
               </View>
               {overdueRituals.map(r => {
-                const cat = categories.find(c => c.id === r.category || c.name === r.category || c.name.toLowerCase() === r.category?.toLowerCase());
-                const catColor = categoryColors[r.category] || categoryColors[r.category?.toLowerCase().replace(/\s+/g, '_')] || categoryColors[r.category?.toLowerCase().replace(/\s+/g, '-')] || (cat ? categoryColors[cat.id] : undefined) || theme.accent;
+                const cat = resolveCategory(r.category, categories);
+                const catColor = resolveCategoryColor(r.category, categoryColors, categories);
                 const days = r.scheduledDate ? getDaysUntil(r.scheduledDate) : null;
                 return (
                   <Pressable
@@ -232,8 +233,7 @@ locations={[0, 0.35, 0.65, 1]}
                 </Pressable>
               </View>
               {recentEntries.map(entry => {
-                const catEntryObj = categories.find(c => c.id === entry.category || c.name === entry.category || c.name.toLowerCase() === entry.category?.toLowerCase());
-                const catColor = categoryColors[entry.category] || categoryColors[entry.category?.toLowerCase().replace(/\s+/g, '_')] || categoryColors[entry.category?.toLowerCase().replace(/\s+/g, '-')] || (catEntryObj ? categoryColors[catEntryObj.id] : undefined) || theme.accent;
+                const catColor = resolveCategoryColor(entry.category, categoryColors, categories);
                 return (
                   <Pressable key={entry.id} style={styles.activityCard} onPress={() => router.push(`/ritual/${entry.ritualId}`)}>
                     <View style={[styles.activityDot, { backgroundColor: catColor }]} />

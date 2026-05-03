@@ -11,6 +11,7 @@ import { theme } from '../constants/theme';
 import { useApp } from '../contexts/AppContext';
 import { useAlert } from '@/template';
 import GradientScreen from '../components/GradientScreen';
+import { resolveCategoryColor } from '../utils/categoryHelpers';
 
 export default function AddLibraryRitualScreen() {
   const router = useRouter();
@@ -70,7 +71,7 @@ export default function AddLibraryRitualScreen() {
           <Text style={styles.label}>Category</Text>
           <View style={styles.categoryGrid}>
             {categories.map(cat => {
-              const catColor = categoryColors[cat.id] || theme.accent;
+              const catColor = resolveCategoryColor(cat.id, categoryColors, categories);
               return (
                 <Pressable
                   key={cat.id}

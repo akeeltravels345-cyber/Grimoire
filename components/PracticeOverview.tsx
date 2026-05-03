@@ -15,6 +15,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { theme } from '../constants/theme';
 import { useApp } from '../contexts/AppContext';
+import { resolveCategoryColor } from '../utils/categoryHelpers';
 
 // ═══════════════════════════════════════════
 // Core category configuration
@@ -351,7 +352,7 @@ export default function PracticeOverview() {
 
       const fallbackIcon = CORE_ICONS[coreName.toLowerCase()] || 'auto-fix-high';
       const fallbackColor = CORE_FALLBACK_COLORS[coreName.toLowerCase()] || theme.accent;
-      const catColor = catId ? (categoryColors[catId] || categoryColors[coreName.toLowerCase().replace(/\s+/g, '_')] || categoryColors[coreName.toLowerCase().replace(/\s+/g, '-')] || categoryColors[coreName] || fallbackColor) : fallbackColor;
+      const catColor = catId ? resolveCategoryColor(catId, categoryColors, categories, fallbackColor) : fallbackColor;
       const catIcon = catObj?.icon || fallbackIcon;
 
       const catRituals = catId ? rituals.filter(r => r.category === catId) : [];
@@ -403,7 +404,7 @@ export default function PracticeOverview() {
 
       const totalCount = recentRituals.length;
       const completedCount = recentRituals.filter(r => r.status === 'completed').length;
-      const catColor = categoryColors[cat.id] || categoryColors[cat.name] || categoryColors[cat.name.toLowerCase().replace(/\s+/g, '_')] || categoryColors[cat.name.toLowerCase().replace(/\s+/g, '-')] || theme.accent;
+      const catColor = resolveCategoryColor(cat.id, categoryColors, categories);
 
       let lastPerformedDaysAgo: number | null = null;
       const perfDates = catRituals

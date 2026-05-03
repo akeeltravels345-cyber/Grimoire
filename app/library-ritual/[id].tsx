@@ -11,6 +11,7 @@ import { theme } from '../../constants/theme';
 import { useApp } from '../../contexts/AppContext';
 import { useAlert } from '@/template';
 import GradientScreen from '../../components/GradientScreen';
+import { resolveCategoryColor, resolveCategory } from '../../utils/categoryHelpers';
 
 const scheduleLabels: Record<string, string> = {
   daily: 'Daily', weekly: 'Weekly', moon_phase: 'Moon Phase', as_needed: 'As Needed', monthly: 'Monthly',
@@ -114,8 +115,8 @@ export default function LibraryRitualDetailScreen() {
     );
   }
 
-  const catObj = categories.find(c => c.id === libRitual.category);
-  const catColor = categoryColors[libRitual.category] || theme.accent;
+  const catObj = resolveCategory(libRitual.category, categories);
+  const catColor = resolveCategoryColor(libRitual.category, categoryColors, categories);
   const ingredients = libRitual.ingredients?.filter(Boolean) || [];
 
   return (
@@ -159,7 +160,7 @@ export default function LibraryRitualDetailScreen() {
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
       <View style={{ flexDirection: 'row', gap: 8, paddingVertical: 4 }}>
         {categories.map(cat => {
-          const cColor = categoryColors[cat.id] || theme.accent;
+          const cColor = resolveCategoryColor(cat.id, categoryColors, categories);
           const isActive = editCategory === cat.id;
           return (
             <Pressable
