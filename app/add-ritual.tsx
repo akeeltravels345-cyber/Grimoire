@@ -122,7 +122,7 @@ export default function AddRitualScreen() {
           <Text style={styles.label}>Category</Text>
           <View style={styles.categoryGrid}>
             {categories.map(cat => {
-              const catColor = categoryColors[cat.id] || theme.accent;
+              const catColor = categoryColors[cat.id] || categoryColors[cat.name] || categoryColors[cat.name.toLowerCase().replace(/\s+/g, '_')] || categoryColors[cat.name.toLowerCase().replace(/\s+/g, '-')] || theme.accent;
               return (
                 <Pressable
                   key={cat.id}

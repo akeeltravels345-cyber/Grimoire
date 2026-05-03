@@ -188,8 +188,8 @@ locations={[0, 0.35, 0.65, 1]}
                 <Text style={styles.alertsTitle}>{overdueRituals.length} Past Due</Text>
               </View>
               {overdueRituals.map(r => {
-                const catColor = categoryColors[r.category] || theme.accent;
-                const cat = categories.find(c => c.id === r.category);
+                const cat = categories.find(c => c.id === r.category || c.name === r.category || c.name.toLowerCase() === r.category?.toLowerCase());
+                const catColor = categoryColors[r.category] || categoryColors[r.category?.toLowerCase().replace(/\s+/g, '_')] || categoryColors[r.category?.toLowerCase().replace(/\s+/g, '-')] || (cat ? categoryColors[cat.id] : undefined) || theme.accent;
                 const days = r.scheduledDate ? getDaysUntil(r.scheduledDate) : null;
                 return (
                   <Pressable
@@ -232,7 +232,8 @@ locations={[0, 0.35, 0.65, 1]}
                 </Pressable>
               </View>
               {recentEntries.map(entry => {
-                const catColor = categoryColors[entry.category] || theme.accent;
+                const catEntryObj = categories.find(c => c.id === entry.category || c.name === entry.category || c.name.toLowerCase() === entry.category?.toLowerCase());
+                const catColor = categoryColors[entry.category] || categoryColors[entry.category?.toLowerCase().replace(/\s+/g, '_')] || categoryColors[entry.category?.toLowerCase().replace(/\s+/g, '-')] || (catEntryObj ? categoryColors[catEntryObj.id] : undefined) || theme.accent;
                 return (
                   <Pressable key={entry.id} style={styles.activityCard} onPress={() => router.push(`/ritual/${entry.ritualId}`)}>
                     <View style={[styles.activityDot, { backgroundColor: catColor }]} />

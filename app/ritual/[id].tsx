@@ -53,8 +53,8 @@ for (let i = 0; i < 90; i++) {
     );
   }
 
-  const category = categories.find(c => c.id === ritual.category);
-  const catColor = categoryColors[ritual.category] || theme.accent;
+  const category = categories.find(c => c.id === ritual.category || c.name === ritual.category || c.name.toLowerCase() === ritual.category?.toLowerCase());
+  const catColor = categoryColors[ritual.category] || categoryColors[ritual.category?.toLowerCase().replace(/\s+/g, '_')] || categoryColors[ritual.category?.toLowerCase().replace(/\s+/g, '-')] || (category ? categoryColors[category.id] : undefined) || theme.accent;
   const manif = manifestations.find(m => m.ritualId === ritual.id);
 
   const computedStatus = getComputedStatus(ritual);

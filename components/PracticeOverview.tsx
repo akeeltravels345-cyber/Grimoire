@@ -351,7 +351,7 @@ export default function PracticeOverview() {
 
       const fallbackIcon = CORE_ICONS[coreName.toLowerCase()] || 'auto-fix-high';
       const fallbackColor = CORE_FALLBACK_COLORS[coreName.toLowerCase()] || theme.accent;
-      const catColor = catId ? (categoryColors[catId] || fallbackColor) : fallbackColor;
+      const catColor = catId ? (categoryColors[catId] || categoryColors[coreName.toLowerCase().replace(/\s+/g, '_')] || categoryColors[coreName.toLowerCase().replace(/\s+/g, '-')] || categoryColors[coreName] || fallbackColor) : fallbackColor;
       const catIcon = catObj?.icon || fallbackIcon;
 
       const catRituals = catId ? rituals.filter(r => r.category === catId) : [];
@@ -403,7 +403,7 @@ export default function PracticeOverview() {
 
       const totalCount = recentRituals.length;
       const completedCount = recentRituals.filter(r => r.status === 'completed').length;
-      const catColor = categoryColors[cat.id] || theme.accent;
+      const catColor = categoryColors[cat.id] || categoryColors[cat.name] || categoryColors[cat.name.toLowerCase().replace(/\s+/g, '_')] || categoryColors[cat.name.toLowerCase().replace(/\s+/g, '-')] || theme.accent;
 
       let lastPerformedDaysAgo: number | null = null;
       const perfDates = catRituals
