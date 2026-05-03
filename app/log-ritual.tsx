@@ -8,12 +8,14 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme, getCurrentMoonPhase } from '../constants/theme';
 import { getTodayPlanet } from '../constants/planetaryData';
 import { getCurrentPlanetaryHour } from '../services/planetaryHours';
 import { useApp } from '../contexts/AppContext';
 import { useAlert } from '@/template';
-import GradientScreen from '../components/GradientScreen';
+import StarField from '../components/StarField';
 
 const ENERGY_LEVELS = [
   { value: 1, label: 'Low', icon: 'battery-1-bar' },
@@ -59,19 +61,43 @@ export default function LogRitualScreen() {
 
   if (!ritual) {
     return (
-      <GradientScreen>
+      <LinearGradient
+        colors={['#2A1020', '#1E0A2E', '#180820', '#1A0A28', '#120618']}
+        locations={[0, 0.25, 0.5, 0.75, 1]}
+        start={{ x: 0.3, y: 0 }}
+        end={{ x: 0.7, y: 1 }}
+        style={{ flex: 1 }}
+      >
+        <SafeAreaView edges={['top']} style={{ flex: 1 }}>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: theme.textSecondary, fontSize: 16 }}>Ritual not found</Text>
           <Pressable onPress={() => router.back()} style={{ marginTop: 16 }}>
             <Text style={{ color: theme.primary, fontWeight: '600' }}>Go back</Text>
           </Pressable>
         </View>
-      </GradientScreen>
+        </SafeAreaView>
+      </LinearGradient>
     );
   }
 
   return (
-    <GradientScreen>
+    <LinearGradient
+      colors={['#2A1020', '#1E0A2E', '#180820', '#1A0A28', '#120618']}
+      locations={[0, 0.25, 0.5, 0.75, 1]}
+      start={{ x: 0.3, y: 0 }}
+      end={{ x: 0.7, y: 1 }}
+      style={{ flex: 1 }}
+    >
+      <LinearGradient
+        colors={['rgba(180,60,120,0.2)', 'transparent', 'rgba(100,40,160,0.15)']}
+        locations={[0, 0.5, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        pointerEvents="none"
+      />
+      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
+        <StarField starCount={40} showShootingStar={false} />
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.closeBtn}>
           <MaterialIcons name="close" size={24} color={theme.textPrimary} />
@@ -205,7 +231,8 @@ export default function LogRitualScreen() {
         </Modal>
       
       </KeyboardAvoidingView>
-    </GradientScreen>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 

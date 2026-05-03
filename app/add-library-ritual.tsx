@@ -7,10 +7,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { theme } from '../constants/theme';
 import { useApp } from '../contexts/AppContext';
 import { useAlert } from '@/template';
-import GradientScreen from '../components/GradientScreen';
+import StarField from '../components/StarField';
 import { resolveCategoryColor } from '../utils/categoryHelpers';
 
 export default function AddLibraryRitualScreen() {
@@ -44,7 +46,23 @@ export default function AddLibraryRitualScreen() {
   };
 
   return (
-    <GradientScreen>
+    <LinearGradient
+      colors={['#2A1020', '#1E0A2E', '#180820', '#1A0A28', '#120618']}
+      locations={[0, 0.25, 0.5, 0.75, 1]}
+      start={{ x: 0.3, y: 0 }}
+      end={{ x: 0.7, y: 1 }}
+      style={{ flex: 1 }}
+    >
+      <LinearGradient
+        colors={['rgba(180,60,120,0.2)', 'transparent', 'rgba(100,40,160,0.15)']}
+        locations={[0, 0.5, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        pointerEvents="none"
+      />
+      <SafeAreaView edges={['top']} style={{ flex: 1 }}>
+        <StarField starCount={40} showShootingStar={false} />
       <View style={styles.header}>
         <Pressable onPress={() => router.back()} style={styles.closeBtn}>
           <MaterialIcons name="close" size={24} color={theme.textPrimary} />
@@ -131,7 +149,8 @@ export default function AddLibraryRitualScreen() {
           <Text style={styles.hint}>Separate items with commas</Text>
         </ScrollView>
       </KeyboardAvoidingView>
-    </GradientScreen>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
