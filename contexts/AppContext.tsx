@@ -61,7 +61,7 @@ interface AppContextType {
   deleteEntireSeries: (seriesId: string) => void;
   stopSchedule: (seriesId: string) => void;
   addJournalEntry: (ritualId: string, entry: Omit<JournalEntry, 'id'>) => void;
-  addManifestationResult: (ritualId: string, note: string, date: string, type: 'sign' | 'manifested') => void;
+  addManifestationResult: (ritualId: string, note: string, date: string, type: 'sign' | 'manifested', signType?: import('../services/mockData').SignType) => void;
   getManifestations: () => ManifestationRecord[];
   addCategory: (category: PracticeCategory, color: string) => void;
   deleteCategory: (categoryId: string) => void;
@@ -446,7 +446,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ritualName: ritual.name,
         intention: manifSource,
         category: ritual.category,
-        status: 'pending',
+        status: 'brewing',
         results: [],
         createdAt: new Date().toISOString(),
       };
@@ -528,16 +528,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }));
   };
 
-  const addManifestationResult = (ritualId: string, note: string, date: string, type: 'sign' | 'manifested') => {
+  const addManifestationResult = (ritualId: string, note: string, date: string, type: 'sign' | 'manifested', signType?: import('../services/mockData').SignType) => {
     const newResult: ManifestationResult = {
       id: 'mr_' + Date.now().toString(),
       note,
       date,
       type,
+      signType,
     };
     setManifestations(prev => prev.map(m => {
       if (m.ritualId !== ritualId) return m;
-      const newStatus = type === 'manifested' ? 'manifested' : 'partial';
+      const newStatus = type === 'manifested' ? 'spilled' : 'stirring';
       return {
         ...m,
         results: [...m.results, newResult],

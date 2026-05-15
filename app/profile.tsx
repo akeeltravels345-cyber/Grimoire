@@ -111,8 +111,8 @@ export default function ProfileScreen() {
     }
   }
 
-  const totalManifested = manifestations.filter(m => m.status === 'manifested').length;
-  const totalPending = manifestations.filter(m => m.status === 'pending' || m.status === 'partial').length;
+  const totalManifested = manifestations.filter(m => m.status === 'spilled').length;
+  const totalPending = manifestations.filter(m => m.status === 'brewing' || m.status === 'stirring').length;
 
   useEffect(() => {
     Promise.all([

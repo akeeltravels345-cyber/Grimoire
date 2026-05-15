@@ -441,7 +441,7 @@ export default function PracticeOverview() {
     };
   }, [rituals, categories, categoryColors]);
 
-  const manifestedCount = manifestations.filter(m => m.status === 'manifested').length;
+  const manifestedCount = manifestations.filter(m => m.status === 'spilled').length;
 
   return (
     <View style={s.card}>

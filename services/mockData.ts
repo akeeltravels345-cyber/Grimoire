@@ -1,8 +1,11 @@
+export type SignType = 'dream' | 'omen' | 'encounter' | 'symbol' | 'number' | 'synchronicity';
+
 export interface ManifestationResult {
   id: string;
   note: string;
   date: string;
   type: 'sign' | 'manifested';
+  signType?: SignType;
 }
 
 export interface ManifestationRecord {
@@ -11,7 +14,7 @@ export interface ManifestationRecord {
   ritualName: string;
   intention: string;
   category: string;
-  status: 'pending' | 'partial' | 'manifested';
+  status: 'brewing' | 'stirring' | 'spilled';
   results: ManifestationResult[];
   createdAt: string;
 }

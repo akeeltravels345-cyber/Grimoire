@@ -147,7 +147,7 @@ export default function DashboardScreen() {
       };
     });
 
-    const manifestedCount = manifestations.filter(m => m.status === 'manifested').length;
+    const manifestedCount = manifestations.filter(m => m.status === 'spilled').length;
 
     return { monthName, daysRemaining, daysInMonth, completed, total, missed, completionPct, warningLevel, coreCatData, manifestedCount };
   }, [rituals, categories, categoryColors, coreCategories, manifestations]);

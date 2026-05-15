@@ -202,9 +202,9 @@ for (let i = 0; i < 90; i++) {
 
   function getStatusStyle(status: string) {
     switch (status) {
-      case 'pending': return { bg: theme.primary + '18', border: theme.primary, color: theme.primary, label: 'Awaiting \u2726', icon: 'hourglass-top' as const };
-      case 'partial': return { bg: '#4EA8DE22', border: '#4EA8DE', color: '#4EA8DE', label: 'Signs Appearing', icon: 'eco' as const };
-      case 'manifested': return { bg: theme.success + '18', border: theme.success, color: theme.success, label: 'Manifested', icon: 'star' as const };
+      case 'brewing':  return { bg: theme.primary + '18', border: theme.primary, color: theme.primary, label: '\ud83e\ude84 Brewing', icon: 'hourglass-top' as const };
+      case 'stirring': return { bg: '#4EA8DE22', border: '#4EA8DE', color: '#4EA8DE', label: '\ud83c\udf0a Stirring', icon: 'eco' as const };
+      case 'spilled':  return { bg: theme.success + '18', border: theme.success, color: theme.success, label: '\u2b50 Spilled', icon: 'star' as const };
       default: return { bg: theme.surfaceLight, border: theme.border, color: theme.textMuted, label: 'Unknown', icon: 'help' as const };
     }
   }
@@ -416,8 +416,8 @@ for (let i = 0; i < 90; i++) {
                     <>
                       <MaterialIcons name={ss.icon} size={14} color={ss.color} />
                       <Text style={[styles.outcomeManifText, { color: ss.color }]}>{ss.label}</Text>
-                      {manif.status !== 'manifested' ? (
-                        <Text style={styles.outcomeManifAction}>Add Result</Text>
+                      {manif.status !== 'spilled' ? (
+                        <Text style={styles.outcomeManifAction}>Log a Sign</Text>
                       ) : null}
                     </>
                   );
@@ -592,10 +592,10 @@ for (let i = 0; i < 90; i++) {
               </View>
             ) : null}
 
-            {manif.status !== 'manifested' ? (
+            {manif.status !== 'spilled' ? (
               <Pressable style={styles.addManifestBtn} onPress={() => router.push({ pathname: '/add-manifestation', params: { ritualId: ritual.id } })}>
                 <MaterialIcons name="add-circle-outline" size={16} color={theme.success} />
-                <Text style={styles.addManifestText}>Add Result</Text>
+                <Text style={styles.addManifestText}>Log a Sign</Text>
               </Pressable>
             ) : null}
           </View>
@@ -635,10 +635,10 @@ for (let i = 0; i < 90; i++) {
 
       {/* Floating Buttons */}
       <View style={[styles.floatingContainer, { bottom: insets.bottom + 16 }]}>
-        {manif && manif.status !== 'manifested' ? (
+        {manif && manif.status !== 'spilled' ? (
           <Pressable style={styles.manifestButton} onPress={() => router.push({ pathname: '/add-manifestation', params: { ritualId: ritual.id } })}>
             <MaterialIcons name="star" size={18} color={theme.background} />
-            <Text style={styles.manifestButtonText}>Add Result</Text>
+            <Text style={styles.manifestButtonText}>Log a Sign</Text>
           </Pressable>
         ) : null}
         {computedStatus === 'completed' ? (
