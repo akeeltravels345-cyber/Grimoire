@@ -580,7 +580,7 @@ for (let i = 0; i < 90; i++) {
                   <View key={r.id} style={[styles.manifResult, { borderLeftColor: r.type === 'manifested' ? theme.success : '#4EA8DE' }]}>
                     <View style={styles.manifResultHeader}>
                       <Text style={[styles.manifResultType, { color: r.type === 'manifested' ? theme.success : '#4EA8DE' }]}>
-                        {r.type === 'manifested' ? 'Manifested' : 'Sign'}
+                        {r.type === 'manifested' ? '⭐ Spilled' : `${r.signType ? { dream: '🌙', omen: '🦅', encounter: '👁️', symbol: '✦', number: '🔢', synchronicity: '✨' }[r.signType] ?? '✦' : '✦'} Sign`}
                       </Text>
                       <Text style={styles.manifResultDate}>
                         {new Date(r.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}

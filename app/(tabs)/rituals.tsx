@@ -116,7 +116,7 @@ export default function RitualsScreen() {
   const [activeFilter, setActiveFilter] = useState<StatusFilter>('all');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [selectedDay, setSelectedDay] = useState<Date | null>(new Date());
-  const [manifFilter, setManifFilter] = useState<'all' | 'brewing' | 'spilled'>('all');
+  const [manifFilter, setManifFilter] = useState<'all' | 'brewing' | 'stirring' | 'spilled'>('all');
   const [weekOffset, setWeekOffset] = useState(0);
   const [monthOffset, setMonthOffset] = useState(0);
   const [selectedCalDay, setSelectedCalDay] = useState<Date | null>(null);
@@ -198,7 +198,7 @@ export default function RitualsScreen() {
   const isFiltered = activeFilter !== 'all' || selectedDay !== null || activeCategory !== 'all';
   const sortedFiltered = useMemo(() => { const order: Record<string, number> = { overdue: 0, approaching: 1, scheduled: 2, completed: 3 }; return [...filtered].sort((a, b) => { const oa = order[a.computedStatus] ?? 2; const ob = order[b.computedStatus] ?? 2; if (oa !== ob) return oa - ob; const da = a.scheduledDate ? new Date(a.scheduledDate).getTime() : Infinity; const db = b.scheduledDate ? new Date(b.scheduledDate).getTime() : Infinity; return da - db; }); }, [filtered]);
 
-  const filteredManifestations = manifestations.filter(m => { if (manifFilter === 'all') return true; if (manifFilter === 'brewing') return m.status === 'brewing' || m.status === 'stirring'; if (manifFilter === 'spilled') return m.status === 'spilled'; return true; });
+  const filteredManifestations = manifestations.filter(m => { if (manifFilter === 'all') return true; if (manifFilter === 'brewing') return m.status === 'brewing'; if (manifFilter === 'stirring') return m.status === 'stirring'; if (manifFilter === 'spilled') return m.status === 'spilled'; return true; });
   const pendingCount = manifestations.filter(m => m.status === 'brewing' || m.status === 'stirring').length;
   const manifestedCount = manifestations.filter(m => m.status === 'spilled').length;
 
@@ -504,7 +504,7 @@ export default function RitualsScreen() {
         </>
       ) : (
         <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 16 }} showsVerticalScrollIndicator={false}>
-          <View style={styles.manifFilterTabs}>{([{ key: 'all' as const, label: 'All' }, { key: 'brewing' as const, label: '\ud83e\ude84 Brewing' }, { key: 'spilled' as const, label: '\u2b50 Spilled' }]).map(f => <Pressable key={f.key} style={[styles.manifFilterTab, manifFilter === f.key && styles.manifFilterTabActive]} onPress={() => setManifFilter(f.key)}><Text style={[styles.manifFilterText, manifFilter === f.key && styles.manifFilterTextActive]}>{f.label}</Text></Pressable>)}</View>
+          <View style={styles.manifFilterTabs}>{([{ key: 'all' as const, label: 'All' }, { key: 'brewing' as const, label: '\ud83e\ude84 Brewing' }, { key: 'stirring' as const, label: '\ud83c\udf0a Stirring' }, { key: 'spilled' as const, label: '\u2b50 Spilled' }]).map(f => <Pressable key={f.key} style={[styles.manifFilterTab, manifFilter === f.key && styles.manifFilterTabActive]} onPress={() => setManifFilter(f.key)}><Text style={[styles.manifFilterText, manifFilter === f.key && styles.manifFilterTextActive]}>{f.label}</Text></Pressable>)}</View>
           <View style={styles.manifSummaryRow}><View style={styles.manifSummaryCard}><Text style={[styles.manifSummaryValue, { color: theme.primary }]}>{pendingCount}</Text><Text style={styles.manifSummaryLabel}>BREWING</Text></View><View style={styles.manifSummaryCard}><Text style={[styles.manifSummaryValue, { color: theme.success }]}>{manifestedCount}</Text><Text style={styles.manifSummaryLabel}>SPILLED</Text></View><View style={styles.manifSummaryCard}><Text style={[styles.manifSummaryValue, { color: '#4EA8DE' }]}>{manifestations.length > 0 ? Math.round((manifestedCount / manifestations.length) * 100) : 0}%</Text><Text style={styles.manifSummaryLabel}>SUCCESS</Text></View></View>
           {filteredManifestations.length === 0 ? <View style={styles.emptyState}><MaterialIcons name="auto-awesome" size={48} color={theme.textMuted} /><Text style={styles.emptyTitle}>{manifFilter === 'spilled' ? 'Nothing Spilled Yet' : manifFilter === 'brewing' ? 'Nothing Brewing' : 'No Intentions Cast'}</Text><Text style={styles.emptyText}>Add a tangible outcome when creating rituals to track what you call in</Text></View> : filteredManifestations.map(m => {
             const ss = getStatusStyle(m.status);

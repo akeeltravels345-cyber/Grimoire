@@ -538,7 +538,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     };
     setManifestations(prev => prev.map(m => {
       if (m.ritualId !== ritualId) return m;
-      const newStatus = type === 'manifested' ? 'spilled' : 'stirring';
+      const newStatus = type === 'manifested' ? 'spilled' : m.status === 'spilled' ? 'spilled' : 'stirring';
       return {
         ...m,
         results: [...m.results, newResult],
