@@ -426,9 +426,11 @@ export default function RitualsScreen() {
                     <Text style={{ fontSize: 15, fontWeight: '600', color: '#F5D5E0', fontFamily: theme.fonts.serif }} numberOfLines={1}>{libR.name}</Text>
                     <Text style={{ fontSize: 11, color: theme.accent, fontWeight: '500', marginTop: 1 }}>{cat?.name || libR.category}</Text>
                   </View>
-                  <View style={{ backgroundColor: catColor + '20', borderWidth: 0.5, borderColor: catColor + '50', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 }}>
-                    <Text style={{ fontSize: 11, fontWeight: '600', color: catColor }}>{scheduleLabels[libR.schedule] || libR.schedule}</Text>
-                  </View>
+                  {libR.timesPerformed > 0 ? (
+                    <View style={{ backgroundColor: catColor + '20', borderWidth: 0.5, borderColor: catColor + '50', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 20 }}>
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: catColor }}>×{libR.timesPerformed}</Text>
+                    </View>
+                  ) : null}
                   {inPractice ? (
                     <View style={{ width: 24, height: 24, borderRadius: 12, backgroundColor: 'rgba(94,189,138,0.15)', borderWidth: 0.5, borderColor: 'rgba(94,189,138,0.4)', alignItems: 'center', justifyContent: 'center' }}>
                       <MaterialIcons name="check" size={14} color="#7ED4A8" />
