@@ -71,7 +71,7 @@ interface AppContextType {
   addLibraryRitual: (ritual: Omit<LibraryRitual, 'id' | 'createdAt' | 'timesPerformed'>) => string;
   updateLibraryRitual: (id: string, updates: Partial<LibraryRitual>) => void;
   deleteLibraryRitual: (id: string) => void;
-  addToPractice: (libraryId: string, overrides?: { scheduledDate?: string; schedule?: LibraryRitual['schedule']; consecutiveDays?: number }) => void;
+  addToPractice: (libraryId: string, overrides?: { scheduledDate?: string; schedule?: LibraryRitual['schedule']; consecutiveDays?: number; tangibleOutcome?: string }) => void;
   journalEntryTypes: JournalEntryType[];
   addJournalEntryType: (type: JournalEntryType) => void;
   deleteJournalEntryType: (id: string) => void;
@@ -700,7 +700,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     s.coreCategoryResults.every(c => c.completed)
   ).length;
 
-  const addToPractice = (libraryId: string, overrides?: { scheduledDate?: string; schedule?: LibraryRitual['schedule']; consecutiveDays?: number }) => {
+  const addToPractice = (libraryId: string, overrides?: { scheduledDate?: string; schedule?: LibraryRitual['schedule']; consecutiveDays?: number; tangibleOutcome?: string }) => {
     const libRitual = libraryRituals.find(r => r.id === libraryId);
     if (!libRitual) return;
     addRitual({
@@ -708,7 +708,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       category: libRitual.category,
       description: libRitual.description,
       intention: libRitual.intention,
-      tangibleOutcome: libRitual.tangibleOutcome,
+      tangibleOutcome: overrides?.tangibleOutcome ?? libRitual.tangibleOutcome,
       ingredients: libRitual.ingredients,
       schedule: overrides?.schedule || libRitual.schedule,
       scheduleDetail: libRitual.scheduleDetail,

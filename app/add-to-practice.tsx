@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, ScrollView, Pressable, TextInput, StyleSheet,
-  KeyboardAvoidingView, Platform, Modal,
+  KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
@@ -14,12 +14,24 @@ import { useAlert } from '@/template';
 import GradientScreen from '../components/GradientScreen';
 
 const scheduleOptions = [
-  { id: 'daily', label: 'Daily', icon: 'today' },
-  { id: 'weekly', label: 'Weekly', icon: 'date-range' },
-  { id: 'monthly', label: 'Monthly', icon: 'calendar-month' },
+  { id: 'daily',      label: 'Daily',      icon: 'today' },
+  { id: 'weekly',     label: 'Weekly',     icon: 'date-range' },
+  { id: 'monthly',    label: 'Monthly',    icon: 'calendar-month' },
   { id: 'moon_phase', label: 'Moon Phase', icon: 'nightlight-round' },
-  { id: 'as_needed', label: 'As Needed', icon: 'more-time' },
+  { id: 'as_needed',  label: 'As Needed',  icon: 'more-time' },
 ] as const;
+
+const DATE_OPTIONS = (() => {
+  const dates: Date[] = [];
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  for (let i = 0; i < 60; i++) {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    dates.push(d);
+  }
+  return dates;
+})();
 
 export default function AddToPracticeScreen() {
   const { libraryId } = useLocalSearchParams<{ libraryId: string }>();
@@ -34,28 +46,9 @@ export default function AddToPracticeScreen() {
     libRitual?.schedule || 'as_needed'
   );
   const [scheduledDate, setScheduledDate] = useState<Date | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [consecutiveDays, setConsecutiveDays] = useState('1');
+  const [tangibleOutcome, setTangibleOutcome] = useState(libRitual?.tangibleOutcome || '');
 
-  const generateDateOptions = () => {
-    const dates: Date[] = [];
-    const now = new Date();
-    const start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    for (let i = 0; i < 60; i++) {
-      const d = new Date(start);
-      d.setDate(d.getDate() + i);
-      dates.push(d);
-    }
-    return dates;
-  };
-  const dateOptions = generateDateOptions();
-
-  const formatDateDisplay = (date: Date | null): string => {
-    if (!date) return '';
-    return date.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric', year: 'numeric' });
-  };
-
-  const needsDate = true;
   const parsedConsecutive = Math.max(1, parseInt(consecutiveDays) || 1);
   const canSave = scheduledDate !== null;
 
@@ -64,7 +57,8 @@ export default function AddToPracticeScreen() {
     addToPractice(libraryId, {
       scheduledDate: scheduledDate ? scheduledDate.toISOString() : undefined,
       schedule,
-      consecutiveDays: parsedConsecutive,
+      consecutiveDays: schedule === 'daily' ? parsedConsecutive : 1,
+      tangibleOutcome: tangibleOutcome.trim(),
     });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     showAlert('Added to Practice!', `${libRitual?.name || 'Ritual'} has been scheduled.`);
@@ -75,7 +69,7 @@ export default function AddToPracticeScreen() {
     return (
       <GradientScreen>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Text style={{ color: theme.textSecondary, fontSize: 16 }}>Library ritual not found</Text>
+          <Text style={{ color: theme.textSecondary, fontSize: 16 }}>Ritual not found</Text>
           <Pressable onPress={() => router.back()} style={{ marginTop: 16 }}>
             <Text style={{ color: theme.primary, fontWeight: '600' }}>Go back</Text>
           </Pressable>
@@ -95,32 +89,51 @@ export default function AddToPracticeScreen() {
         </Pressable>
         <Text style={styles.headerTitle}>Add to Practice</Text>
         <Pressable onPress={handleSave} style={[styles.saveBtn, !canSave && styles.saveBtnDisabled]} disabled={!canSave}>
-          <Text style={[styles.saveBtnText, !canSave && styles.saveBtnTextDisabled]}>Save</Text>
+          <Text style={[styles.saveBtnText, !canSave && styles.saveBtnTextDisabled]}>Schedule</Text>
         </Pressable>
       </View>
 
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}>
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 32 }} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-
-          {/* Ritual Info Card */}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 32 }}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Ritual info */}
           <View style={styles.ritualCard}>
             <View style={styles.ritualCardHeader}>
               <MaterialIcons
                 name={(catObj?.icon || 'auto-awesome') as keyof typeof MaterialIcons.glyphMap}
-                size={28}
+                size={26}
                 color={catColor}
               />
               <View style={{ flex: 1 }}>
                 <Text style={styles.ritualName}>{libRitual.name}</Text>
-                <View style={[styles.categoryBadge, { backgroundColor: catColor + '20' }]}>
-                  <Text style={[styles.categoryBadgeText, { color: catColor }]}>{catObj?.name || libRitual.category}</Text>
-                </View>
+                {catObj && (
+                  <View style={[styles.categoryBadge, { backgroundColor: catColor + '20' }]}>
+                    <Text style={[styles.categoryBadgeText, { color: catColor }]}>{catObj.name}</Text>
+                  </View>
+                )}
               </View>
             </View>
             {libRitual.intention ? (
-              <Text style={styles.ritualIntention} numberOfLines={2}>{libRitual.intention}</Text>
+              <Text style={styles.ritualIntention} numberOfLines={2}>"{libRitual.intention}"</Text>
             ) : null}
           </View>
+
+          {/* Tangible Outcome */}
+          <Text style={styles.label}>What does success look like?</Text>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={tangibleOutcome}
+            onChangeText={setTangibleOutcome}
+            placeholder="e.g., Receive $5,000 within 30 days, land a new client this month..."
+            placeholderTextColor={theme.textMuted}
+            multiline
+            textAlignVertical="top"
+          />
+          <Text style={styles.hint}>Be specific — this becomes your manifestation to track</Text>
 
           {/* Schedule */}
           <Text style={styles.label}>Schedule</Text>
@@ -131,79 +144,81 @@ export default function AddToPracticeScreen() {
                 style={[styles.scheduleOption, schedule === opt.id && styles.scheduleOptionActive]}
                 onPress={() => { setSchedule(opt.id); Haptics.selectionAsync(); }}
               >
-                <MaterialIcons name={opt.icon as keyof typeof MaterialIcons.glyphMap} size={20} color={schedule === opt.id ? theme.primary : theme.textMuted} />
-                <Text style={[styles.scheduleOptionText, schedule === opt.id && styles.scheduleOptionTextActive]}>{opt.label}</Text>
+                <MaterialIcons
+                  name={opt.icon as keyof typeof MaterialIcons.glyphMap}
+                  size={18}
+                  color={schedule === opt.id ? theme.primary : theme.textMuted}
+                />
+                <Text style={[styles.scheduleOptionText, schedule === opt.id && styles.scheduleOptionTextActive]}>
+                  {opt.label}
+                </Text>
               </Pressable>
             ))}
           </View>
 
-          {/* Consecutive Days */}
-          {needsDate ? (
+          {/* Consecutive days — only for daily */}
+          {schedule === 'daily' && (
             <>
-              <Text style={styles.label}>Number of Consecutive Days</Text>
-              <TextInput
-                style={[styles.input, { width: 100 }]}
-                value={consecutiveDays}
-                onChangeText={setConsecutiveDays}
-                placeholder="1"
-                placeholderTextColor={theme.textMuted}
-                keyboardType="number-pad"
-                maxLength={3}
-              />
-              <Text style={styles.hint}>e.g. enter 3 if this ritual must be performed 3 days in a row</Text>
-            </>
-          ) : null}
-
-          {/* Scheduled Date */}
-          {needsDate ? (
-            <>
-              <Text style={styles.label}>Scheduled Date *</Text>
-              <Pressable style={styles.dateField} onPress={() => setShowDatePicker(true)}>
-                <MaterialIcons name="event" size={20} color={scheduledDate ? theme.primary : theme.textMuted} />
-                <Text style={[styles.dateFieldText, !scheduledDate && { color: theme.textMuted }]}>
-                  {scheduledDate ? formatDateDisplay(scheduledDate) : 'Select a date for this ritual...'}
-                </Text>
-                <MaterialIcons name="arrow-drop-down" size={24} color={theme.textMuted} />
-              </Pressable>
-              {!scheduledDate ? <Text style={styles.hint}>Required - pick the date this ritual is scheduled</Text> : null}
-            </>
-          ) : null}
-        </ScrollView>
-
-        {/* Date Picker Modal */}
-        <Modal visible={showDatePicker} transparent animationType="slide">
-          <Pressable style={styles.dateModalOverlay} onPress={() => setShowDatePicker(false)}>
-            <Pressable style={styles.dateModalContent} onPress={() => {}}>
-              <View style={styles.dateModalHeader}>
-                <Text style={styles.dateModalTitle}>Select Date</Text>
-                <Pressable onPress={() => setShowDatePicker(false)} style={styles.dateModalClose}>
-                  <MaterialIcons name="close" size={22} color={theme.textPrimary} />
+              <Text style={styles.label}>Consecutive Days</Text>
+              <View style={styles.consecutiveRow}>
+                <Pressable
+                  style={styles.consecutiveBtn}
+                  onPress={() => { setConsecutiveDays(String(Math.max(1, parsedConsecutive - 1))); Haptics.selectionAsync(); }}
+                >
+                  <MaterialIcons name="remove" size={20} color={theme.textPrimary} />
                 </Pressable>
+                <Text style={styles.consecutiveValue}>{parsedConsecutive}</Text>
+                <Pressable
+                  style={styles.consecutiveBtn}
+                  onPress={() => { setConsecutiveDays(String(parsedConsecutive + 1)); Haptics.selectionAsync(); }}
+                >
+                  <MaterialIcons name="add" size={20} color={theme.textPrimary} />
+                </Pressable>
+                <Text style={styles.consecutiveLabel}>
+                  {parsedConsecutive === 1 ? 'day' : 'days in a row'}
+                </Text>
               </View>
-              <ScrollView style={{ maxHeight: 360 }} showsVerticalScrollIndicator={false}>
-                {dateOptions.map((d, i) => {
-                  const isSelected = scheduledDate && d.toDateString() === scheduledDate.toDateString();
-                  const isToday = d.toDateString() === new Date().toDateString();
-                  return (
-                    <Pressable
-                      key={i}
-                      style={[styles.dateOption, isSelected && styles.dateOptionActive]}
-                      onPress={() => { setScheduledDate(d); setShowDatePicker(false); Haptics.selectionAsync(); }}
-                    >
-                      <View style={{ flex: 1 }}>
-                        <Text style={[styles.dateOptionText, isSelected && styles.dateOptionTextActive]}>
-                          {d.toLocaleDateString('en-US', { weekday: 'short', month: 'long', day: 'numeric' })}
-                          {isToday ? '  (Today)' : ''}
-                        </Text>
-                      </View>
-                      {isSelected ? <MaterialIcons name="check-circle" size={20} color={theme.primary} /> : null}
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </Pressable>
-          </Pressable>
-        </Modal>
+            </>
+          )}
+
+          {/* Inline date selector */}
+          <Text style={styles.label}>Start Date *</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.dateStrip}
+          >
+            {DATE_OPTIONS.map((d, i) => {
+              const isSelected = scheduledDate?.toDateString() === d.toDateString();
+              const isToday = d.toDateString() === new Date().toDateString();
+              return (
+                <Pressable
+                  key={i}
+                  style={[styles.datePill, isSelected && styles.datePillActive]}
+                  onPress={() => { setScheduledDate(d); Haptics.selectionAsync(); }}
+                >
+                  <Text style={[styles.datePillDay, isSelected && styles.datePillTextActive]}>
+                    {isToday ? 'Today' : d.toLocaleDateString('en-US', { weekday: 'short' })}
+                  </Text>
+                  <Text style={[styles.datePillNum, isSelected && styles.datePillTextActive]}>
+                    {d.getDate()}
+                  </Text>
+                  <Text style={[styles.datePillMonth, isSelected && styles.datePillTextActive]}>
+                    {d.toLocaleDateString('en-US', { month: 'short' })}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+          {!scheduledDate && (
+            <Text style={styles.hint}>Swipe to pick a date</Text>
+          )}
+          {scheduledDate && (
+            <Text style={[styles.hint, { color: theme.primary }]}>
+              Scheduled for {scheduledDate.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+            </Text>
+          )}
+        </ScrollView>
       </KeyboardAvoidingView>
     </GradientScreen>
   );
@@ -218,44 +233,34 @@ const styles = StyleSheet.create({
   saveBtnText: { fontSize: 15, fontWeight: '600', color: theme.background },
   saveBtnTextDisabled: { color: theme.textMuted },
 
-  // Ritual Info Card
-  ritualCard: {
-    backgroundColor: theme.surface,
-    borderRadius: theme.radius.md,
-    padding: 16,
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: theme.primary + '20',
-    ...theme.shadows.card,
-  },
+  ritualCard: { backgroundColor: theme.surface, borderRadius: 14, padding: 16, marginTop: 20, borderWidth: 1, borderColor: theme.primary + '20' },
   ritualCardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  ritualName: { fontSize: 18, fontWeight: '700', color: theme.textPrimary, marginBottom: 4 },
+  ritualName: { fontSize: 17, fontWeight: '700', color: theme.textPrimary, marginBottom: 4 },
   categoryBadge: { alignSelf: 'flex-start', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 12 },
   categoryBadgeText: { fontSize: 11, fontWeight: '600' },
   ritualIntention: { fontSize: 13, color: theme.textSecondary, marginTop: 10, lineHeight: 18, fontStyle: 'italic' },
 
-  label: { fontSize: 13, fontWeight: '600', color: theme.textSecondary, marginTop: 24, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
+  label: { fontSize: 13, fontWeight: '600', color: theme.textSecondary, marginTop: 24, marginBottom: 10, textTransform: 'uppercase', letterSpacing: 0.5 },
   input: { backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 14, fontSize: 15, color: theme.textPrimary, borderWidth: 1, borderColor: theme.border },
-  hint: { fontSize: 12, color: theme.textMuted, marginTop: 4, marginLeft: 4, fontStyle: 'italic' },
+  textArea: { minHeight: 90, paddingTop: 14, lineHeight: 22 },
+  hint: { fontSize: 12, color: theme.textMuted, marginTop: 6, fontStyle: 'italic' },
 
-  scheduleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginBottom: 4 },
-  scheduleOption: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: theme.radius.md, backgroundColor: theme.surface, borderWidth: 1.5, borderColor: theme.border },
+  scheduleGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  scheduleOption: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, backgroundColor: theme.surface, borderWidth: 1.5, borderColor: theme.border },
   scheduleOptionActive: { backgroundColor: theme.primary + '15', borderColor: theme.primary },
   scheduleOptionText: { fontSize: 13, fontWeight: '600', color: theme.textMuted },
   scheduleOptionTextActive: { color: theme.primary },
 
-  // Date Field
-  dateField: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 14, borderWidth: 1, borderColor: theme.border },
-  dateFieldText: { flex: 1, fontSize: 15, color: theme.textPrimary, fontWeight: '500' },
+  consecutiveRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  consecutiveBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: theme.surface, borderWidth: 1, borderColor: theme.border, alignItems: 'center', justifyContent: 'center' },
+  consecutiveValue: { fontSize: 22, fontWeight: '700', color: theme.textPrimary, minWidth: 32, textAlign: 'center' },
+  consecutiveLabel: { fontSize: 14, color: theme.textSecondary },
 
-  // Date Picker Modal
-  dateModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-  dateModalContent: { backgroundColor: '#231248', borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingBottom: 32, maxHeight: '60%' },
-  dateModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: 16, borderBottomWidth: 1, borderBottomColor: theme.border },
-  dateModalTitle: { fontSize: 17, fontWeight: '700', color: theme.textPrimary },
-  dateModalClose: { width: 36, height: 36, borderRadius: 18, backgroundColor: theme.surfaceLight, alignItems: 'center', justifyContent: 'center' },
-  dateOption: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: theme.border + '40' },
-  dateOptionActive: { backgroundColor: theme.primary + '12' },
-  dateOptionText: { fontSize: 15, color: theme.textPrimary, fontWeight: '500' },
-  dateOptionTextActive: { color: theme.primary, fontWeight: '700' },
+  dateStrip: { paddingVertical: 4, paddingRight: 16, gap: 8 },
+  datePill: { alignItems: 'center', paddingVertical: 10, paddingHorizontal: 14, borderRadius: 14, backgroundColor: theme.surface, borderWidth: 1.5, borderColor: theme.border, minWidth: 58 },
+  datePillActive: { backgroundColor: theme.primary, borderColor: theme.primary },
+  datePillDay: { fontSize: 11, fontWeight: '600', color: theme.textMuted, marginBottom: 2 },
+  datePillNum: { fontSize: 20, fontWeight: '700', color: theme.textPrimary },
+  datePillMonth: { fontSize: 11, color: theme.textMuted, marginTop: 2 },
+  datePillTextActive: { color: theme.background },
 });
