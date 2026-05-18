@@ -105,32 +105,18 @@ export default function LibraryRitualDetailScreen() {
 
   if (!libRitual) {
     return (
-      <LinearGradient
-        colors={['#2A1020', '#1E0A2E', '#180820', '#1A0A28', '#120618']}
-        locations={[0, 0.25, 0.5, 0.75, 1]}
-        start={{ x: 0.3, y: 0 }}
-        end={{ x: 0.7, y: 1 }}
-        style={{ flex: 1 }}
-      >
-        <LinearGradient
-          colors={['rgba(180,60,120,0.2)', 'transparent', 'rgba(100,40,160,0.15)']}
-          locations={[0, 0.5, 1]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-          pointerEvents="none"
-        />
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
         <SafeAreaView edges={['top']} style={{ flex: 1 }}>
           <StarField starCount={40} showShootingStar={false} />
           <View style={styles.notFound}>
-          <MaterialIcons name="auto-stories" size={48} color={theme.textMuted} />
-          <Text style={styles.notFoundTitle}>Spell not found</Text>
-          <Pressable onPress={() => router.back()} style={styles.notFoundBtn}>
-            <Text style={styles.notFoundBtnText}>Go Back</Text>
-          </Pressable>
-        </View>
+            <MaterialIcons name="auto-stories" size={48} color={theme.textMuted} />
+            <Text style={styles.notFoundTitle}>Spell not found</Text>
+            <Pressable onPress={() => router.back()} style={styles.notFoundBtn}>
+              <Text style={styles.notFoundBtnText}>Go Back</Text>
+            </Pressable>
+          </View>
         </SafeAreaView>
-      </LinearGradient>
+      </View>
     );
   }
 
@@ -139,19 +125,14 @@ export default function LibraryRitualDetailScreen() {
   const ingredients = libRitual.ingredients?.filter(Boolean) || [];
 
   return (
-    <LinearGradient
-      colors={['#2A1020', '#1E0A2E', '#180820', '#1A0A28', '#120618']}
-      locations={[0, 0.25, 0.5, 0.75, 1]}
-      start={{ x: 0.3, y: 0 }}
-      end={{ x: 0.7, y: 1 }}
-      style={{ flex: 1 }}
-    >
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      {/* Category-tinted wash fading from top */}
       <LinearGradient
-        colors={['rgba(180,60,120,0.2)', 'transparent', 'rgba(100,40,160,0.15)']}
-        locations={[0, 0.5, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        colors={[catColor + '28', catColor + '10', 'transparent']}
+        locations={[0, 0.4, 1]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 320 }}
         pointerEvents="none"
       />
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
@@ -178,69 +159,63 @@ export default function LibraryRitualDetailScreen() {
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: insets.bottom + 100 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: insets.bottom + 100 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* Name */}
-        {editing ? (
-          <TextInput style={[styles.ritualName, { borderBottomWidth: 1, borderBottomColor: theme.primary }]} value={editName} onChangeText={setEditName} multiline />
-        ) : (
-          <Text style={styles.ritualName}>{libRitual.name}</Text>
-        )}
-
-        {/* Category */}
-        {editing ? (
-  <View style={{ marginBottom: 16, marginTop: 16 }}>
-    <Text style={[styles.sectionLabel, { marginBottom: 8 }]}>CATEGORY</Text>
-    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      <View style={{ flexDirection: 'row', gap: 8, paddingVertical: 4 }}>
-        {categories.map(cat => {
-          const cColor = resolveCategoryColor(cat.id, categoryColors, categories);
-          const isActive = editCategory === cat.id;
-          return (
-            <Pressable
-              key={cat.id}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: isActive ? cColor + '20' : theme.surface, borderWidth: 1.5, borderColor: isActive ? cColor : theme.border }}
-              onPress={() => setEditCategory(cat.id)}
-            >
-              <MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={16} color={isActive ? cColor : theme.textMuted} />
-              <Text style={{ fontSize: 13, fontWeight: '600', color: isActive ? cColor : theme.textMuted }}>{cat.name}</Text>
-            </Pressable>
-          );
-        })}
-      </View>
-    </ScrollView>
-  </View>
-) : null}
-
-        {/* Category & Schedule badges */}
-        <View style={styles.badgeRow}>
-          <View style={[styles.badge, { backgroundColor: catColor + '18', borderColor: catColor + '30' }]}>
-            <MaterialIcons
-              name={(catObj?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap}
-              size={14}
-              color={catColor}
-            />
-            <Text style={[styles.badgeText, { color: catColor }]}>{catObj?.name || libRitual.category}</Text>
-          </View>
-          <View style={[styles.badge, { backgroundColor: theme.surfaceLight }]}>
-            <Text style={styles.badgeText}>{scheduleLabels[libRitual.schedule] || libRitual.schedule}</Text>
-          </View>
-        </View>
-
-        {/* Practice Status */}
-        <View style={[styles.statusIndicator, inPractice
-          ? { backgroundColor: theme.success + '10', borderColor: theme.success + '30' }
-          : { backgroundColor: theme.accent + '10', borderColor: theme.accent + '30' }
-        ]}>
-          <MaterialIcons
-            name={inPractice ? 'check-circle' : 'schedule'}
-            size={18}
-            color={inPractice ? theme.success : theme.accent}
-          />
-          <Text style={[styles.statusText, { color: inPractice ? theme.success : theme.accent }]}>
-            {inPractice ? 'Active in Practice' : 'Not Scheduled'}
-          </Text>
+        {/* Hero */}
+        <View style={styles.ritualHeader}>
+          {editing ? (
+            <>
+              <Text style={styles.editFieldLabel}>CATEGORY</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
+                {categories.map(cat => {
+                  const cColor = resolveCategoryColor(cat.id, categoryColors, categories);
+                  const isActive = editCategory === cat.id;
+                  return (
+                    <Pressable
+                      key={cat.id}
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, backgroundColor: isActive ? cColor + '20' : theme.surface, borderWidth: 1.5, borderColor: isActive ? cColor : theme.border }}
+                      onPress={() => setEditCategory(cat.id)}
+                    >
+                      <MaterialIcons name={cat.icon as keyof typeof MaterialIcons.glyphMap} size={16} color={isActive ? cColor : theme.textMuted} />
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: isActive ? cColor : theme.textMuted }}>{cat.name}</Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+              <Text style={styles.editFieldLabel}>SPELL NAME</Text>
+              <TextInput style={styles.editNameInput} value={editName} onChangeText={setEditName} multiline placeholderTextColor={theme.textMuted} placeholder="Spell name..." />
+            </>
+          ) : (
+            <>
+              <View style={[styles.categoryRing, { borderColor: catColor + '50' }]}>
+                <View style={[styles.categoryBadge, { backgroundColor: catColor + '20' }]}>
+                  <MaterialIcons name={(catObj?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap} size={32} color={catColor} />
+                </View>
+              </View>
+              <Text style={styles.ritualName}>{libRitual.name}</Text>
+              <View style={styles.nameSeparator}>
+                <View style={[styles.nameSeparatorLine, { backgroundColor: catColor + '50' }]} />
+                <MaterialIcons name="auto-awesome" size={11} color={catColor} style={{ marginHorizontal: 8 }} />
+                <View style={[styles.nameSeparatorLine, { backgroundColor: catColor + '50' }]} />
+              </View>
+              <View style={styles.tagRow}>
+                <View style={[styles.tag, { backgroundColor: catColor + '20' }]}>
+                  <Text style={[styles.tagText, { color: catColor }]}>{catObj?.name || libRitual.category}</Text>
+                </View>
+                <View style={styles.tag}>
+                  <MaterialIcons name="schedule" size={12} color={theme.textSecondary} />
+                  <Text style={styles.tagText}>{scheduleLabels[libRitual.schedule] || libRitual.schedule}</Text>
+                </View>
+                <View style={[styles.tag, { backgroundColor: inPractice ? theme.success + '20' : theme.accent + '15' }]}>
+                  <MaterialIcons name={inPractice ? 'check-circle' : 'bookmark-border'} size={12} color={inPractice ? theme.success : theme.accent} />
+                  <Text style={[styles.tagText, { color: inPractice ? theme.success : theme.accent }]}>
+                    {inPractice ? 'In Practice' : 'Library Only'}
+                  </Text>
+                </View>
+              </View>
+            </>
+          )}
         </View>
 
         {/* Intention */}
@@ -345,29 +320,21 @@ export default function LibraryRitualDetailScreen() {
         {/* Practice History */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>PRACTICE HISTORY</Text>
-          <View style={styles.historyCard}>
-            <View style={styles.historyRow}>
-              <View style={styles.historyStat}>
-                <Text style={styles.historyValue}>{practiceRituals.length}</Text>
-                <Text style={styles.historyLabel}>Scheduled</Text>
-              </View>
-              <View style={styles.historyDivider} />
-              <View style={styles.historyStat}>
-                <Text style={[styles.historyValue, { color: theme.success }]}>{completedCount}</Text>
-                <Text style={styles.historyLabel}>Completed</Text>
-              </View>
-              <View style={styles.historyDivider} />
-              <View style={styles.historyStat}>
-                <Text style={[styles.historyValue, { color: theme.primary }]}>{totalPerformed}</Text>
-                <Text style={styles.historyLabel}>Times Logged</Text>
-              </View>
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statValue}>{practiceRituals.length}</Text>
+              <Text style={styles.statLabel}>Scheduled</Text>
             </View>
-            {totalPerformed === 0 ? (
-              <View style={styles.historyEmpty}>
-                <MaterialIcons name="history" size={16} color={theme.textMuted} />
-                <Text style={styles.historyEmptyText}>No practice sessions logged yet</Text>
-              </View>
-            ) : null}
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: theme.success }]}>{completedCount}</Text>
+              <Text style={styles.statLabel}>Completed</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={[styles.statValue, { color: theme.primary }]}>{totalPerformed}</Text>
+              <Text style={styles.statLabel}>Times Logged</Text>
+            </View>
           </View>
         </View>
 
@@ -386,8 +353,11 @@ export default function LibraryRitualDetailScreen() {
           <Pressable
             style={styles.viewPracticeBtn}
             onPress={() => {
-              // Navigate to rituals tab and switch to practice
-              router.push('/(tabs)/rituals');
+              if (practiceRituals.length === 1) {
+                router.push(`/ritual/${practiceRituals[0].id}`);
+              } else {
+                router.push('/(tabs)/rituals');
+              }
             }}
           >
             <MaterialIcons name="visibility" size={20} color={theme.textPrimary} />
@@ -404,7 +374,7 @@ export default function LibraryRitualDetailScreen() {
         )}
       </View>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -413,7 +383,6 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     paddingHorizontal: 12, paddingVertical: 8,
-    borderBottomWidth: 1, borderBottomColor: theme.border,
   },
   backBtn: {
     width: 44, height: 44, borderRadius: 22,
@@ -431,39 +400,27 @@ const styles = StyleSheet.create({
   notFoundBtn: { paddingHorizontal: 20, paddingVertical: 10, backgroundColor: theme.primary, borderRadius: theme.radius.md },
   notFoundBtnText: { fontSize: 14, fontWeight: '600', color: theme.background },
 
-  // Name
-  ritualName: {
-    fontSize: 24, fontWeight: '700', color: theme.textPrimary,
-    textAlign: 'center', marginTop: 28, marginBottom: 14,
-    fontFamily: theme.fonts.serif,
-    lineHeight: 32,
-  },
+  // Hero
+  ritualHeader: { alignItems: 'center', paddingBottom: 20, paddingTop: 8 },
+  categoryRing: { width: 88, height: 88, borderRadius: 44, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  categoryBadge: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center' },
+  ritualName: { fontSize: 26, fontWeight: '700', color: theme.textPrimary, textAlign: 'center', marginBottom: 10, lineHeight: 34, fontFamily: theme.fonts.serif },
+  nameSeparator: { flexDirection: 'row', alignItems: 'center', marginBottom: 14, width: '60%' },
+  nameSeparatorLine: { flex: 1, height: 1 },
+  tagRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 },
+  tag: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12, backgroundColor: theme.surfaceLight },
+  tagText: { fontSize: 12, fontWeight: '600', color: theme.textSecondary },
 
-  // Badges
-  badgeRow: {
-    flexDirection: 'row', justifyContent: 'center', gap: 8,
-    marginBottom: 16,
-  },
-  badge: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
-    borderWidth: 1, borderColor: 'transparent',
-  },
-  badgeText: { fontSize: 12, fontWeight: '600', color: theme.textMuted },
-
-  // Status Indicator
-  statusIndicator: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 12, borderRadius: theme.radius.md,
-    borderWidth: 1, marginBottom: 24,
-  },
-  statusText: { fontSize: 14, fontWeight: '700' },
+  // Edit mode hero
+  editFieldLabel: { fontSize: 11, fontWeight: '700', color: theme.textMuted, textTransform: 'uppercase' as const, letterSpacing: 0.5, marginBottom: 8, marginTop: 4, alignSelf: 'flex-start' },
+  editNameInput: { width: '100%', backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 14, fontSize: 20, fontWeight: '700', color: theme.textPrimary, borderWidth: 1.5, borderColor: theme.primary + '30', fontFamily: theme.fonts.serif, textAlign: 'center', marginBottom: 8 },
 
   // Sections
   section: { marginBottom: 24 },
   sectionLabel: {
     fontSize: 10, fontWeight: '700', color: theme.textMuted,
     letterSpacing: 1.2, marginBottom: 10,
+    textTransform: 'uppercase' as const,
   },
 
   // Intention
@@ -508,23 +465,12 @@ const styles = StyleSheet.create({
   },
   ingredientText: { fontSize: 13, fontWeight: '500', color: theme.textPrimary },
 
-  // Practice History
-  historyCard: {
-    backgroundColor: theme.surface, borderRadius: theme.radius.md,
-    padding: 16, borderWidth: 1, borderColor: theme.border,
-    ...theme.shadows.card,
-  },
-  historyRow: { flexDirection: 'row', alignItems: 'center' },
-  historyStat: { flex: 1, alignItems: 'center', gap: 4 },
-  historyValue: { fontSize: 22, fontWeight: '700', color: theme.textPrimary },
-  historyLabel: { fontSize: 10, fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase', letterSpacing: 0.5 },
-  historyDivider: { width: 1, height: 32, backgroundColor: theme.border },
-  historyEmpty: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 6, marginTop: 14, paddingTop: 12,
-    borderTopWidth: 1, borderTopColor: theme.border,
-  },
-  historyEmptyText: { fontSize: 12, color: theme.textMuted, fontStyle: 'italic' },
+  // Practice Stats
+  statsRow: { flexDirection: 'row', backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 18, ...theme.shadows.card },
+  statItem: { flex: 1, alignItems: 'center' },
+  statValue: { fontSize: 18, fontWeight: '700', color: theme.textPrimary, marginBottom: 4 },
+  statLabel: { fontSize: 10, fontWeight: '600', color: theme.textMuted, textTransform: 'uppercase' as const, letterSpacing: 0.5 },
+  statDivider: { width: 1, backgroundColor: theme.border, marginVertical: 4 },
 
   // Meta
   metaRow: {

@@ -17,15 +17,9 @@ import { useApp } from '../contexts/AppContext';
 import { useAlert } from '@/template';
 import StarField from '../components/StarField';
 
-const ENERGY_LEVELS = [
-  { value: 1, label: 'Low', icon: 'battery-1-bar' },
-  { value: 2, label: 'Moderate', icon: 'battery-3-bar' },
-  { value: 3, label: 'High', icon: 'battery-full' },
-  { value: 4, label: 'Electric', icon: 'bolt' },
-] as const;
-
 export default function LogRitualScreen() {
-  const { ritualId } = useLocalSearchParams<{ ritualId: string }>();
+  const { ritualId, mode } = useLocalSearchParams<{ ritualId: string; mode?: string }>();
+  const isReflectMode = mode === 'reflect';
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { rituals, addJournalEntry, moods, addMood, deleteMood } = useApp();
@@ -36,7 +30,6 @@ export default function LogRitualScreen() {
   const [completedDate, setCompletedDate] = useState<Date>(new Date());
   const [showCompletedDatePicker, setShowCompletedDatePicker] = useState(false);
   const [mood, setMood] = useState('');
-  const [energyLevel, setEnergyLevel] = useState(0);
   const [isAddingMood, setIsAddingMood] = useState(false);
   const [newMoodText, setNewMoodText] = useState('');
 
@@ -49,11 +42,17 @@ export default function LogRitualScreen() {
   const handleSave = () => {
     if (!canSave || !ritualId) return;
 
-   addJournalEntry(ritualId, {
-  date: completedDate.toISOString(),
-  notes: notes.trim(),
-  mood,
-});
+    const cosmicParts: string[] = [
+      `${moonPhase.icon} ${moonPhase.name} · ${moonPhase.energy}`,
+      `${todayPlanet.emoji} Day of ${todayPlanet.name}`,
+    ];
+    if (currentHour) cosmicParts.push(`${currentHour.planet.emoji} Hour of ${currentHour.planet.name}`);
+
+    addJournalEntry(
+      ritualId,
+      { date: completedDate.toISOString(), notes: notes.trim(), mood, cosmicContext: cosmicParts.join(' · ') },
+      { markComplete: !isReflectMode }
+    );
 
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.back();
@@ -61,39 +60,25 @@ export default function LogRitualScreen() {
 
   if (!ritual) {
     return (
-      <LinearGradient
-        colors={['#2A1020', '#1E0A2E', '#180820', '#1A0A28', '#120618']}
-        locations={[0, 0.25, 0.5, 0.75, 1]}
-        start={{ x: 0.3, y: 0 }}
-        end={{ x: 0.7, y: 1 }}
-        style={{ flex: 1 }}
-      >
-        <SafeAreaView edges={['top']} style={{ flex: 1 }}>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
+        <SafeAreaView edges={['top']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <Text style={{ color: theme.textSecondary, fontSize: 16 }}>Ritual not found</Text>
           <Pressable onPress={() => router.back()} style={{ marginTop: 16 }}>
             <Text style={{ color: theme.primary, fontWeight: '600' }}>Go back</Text>
           </Pressable>
-        </View>
         </SafeAreaView>
-      </LinearGradient>
+      </View>
     );
   }
 
   return (
-    <LinearGradient
-      colors={['#2A1020', '#1E0A2E', '#180820', '#1A0A28', '#120618']}
-      locations={[0, 0.25, 0.5, 0.75, 1]}
-      start={{ x: 0.3, y: 0 }}
-      end={{ x: 0.7, y: 1 }}
-      style={{ flex: 1 }}
-    >
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       <LinearGradient
-        colors={['rgba(180,60,120,0.2)', 'transparent', 'rgba(100,40,160,0.15)']}
-        locations={[0, 0.5, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        colors={[theme.primary + '20', theme.primary + '08', 'transparent']}
+        locations={[0, 0.4, 1]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 280 }}
         pointerEvents="none"
       />
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
@@ -102,7 +87,7 @@ export default function LogRitualScreen() {
         <Pressable onPress={() => router.back()} style={styles.closeBtn}>
           <MaterialIcons name="close" size={24} color={theme.textPrimary} />
         </Pressable>
-        <Text style={styles.headerTitle}>Log Ritual</Text>
+        <Text style={styles.headerTitle}>{isReflectMode ? 'Add Reflection' : 'Log Ritual'}</Text>
         <Pressable onPress={handleSave} style={[styles.saveBtn, !canSave && styles.saveBtnDisabled]} disabled={!canSave}>
           <Text style={[styles.saveBtnText, !canSave && styles.saveBtnTextDisabled]}>Save</Text>
         </Pressable>
@@ -118,8 +103,8 @@ export default function LogRitualScreen() {
             </Text>
           </View>
 
-          {/* Date Completed */}
-          <Text style={styles.label}>Date Completed</Text>
+          {/* Date */}
+          <Text style={styles.label}>{isReflectMode ? 'Date' : 'Date Completed'}</Text>
           <Pressable style={styles.completedDateField} onPress={() => setShowCompletedDatePicker(true)}>
             <MaterialIcons name="event-available" size={20} color={theme.primary} />
             <Text style={styles.completedDateText}>
@@ -127,7 +112,7 @@ export default function LogRitualScreen() {
             </Text>
             <MaterialIcons name="edit-calendar" size={18} color={theme.textMuted} />
           </Pressable>
-          <Text style={styles.completedDateHint}>Defaults to today — change if you are logging a past practice</Text>
+          <Text style={styles.completedDateHint}>{isReflectMode ? 'Defaults to today — change if reflecting on a past moment' : 'Defaults to today — change if you are logging a past practice'}</Text>
 
           {/* Cosmic Context Card */}
           <View style={styles.cosmicCard}>
@@ -183,7 +168,7 @@ export default function LogRitualScreen() {
           </View>
 
           {/* Notes */}
-          <Text style={styles.label}>Notes *</Text>
+          <Text style={styles.label}>Notes</Text>
           <TextInput style={[styles.input, styles.textArea]} value={notes} onChangeText={setNotes} placeholder="Describe your experience... What happened? What did you notice? How did the energy feel?" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
         </ScrollView>
 
@@ -232,7 +217,7 @@ export default function LogRitualScreen() {
       
       </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 

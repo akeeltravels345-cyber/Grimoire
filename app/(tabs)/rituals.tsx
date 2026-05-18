@@ -139,12 +139,12 @@ export default function RitualsScreen() {
   const monthDays = useMemo(() => getMonthDays(), []);
 
   useEffect(() => {
-    if (timelineView === 'list') {
+    if (timelineView === 'list' && tabMode === 'practice') {
       const todayIndex = today.getDate() - 1;
       const scrollX = Math.max(0, todayIndex * (DAY_PILL_WIDTH + DAY_PILL_GAP) - 140);
       setTimeout(() => { dateScrollRef.current?.scrollTo({ x: scrollX, animated: true }); }, 300);
     }
-  }, [today, timelineView]);
+  }, [today, timelineView, tabMode]);
 
   const ritualsWithComputed = useMemo(() => rituals.map(r => ({ ...r, computedStatus: getComputedStatus(r) })), [rituals]);
   const counts = useMemo(() => getUniqueRitualCounts(rituals), [rituals]);
@@ -165,10 +165,18 @@ export default function RitualsScreen() {
 
   const filteredLibrary = useMemo(() => {
     let list = libraryRituals;
-    if (libSearch.trim()) { const q = libSearch.toLowerCase().trim(); list = list.filter(r => r.name.toLowerCase().includes(q)); }
+    if (libSearch.trim()) {
+      const q = libSearch.toLowerCase().trim();
+      list = list.filter(r => {
+        const cat = categories.find(c => c.id === r.category);
+        return r.name.toLowerCase().includes(q) ||
+          r.intention?.toLowerCase().includes(q) ||
+          cat?.name.toLowerCase().includes(q);
+      });
+    }
     if (libCategory !== 'all') list = list.filter(r => r.category === libCategory);
     return list;
-  }, [libraryRituals, libSearch, libCategory]);
+  }, [libraryRituals, libSearch, libCategory, categories]);
 
   const libraryInPractice = useMemo(() => {
     const set = new Set<string>();
@@ -484,7 +492,7 @@ export default function RitualsScreen() {
   </View>
 </View>
 
-      <View style={styles.segmentWrap}><View style={styles.segmentPill}>{([{ key: 'library' as TabMode, label: 'Library' }, { key: 'practice' as TabMode, label: 'Practice' }, { key: 'manifestations' as TabMode, label: 'Manifestations' }]).map(tab => <Pressable key={tab.key} style={[styles.segmentBtn, tabMode === tab.key && styles.segmentBtnActive]} onPress={() => { setTabMode(tab.key); Haptics.selectionAsync(); }}><Text style={[styles.segmentText, tabMode === tab.key && styles.segmentTextActive]}>{tab.label}</Text></Pressable>)}</View></View>
+      <View style={styles.segmentWrap}><View style={styles.segmentPill}>{([{ key: 'library' as TabMode, label: 'Library' }, { key: 'practice' as TabMode, label: 'Practice' }, { key: 'manifestations' as TabMode, label: 'Cauldron' }]).map(tab => <Pressable key={tab.key} style={[styles.segmentBtn, tabMode === tab.key && styles.segmentBtnActive]} onPress={() => { setTabMode(tab.key); if (tab.key === 'practice') setSelectedDay(new Date()); Haptics.selectionAsync(); }}><Text style={[styles.segmentText, tabMode === tab.key && styles.segmentTextActive]}>{tab.label}</Text></Pressable>)}</View></View>
 
       {tabMode === 'library' ? renderLibraryTab() : tabMode === 'practice' ? (
         <>

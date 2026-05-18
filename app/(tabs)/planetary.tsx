@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, Pressable, StyleSheet, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { theme } from '../../constants/theme';
 import { getTodayPlanet, PLANETS, DAY_RULERS, getPlanetByKey, PlanetData } from '../../constants/planetaryData';
@@ -71,9 +71,10 @@ type ScreenTab = 'planets' | 'moon';
 export default function PlanetaryScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { tab } = useLocalSearchParams<{ tab?: string }>();
   const todayDow = new Date().getDay();
 
-  const [screenTab, setScreenTab] = useState<ScreenTab>('planets');
+  const [screenTab, setScreenTab] = useState<ScreenTab>(tab === 'moon' ? 'moon' : 'planets');
   const [selectedDay, setSelectedDay] = useState(todayDow);
   const [hours, setHours] = useState<PlanetaryHourInfo[]>([]);
   const [hourTab, setHourTab] = useState<'day' | 'night'>('day');

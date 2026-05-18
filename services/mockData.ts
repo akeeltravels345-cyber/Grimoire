@@ -25,6 +25,7 @@ export interface JournalEntry {
   notes: string;
   mood: string;
   results?: string;
+  cosmicContext?: string;
 }
 
 // Standalone journal entry (not tied to a ritual)

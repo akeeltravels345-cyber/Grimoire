@@ -21,6 +21,9 @@ export default function RootLayout() {
             <Stack.Screen name="add-library-ritual" options={{ presentation: 'modal' }} />
             <Stack.Screen name="add-to-practice" options={{ presentation: 'modal' }} />
             <Stack.Screen name="library-ritual/[id]" options={{ presentation: 'card' }} />
+            <Stack.Screen name="manifestation/[id]" options={{ presentation: 'card' }} />
+            <Stack.Screen name="journal-entry/[id]" options={{ presentation: 'card' }} />
+            <Stack.Screen name="write-journal" options={{ presentation: 'modal' }} />
             <Stack.Screen name="spell-research" options={{ presentation: 'card' }} />
             <Stack.Screen name="core-practice-settings" options={{ presentation: 'card' }} />
             <Stack.Screen name="monthly-intention" options={{ presentation: 'card' }} />

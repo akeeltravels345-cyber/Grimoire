@@ -45,31 +45,17 @@ for (let i = 0; i < 90; i++) {
 
   if (!ritual) {
     return (
-      <LinearGradient
-        colors={['#2A1020', '#1E0A2E', '#180820', '#1A0A28', '#120618']}
-        locations={[0, 0.25, 0.5, 0.75, 1]}
-        start={{ x: 0.3, y: 0 }}
-        end={{ x: 0.7, y: 1 }}
-        style={{ flex: 1 }}
-      >
-        <LinearGradient
-          colors={['rgba(180,60,120,0.2)', 'transparent', 'rgba(100,40,160,0.15)']}
-          locations={[0, 0.5, 1]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-          pointerEvents="none"
-        />
+      <View style={{ flex: 1, backgroundColor: theme.background }}>
         <SafeAreaView edges={['top']} style={{ flex: 1 }}>
           <StarField starCount={40} showShootingStar={false} />
           <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>Ritual not found</Text>
-          <Pressable onPress={() => router.back()} style={styles.backLink}>
-            <Text style={styles.backLinkText}>Go back</Text>
-          </Pressable>
-        </View>
+            <Text style={styles.errorText}>Ritual not found</Text>
+            <Pressable onPress={() => router.back()} style={styles.backLink}>
+              <Text style={styles.backLinkText}>Go back</Text>
+            </Pressable>
+          </View>
         </SafeAreaView>
-      </LinearGradient>
+      </View>
     );
   }
 
@@ -220,19 +206,14 @@ for (let i = 0; i < 90; i++) {
   const msStyle = getStatusLabel(ritual.status);
 
   return (
-    <LinearGradient
-      colors={['#2A1020', '#1E0A2E', '#180820', '#1A0A28', '#120618']}
-      locations={[0, 0.25, 0.5, 0.75, 1]}
-      start={{ x: 0.3, y: 0 }}
-      end={{ x: 0.7, y: 1 }}
-      style={{ flex: 1 }}
-    >
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      {/* Category-tinted wash fading from top */}
       <LinearGradient
-        colors={['rgba(180,60,120,0.2)', 'transparent', 'rgba(100,40,160,0.15)']}
-        locations={[0, 0.5, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        colors={[catColor + '28', catColor + '10', 'transparent']}
+        locations={[0, 0.4, 1]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 320 }}
         pointerEvents="none"
       />
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
@@ -295,10 +276,17 @@ for (let i = 0; i < 90; i++) {
             </>
           ) : (
             <>
-              <View style={[styles.categoryBadge, { backgroundColor: catColor + '20' }]}>
-                <MaterialIcons name={(category?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap} size={28} color={catColor} />
+              <View style={[styles.categoryRing, { borderColor: catColor + '50' }]}>
+                <View style={[styles.categoryBadge, { backgroundColor: catColor + '20' }]}>
+                  <MaterialIcons name={(category?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap} size={32} color={catColor} />
+                </View>
               </View>
               <Text style={styles.ritualName}>{ritual.name}</Text>
+              <View style={styles.nameSeparator}>
+                <View style={[styles.nameSeparatorLine, { backgroundColor: catColor + '50' }]} />
+                <MaterialIcons name="auto-awesome" size={11} color={catColor} style={{ marginHorizontal: 8 }} />
+                <View style={[styles.nameSeparatorLine, { backgroundColor: catColor + '50' }]} />
+              </View>
               <View style={styles.tagRow}>
                 <View style={[styles.tag, { backgroundColor: catColor + '20' }]}>
                   <Text style={[styles.tagText, { color: catColor }]}>{category?.name || ritual.category}</Text>
@@ -324,26 +312,19 @@ for (let i = 0; i < 90; i++) {
           )}
         </View>
 
-        {/* Status & Schedule Card */}
-        <View style={[styles.statusBadgeCard, { borderColor: csColor + '35', backgroundColor: csColor + '0A' }]}>
-          <View style={styles.statusInlineRow}>
-            <View style={[styles.statusBadgeIconWrap, { backgroundColor: csColor + '18' }]}>
-              <MaterialIcons name={csIcon} size={24} color={csColor} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.statusBadgeLabel, { color: csColor }]}>{csLabel}</Text>
-              {ritual.scheduledDate ? (
-                <Text style={styles.scheduledForDate}>
-                  {new Date(ritual.scheduledDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                </Text>
-              ) : null}
-            </View>
-            {(computedStatus === 'approaching' || computedStatus === 'overdue') && countdownLabel ? (
-              <View style={[styles.countdownPill, { backgroundColor: (computedStatus === 'overdue' ? theme.error : theme.warning) + '18' }]}>
-                <Text style={[styles.countdownText, { color: computedStatus === 'overdue' ? theme.error : theme.warning }]}>{countdownLabel}</Text>
-              </View>
-            ) : null}
-          </View>
+        {/* Status Bar */}
+        <View style={[styles.statusBar, { borderLeftColor: csColor, backgroundColor: csColor + '08' }]}>
+          <MaterialIcons name={csIcon} size={16} color={csColor} />
+          <Text style={[styles.statusBarLabel, { color: csColor }]}>
+            {csLabel}{ritual.scheduledDate
+              ? ` · ${new Date(ritual.scheduledDate).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}`
+              : ''}
+          </Text>
+          {(computedStatus === 'approaching' || computedStatus === 'overdue') && countdownLabel ? (
+            <Text style={[styles.statusBarCountdown, { color: computedStatus === 'overdue' ? theme.error : theme.warning }]}>
+              {countdownLabel}
+            </Text>
+          ) : null}
         </View>
 
         {/* Stop Schedule Banner (for series with future rituals) */}
@@ -433,12 +414,12 @@ for (let i = 0; i < 90; i++) {
             <Text style={styles.editFieldLabel}>Description</Text>
             <TextInput style={[styles.editInput, styles.editTextArea]} value={editDescription} onChangeText={setEditDescription} placeholder="Describe the ritual process..." placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
           </View>
-        ) : (
+        ) : ritual.description ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Description</Text>
+            <Text style={styles.sectionLabel}>DESCRIPTION</Text>
             <Text style={styles.descriptionText}>{ritual.description}</Text>
           </View>
-        )}
+        ) : null}
 
 
         {/* Ingredients */}
@@ -542,7 +523,7 @@ for (let i = 0; i < 90; i++) {
         {/* Ingredients (view mode) */}
         {!isEditing && ritual.ingredients && ritual.ingredients.length > 0 ? (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Ingredients & Tools</Text>
+            <Text style={styles.sectionLabel}>INGREDIENTS & TOOLS</Text>
             <View style={styles.ingredientsList}>
               {ritual.ingredients.map((item, i) => (
                 <View key={i} style={styles.ingredientItem}>
@@ -558,7 +539,7 @@ for (let i = 0; i < 90; i++) {
         {manif ? (
           <View style={[styles.section, { marginTop: 8 }]}>
             <View style={styles.manifHeader}>
-              <Text style={styles.sectionTitle}>Manifestation</Text>
+              <Text style={styles.sectionLabel}>MANIFESTATION</Text>
               {(() => {
                 const ss = getStatusStyle(manif.status);
                 return (
@@ -604,29 +585,45 @@ for (let i = 0; i < 90; i++) {
         {/* Journal Section */}
         <View style={[styles.section, { marginTop: 8 }]}>
           <View style={styles.journalHeader}>
-            <Text style={styles.sectionTitle}>Journal</Text>
-            <Text style={styles.journalCount}>{ritual.journal.length} entries</Text>
+            <Text style={styles.sectionLabel}>JOURNAL</Text>
+            <Text style={styles.journalCount}>{ritual.journal.length} {ritual.journal.length === 1 ? 'entry' : 'entries'}</Text>
           </View>
 
           {ritual.journal.length === 0 ? (
             <View style={styles.emptyJournal}>
               <Image source={require('../../assets/images/journal-empty.png')} style={{ width: 100, height: 100, marginBottom: 12 }} contentFit="contain" />
               <Text style={styles.emptyJournalText}>No journal entries yet</Text>
-              <Text style={styles.emptyJournalSub}>Log this ritual to start recording your practice</Text>
+              <Pressable
+                onPress={() => router.push({ pathname: '/log-ritual', params: { ritualId: ritual.id, mode: 'reflect' } })}
+                style={styles.reflectEmptyBtn}
+              >
+                <MaterialIcons name="edit-note" size={16} color={theme.primary} />
+                <Text style={styles.reflectEmptyBtnText}>Add a Reflection</Text>
+              </Pressable>
             </View>
           ) : (
             ritual.journal.map((entry) => (
-              <View key={entry.id} style={styles.journalEntry}>
+              <Pressable
+                key={entry.id}
+                style={[styles.journalEntry, { borderLeftColor: catColor + '90' }]}
+                onPress={() => router.push({ pathname: '/journal-entry/[id]' as any, params: { id: entry.id, ritualId: ritual.id } })}
+              >
                 <View style={styles.journalEntryHeader}>
-                  <Text style={styles.journalDate}>
-                    {new Date(entry.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                  </Text>
-                  <View style={styles.moodBadge}>
-                    <Text style={styles.moodText}>{entry.mood}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.journalDate}>
+                      {new Date(entry.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
+                    </Text>
+                    {entry.cosmicContext ? (
+                      <Text style={styles.journalCosmic}>{entry.cosmicContext}</Text>
+                    ) : null}
                   </View>
+                  <View style={[styles.moodBadge, { backgroundColor: catColor + '18' }]}>
+                    <Text style={[styles.moodText, { color: catColor }]}>{entry.mood}</Text>
+                  </View>
+                  <MaterialIcons name="chevron-right" size={18} color={theme.textMuted} style={{ marginLeft: 4 }} />
                 </View>
-                <Text style={styles.journalNotes}>{entry.notes}</Text>
-              </View>
+                {entry.notes ? <Text style={styles.journalNotes} numberOfLines={3}>{entry.notes}</Text> : null}
+              </Pressable>
             ))
           )}
         </View>
@@ -641,6 +638,13 @@ for (let i = 0; i < 90; i++) {
             <Text style={styles.manifestButtonText}>Log a Sign</Text>
           </Pressable>
         ) : null}
+        <Pressable
+          style={styles.reflectBtn}
+          onPress={() => router.push({ pathname: '/log-ritual', params: { ritualId: ritual.id, mode: 'reflect' } })}
+        >
+          <MaterialIcons name="edit-note" size={20} color={theme.textPrimary} />
+          <Text style={styles.reflectBtnText}>Reflect</Text>
+        </Pressable>
         {computedStatus === 'completed' ? (
           <Pressable style={[styles.completeRitualBtn, { backgroundColor: catColor }]} onPress={handleReschedule}>
             <MaterialIcons name="replay" size={20} color={theme.background} />
@@ -654,7 +658,7 @@ for (let i = 0; i < 90; i++) {
         )}
       </View>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
@@ -667,29 +671,23 @@ const styles = StyleSheet.create({
   headerBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   headerEditTitle: { fontSize: 16, fontWeight: '600', color: theme.textSecondary, marginLeft: 4 },
   saveEditBtn: { backgroundColor: theme.success, borderRadius: 22 },
-  ritualHeader: { alignItems: 'center', paddingBottom: 20 },
-  categoryBadge: { width: 64, height: 64, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
-  ritualName: { fontSize: 22, fontWeight: '700', color: theme.textPrimary, textAlign: 'center', marginBottom: 12, lineHeight: 28, fontFamily: theme.fonts.serif },
+  ritualHeader: { alignItems: 'center', paddingBottom: 20, paddingTop: 8 },
+  categoryRing: { width: 88, height: 88, borderRadius: 44, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
+  categoryBadge: { width: 72, height: 72, borderRadius: 36, alignItems: 'center', justifyContent: 'center' },
+  ritualName: { fontSize: 26, fontWeight: '700', color: theme.textPrimary, textAlign: 'center', marginBottom: 10, lineHeight: 34, fontFamily: theme.fonts.serif },
+  nameSeparator: { flexDirection: 'row', alignItems: 'center', marginBottom: 14, width: '60%' },
+  nameSeparatorLine: { flex: 1, height: 1 },
   tagRow: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 8 },
   tag: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 5, borderRadius: 12, backgroundColor: theme.surfaceLight },
   tagText: { fontSize: 12, fontWeight: '600', color: theme.textSecondary },
 
-  statusBadgeCard: {
-    alignItems: 'center', backgroundColor: theme.surface, borderRadius: theme.radius.lg,
-    padding: 20, marginBottom: 16, borderWidth: 1, borderColor: theme.border,
-    ...theme.shadows.card,
+  statusBar: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    borderLeftWidth: 3, borderRadius: 8, paddingHorizontal: 14, paddingVertical: 10,
+    marginBottom: 16,
   },
-  statusInlineRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  statusBadgeIconWrap: {
-    width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center',
-  },
-  statusBadgeLabel: { fontSize: 15, fontWeight: '800', letterSpacing: 0.3, textTransform: 'uppercase' as const },
-  scheduledForDate: { fontSize: 13, fontWeight: '600', color: theme.textSecondary, marginTop: 2 },
-  countdownPill: {
-    flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8,
-    paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20,
-  },
-  countdownText: { fontSize: 13, fontWeight: '700' },
+  statusBarLabel: { flex: 1, fontSize: 13, fontWeight: '600' },
+  statusBarCountdown: { fontSize: 12, fontWeight: '700' },
 
   // Stop Schedule Banner
   stopBanner: {
@@ -751,25 +749,38 @@ const styles = StyleSheet.create({
   addManifestBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, borderWidth: 1, borderColor: theme.success + '40', borderRadius: theme.radius.md, backgroundColor: theme.success + '08' },
   addManifestText: { fontSize: 13, fontWeight: '600', color: theme.success },
 
+  sectionLabel: { fontSize: 10, fontWeight: '700', color: theme.textMuted, letterSpacing: 1.2, textTransform: 'uppercase' as const, marginBottom: 10 },
+
   journalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 },
   journalCount: { fontSize: 13, color: theme.textMuted },
   emptyJournal: { alignItems: 'center', paddingVertical: 24, backgroundColor: theme.surface, borderRadius: theme.radius.md },
   emptyJournalText: { fontSize: 15, fontWeight: '600', color: theme.textPrimary, marginBottom: 4 },
   emptyJournalSub: { fontSize: 13, color: theme.textSecondary, fontWeight: '500' },
-  journalEntry: { backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 16, marginBottom: 10, ...theme.shadows.card },
-  journalEntryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 },
+  journalEntry: { backgroundColor: theme.surface, borderRadius: theme.radius.md, padding: 16, marginBottom: 10, borderLeftWidth: 3, ...theme.shadows.card },
+  journalEntryHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   journalDate: { fontSize: 13, fontWeight: '600', color: theme.textSecondary },
-  moodBadge: { backgroundColor: theme.surfaceLight, paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8 },
-  moodText: { fontSize: 11, fontWeight: '600', color: theme.textSecondary },
-  journalNotes: { fontSize: 14, color: theme.textPrimary, lineHeight: 20, fontFamily: theme.fonts.serif },
+  journalCosmic: { fontSize: 11, color: theme.textMuted, marginTop: 3, fontStyle: 'italic' },
+  moodBadge: { paddingHorizontal: 10, paddingVertical: 3, borderRadius: 8 },
+  moodText: { fontSize: 11, fontWeight: '600' },
+  journalNotes: { fontSize: 14, color: theme.textPrimary, lineHeight: 20, fontFamily: theme.fonts.serif, marginTop: 8 },
 
-  floatingContainer: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', gap: 12 },
+  reflectEmptyBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, borderWidth: 1, borderColor: theme.primary + '40', backgroundColor: theme.primary + '10' },
+  reflectEmptyBtnText: { fontSize: 13, fontWeight: '600', color: theme.primary },
+
+  floatingContainer: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', gap: 10 },
   manifestButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: theme.success, paddingVertical: 16, borderRadius: theme.radius.lg, ...theme.shadows.elevated },
-  manifestButtonText: { fontSize: 15, fontWeight: '700', color: theme.background },
+  manifestButtonText: { fontSize: 14, fontWeight: '700', color: theme.background },
+  reflectBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    backgroundColor: theme.surface, paddingVertical: 16, paddingHorizontal: 16,
+    borderRadius: theme.radius.lg, borderWidth: 1.5, borderColor: theme.border,
+    ...theme.shadows.elevated,
+  },
+  reflectBtnText: { fontSize: 14, fontWeight: '700', color: theme.textPrimary },
   completeRitualBtn: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
     backgroundColor: theme.primary, paddingVertical: 16, borderRadius: theme.radius.lg,
     ...theme.shadows.elevated,
   },
-  completeRitualBtnText: { fontSize: 15, fontWeight: '700', color: theme.background, letterSpacing: 0.3 },
+  completeRitualBtnText: { fontSize: 14, fontWeight: '700', color: theme.background, letterSpacing: 0.3 },
 });

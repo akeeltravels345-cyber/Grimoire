@@ -117,7 +117,7 @@ export default function ManifestationsScreen() {
           filtered.map(m => {
             const ss = getStageStyle(m.status);
             return (
-              <View key={m.id} style={styles.card}>
+              <Pressable key={m.id} style={styles.card} onPress={() => router.push(`/manifestation/${m.id}`)}>
                 {/* Stage stripe */}
                 <View style={[styles.cardStripe, { backgroundColor: ss.color }]} />
 
@@ -178,13 +178,13 @@ export default function ManifestationsScreen() {
                     <View style={styles.actionRow}>
                       <Pressable
                         style={styles.logSignBtn}
-                        onPress={() => router.push({ pathname: '/add-manifestation', params: { ritualId: m.ritualId } })}
+                        onPress={(e) => { e.stopPropagation?.(); router.push({ pathname: '/add-manifestation', params: { ritualId: m.ritualId } }); }}
                       >
                         <Text style={styles.logSignBtnText}>✦ Log a Sign</Text>
                       </Pressable>
                       <Pressable
                         style={styles.spilledBtn}
-                        onPress={() => router.push({ pathname: '/add-manifestation', params: { ritualId: m.ritualId, mode: 'spill' } })}
+                        onPress={(e) => { e.stopPropagation?.(); router.push({ pathname: '/add-manifestation', params: { ritualId: m.ritualId, mode: 'spill' } }); }}
                       >
                         <Text style={styles.spilledBtnText}>⭐ It Spilled</Text>
                       </Pressable>
@@ -197,7 +197,7 @@ export default function ManifestationsScreen() {
                     </View>
                   )}
                 </View>
-              </View>
+              </Pressable>
             );
           })
         )}

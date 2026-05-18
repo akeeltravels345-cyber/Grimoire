@@ -292,7 +292,7 @@ locations={[0, 0.35, 0.65, 1]}
               ) : null}
             </Pressable>
 
-            <Pressable style={styles.moonCard} onPress={() => router.push({ pathname: '/(tabs)/planetary', params: {} })}>
+            <Pressable style={styles.moonCard} onPress={() => router.push({ pathname: '/(tabs)/planetary', params: { tab: 'moon' } })}>
               <View style={styles.moonVisualWrap}>
                 <MoonVisual phaseIndex={moonPhaseIndex} size={62} />
               </View>

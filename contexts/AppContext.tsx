@@ -60,8 +60,12 @@ interface AppContextType {
   deleteFutureInSeries: (seriesId: string, fromDate: string) => void;
   deleteEntireSeries: (seriesId: string) => void;
   stopSchedule: (seriesId: string) => void;
-  addJournalEntry: (ritualId: string, entry: Omit<JournalEntry, 'id'>) => void;
+  addJournalEntry: (ritualId: string, entry: Omit<JournalEntry, 'id'>, opts?: { markComplete?: boolean }) => void;
+  updateJournalEntry: (ritualId: string, entryId: string, updates: Partial<JournalEntry>) => void;
+  deleteJournalEntry: (ritualId: string, entryId: string) => void;
+  updateStandaloneEntry: (id: string, updates: Partial<StandaloneJournalEntry>) => void;
   addManifestationResult: (ritualId: string, note: string, date: string, type: 'sign' | 'manifested', signType?: import('../services/mockData').SignType) => void;
+  deleteManifestationResult: (manifestationId: string, resultId: string) => void;
   getManifestations: () => ManifestationRecord[];
   addCategory: (category: PracticeCategory, color: string) => void;
   deleteCategory: (categoryId: string) => void;
@@ -456,6 +460,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const updateRitual = (id: string, updates: Partial<Ritual>) => {
     setRituals(prev => prev.map(r => r.id === id ? { ...r, ...updates } : r));
+    if (updates.name) {
+      setManifestations(prev => prev.map(m => m.ritualId === id ? { ...m, ritualName: updates.name! } : m));
+    }
   };
 
   const deleteRitual = (id: string) => {
@@ -509,23 +516,43 @@ export function AppProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const addJournalEntry = (ritualId: string, entry: Omit<JournalEntry, 'id'>) => {
+  const addJournalEntry = (ritualId: string, entry: Omit<JournalEntry, 'id'>, opts?: { markComplete?: boolean }) => {
+    const markComplete = opts?.markComplete !== false;
     const newEntry: JournalEntry = { ...entry, id: Date.now().toString() };
     setRituals(prev => prev.map(r => {
       if (r.id !== ritualId) return r;
-      // Use the entry date (which may be backdated) for lastPerformed
-      // Only update lastPerformed if this entry is newer than current
       const entryTime = new Date(entry.date).getTime();
       const currentLastPerformed = r.lastPerformed ? new Date(r.lastPerformed).getTime() : 0;
       const newLastPerformed = entryTime > currentLastPerformed ? entry.date : r.lastPerformed || entry.date;
-      return {
-        ...r,
-        journal: [newEntry, ...r.journal],
-        lastPerformed: newLastPerformed,
-        timesPerformed: r.timesPerformed + 1,
-        status: 'completed' as const,
-      };
+      if (markComplete) {
+        return {
+          ...r,
+          journal: [newEntry, ...r.journal],
+          lastPerformed: newLastPerformed,
+          timesPerformed: r.timesPerformed + 1,
+          status: 'completed' as const,
+        };
+      }
+      return { ...r, journal: [newEntry, ...r.journal] };
     }));
+  };
+
+  const updateJournalEntry = (ritualId: string, entryId: string, updates: Partial<JournalEntry>) => {
+    setRituals(prev => prev.map(r => {
+      if (r.id !== ritualId) return r;
+      return { ...r, journal: r.journal.map(e => e.id === entryId ? { ...e, ...updates } : e) };
+    }));
+  };
+
+  const deleteJournalEntry = (ritualId: string, entryId: string) => {
+    setRituals(prev => prev.map(r => {
+      if (r.id !== ritualId) return r;
+      return { ...r, journal: r.journal.filter(e => e.id !== entryId) };
+    }));
+  };
+
+  const updateStandaloneEntry = (id: string, updates: Partial<StandaloneJournalEntry>) => {
+    setStandaloneEntries(prev => prev.map(e => e.id === id ? { ...e, ...updates } : e));
   };
 
   const addManifestationResult = (ritualId: string, note: string, date: string, type: 'sign' | 'manifested', signType?: import('../services/mockData').SignType) => {
@@ -544,6 +571,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
         results: [...m.results, newResult],
         status: newStatus as ManifestationRecord['status'],
       };
+    }));
+  };
+
+  const deleteManifestationResult = (manifestationId: string, resultId: string) => {
+    setManifestations(prev => prev.map(m => {
+      if (m.id !== manifestationId) return m;
+      const newResults = m.results.filter(r => r.id !== resultId);
+      const newStatus: ManifestationRecord['status'] =
+        newResults.some(r => r.type === 'manifested') ? 'spilled' :
+        newResults.some(r => r.type === 'sign') ? 'stirring' : 'brewing';
+      return { ...m, results: newResults, status: newStatus };
     }));
   };
 
@@ -743,7 +781,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     <AppContext.Provider value={{
       rituals, libraryRituals, categories, categoryColors, manifestations, standaloneEntries, isLoaded,
       addRitual, updateRitual, deleteRitual, deleteFutureInSeries, deleteEntireSeries, stopSchedule,
-      addJournalEntry, addManifestationResult, getManifestations,
+      addJournalEntry, updateJournalEntry, deleteJournalEntry, updateStandaloneEntry,
+      addManifestationResult, deleteManifestationResult, getManifestations,
       addCategory, deleteCategory,
       addStandaloneEntry, deleteStandaloneEntry, updateStatus,
       addLibraryRitual, updateLibraryRitual, deleteLibraryRitual, addToPractice,
