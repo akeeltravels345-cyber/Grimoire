@@ -47,19 +47,13 @@ export default function CorePracticeSettingsScreen() {
   const hasChanges = JSON.stringify([...selectedIds].sort()) !== JSON.stringify([...coreCategories].sort());
 
   return (
-    <LinearGradient
-      colors={['#2A1020', '#1E0A2E', '#180820', '#1A0A28', '#120618']}
-      locations={[0, 0.25, 0.5, 0.75, 1]}
-      start={{ x: 0.3, y: 0 }}
-      end={{ x: 0.7, y: 1 }}
-      style={{ flex: 1 }}
-    >
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
       <LinearGradient
-        colors={['rgba(180,60,120,0.2)', 'transparent', 'rgba(100,40,160,0.15)']}
-        locations={[0, 0.5, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        colors={[theme.primary + '28', theme.primary + '10', 'transparent']}
+        locations={[0, 0.4, 1]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 320, zIndex: 0 }}
         pointerEvents="none"
       />
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
@@ -161,7 +155,7 @@ export default function CorePracticeSettingsScreen() {
           </View>
         </ScrollView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 

@@ -59,7 +59,6 @@ export default function AddRitualScreen() {
   const canSave =
     name.trim().length > 0 &&
     intention.trim().length > 0 &&
-    tangibleOutcome.trim().length > 0 &&
     (!needsDate || scheduledDate !== null);
 
   const handleSave = () => {
@@ -97,19 +96,14 @@ export default function AddRitualScreen() {
   };
 
   return (
-    <LinearGradient
-      colors={['#2A1020', '#1E0A2E', '#180820', '#1A0A28', '#120618']}
-      locations={[0, 0.25, 0.5, 0.75, 1]}
-      start={{ x: 0.3, y: 0 }}
-      end={{ x: 0.7, y: 1 }}
-      style={{ flex: 1 }}
-    >
+    <View style={{ flex: 1, backgroundColor: theme.background }}>
+      {/* Soft purple wash from the top */}
       <LinearGradient
-        colors={['rgba(180,60,120,0.2)', 'transparent', 'rgba(100,40,160,0.15)']}
-        locations={[0, 0.5, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        colors={[theme.primary + '28', theme.primary + '10', 'transparent']}
+        locations={[0, 0.4, 1]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 320, zIndex: 0 }}
         pointerEvents="none"
       />
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>
@@ -164,10 +158,10 @@ export default function AddRitualScreen() {
             <Text style={styles.label}>Intention *</Text>
             <TextInput style={[styles.input, styles.textArea]} value={intention} onChangeText={setIntention} placeholder="What is the purpose of this ritual?" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
 
-            {/* Tangible Outcome */}
-            <Text style={styles.label}>Tangible Outcome *</Text>
-            <TextInput style={[styles.input, styles.textArea]} value={tangibleOutcome} onChangeText={setTangibleOutcome} placeholder="Translate that intention into a specific measurable result. e.g. Receive $5,000 within 30 days" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
-            <Text style={styles.hint}>This auto-generates an entry in your manifestation tracker</Text>
+            {/* Tangible Outcome — optional, auto-creates manifestation entry */}
+            <Text style={styles.label}>Tangible Outcome</Text>
+            <TextInput style={[styles.input, styles.textArea]} value={tangibleOutcome} onChangeText={setTangibleOutcome} placeholder="Optional: a specific measurable result. e.g. Receive $5,000 within 30 days" placeholderTextColor={theme.textMuted} multiline textAlignVertical="top" />
+            <Text style={styles.hint}>✦ If set, auto-adds an entry in your Cauldron (manifestation tracker)</Text>
 
             {/* Description */}
             <Text style={styles.label}>Description</Text>
@@ -261,7 +255,7 @@ export default function AddRitualScreen() {
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </LinearGradient>
+    </View>
   );
 }
 
