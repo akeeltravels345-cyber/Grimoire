@@ -15,6 +15,13 @@ import { getCurrentPlanetaryHour, formatHourTime, PlanetaryHourInfo } from '../.
 import { useApp } from '../../contexts/AppContext';
 import { getComputedStatus, getDaysUntil } from '../../services/mockData';
 
+function getGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good Morning ✦';
+  if (hour < 17) return 'Good Afternoon ✦';
+  return 'Good Evening ✦';
+}
+
 import StarField from '../../components/StarField';
 import MoonVisual from '../../components/MoonVisual';
 import PlanetVisual from '../../components/PlanetVisual';
@@ -36,7 +43,7 @@ function getMoonPhaseIndex(): number {
 export default function DashboardScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { rituals, categories, categoryColors, manifestations, updateRitual, currentMonthIntention, coreCategories, monthlyStreak } = useApp();
+  const { rituals, categories, categoryColors, manifestations, updateRitual, currentMonthIntention, coreCategories, monthlyStreak, standaloneEntries } = useApp();
   const moonPhase = getCurrentMoonPhase();
   const moonPhaseIndex = getMoonPhaseIndex();
   const todayPlanet = getTodayPlanet();
@@ -154,17 +161,39 @@ export default function DashboardScreen() {
 
 
 
+  const todayRituals = useMemo(() => {
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    return rituals.filter(r => {
+      if (!r.scheduledDate) return false;
+      const d = r.scheduledDate.slice(0, 10);
+      return d === todayStr && r.status !== 'completed' && r.status !== 'dismissed';
+    });
+  }, [rituals]);
+
   const recentEntries = useMemo(() => {
-    const entries: { id: string; ritualName: string; ritualId: string; category: string; date: string; notes: string; mood: string }[] = [];
+    type ActivityEntry = {
+      id: string; ritualName: string; ritualId?: string; category?: string;
+      date: string; notes: string; mood: string; isStandalone?: boolean; title?: string;
+    };
+    const entries: ActivityEntry[] = [];
     rituals.forEach(r => {
       r.journal.forEach(j => {
         entries.push({ ...j, ritualName: r.name, ritualId: r.id, category: r.category });
       });
     });
-    return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 3);
-  }, [rituals]);
+    standaloneEntries.forEach(e => {
+      entries.push({
+        id: e.id, ritualName: e.title || e.type, ritualId: undefined,
+        category: undefined, date: e.date, notes: e.notes,
+        mood: e.mood || '', isStandalone: true, title: e.title,
+      });
+    });
+    return entries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()).slice(0, 4);
+  }, [rituals, standaloneEntries]);
 
   const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const greeting = getGreeting();
 
   function getOverduePill(days: number): string {
     if (days === -1) return '1d overdue';
@@ -216,9 +245,12 @@ locations={[0, 0.35, 0.65, 1]}
           <View style={styles.header}>
             <View>
               <Text style={styles.dateText}>{todayStr}</Text>
-              <Text style={styles.greeting}>Blessed Be ✦</Text>
+              <Text style={styles.greeting}>{greeting}</Text>
             </View>
             <View style={{ flexDirection: 'row', gap: 10 }}>
+              <Pressable onPress={() => router.push('/write-journal' as any)} style={styles.profileButton}>
+                <MaterialIcons name="edit-note" size={22} color={theme.textSecondary} />
+              </Pressable>
               <Pressable onPress={() => router.push('/add-ritual')} style={styles.addButton}>
                 <LinearGradient
                   colors={[theme.primary, theme.primaryDark]}
@@ -341,6 +373,46 @@ locations={[0, 0.35, 0.65, 1]}
             </View>
           ) : null}
 
+          {/* ═══ TODAY'S PRACTICE ═══ */}
+          {todayRituals.length > 0 ? (
+            <View style={styles.todaySection}>
+              <View style={styles.sectionHeader}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <Text style={styles.sectionTitle}>Today's Rituals</Text>
+                  <View style={styles.todayCountBadge}>
+                    <Text style={styles.todayCountText}>{todayRituals.length}</Text>
+                  </View>
+                </View>
+              </View>
+              {todayRituals.map(r => {
+                const cat = resolveCategory(r.category, categories);
+                const catColor = resolveCategoryColor(r.category, categoryColors, categories);
+                return (
+                  <Pressable key={r.id} style={styles.todayCard} onPress={() => router.push(`/ritual/${r.id}`)}>
+                    <View style={[styles.todayCatBar, { backgroundColor: catColor }]} />
+                    <View style={[styles.todayIcon, { backgroundColor: catColor + '22' }]}>
+                      <MaterialIcons name={(cat?.icon || 'auto-fix-high') as keyof typeof MaterialIcons.glyphMap} size={18} color={catColor} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.todayName} numberOfLines={1}>{r.name}</Text>
+                      {r.intention ? (
+                        <Text style={styles.todayIntention} numberOfLines={1}>{r.intention}</Text>
+                      ) : null}
+                    </View>
+                    <Pressable
+                      style={[styles.todayCompleteBtn, { borderColor: catColor + '60' }]}
+                      onPress={() => router.push({ pathname: '/log-ritual', params: { ritualId: r.id } } as any)}
+                      hitSlop={6}
+                    >
+                      <MaterialIcons name="check" size={15} color={catColor} />
+                      <Text style={[styles.todayCompleteBtnText, { color: catColor }]}>Complete</Text>
+                    </Pressable>
+                  </Pressable>
+                );
+              })}
+            </View>
+          ) : null}
+
           {/* ═══ MONTHLY SNAPSHOT ═══ */}
           <MonthlySnapshotCard
             data={monthlyData}
@@ -354,24 +426,43 @@ locations={[0, 0.35, 0.65, 1]}
               <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>Recent Activity</Text>
                 <Pressable onPress={() => router.push('/(tabs)/journal')}>
-                  <Text style={styles.seeAll}>Journal</Text>
+                  <Text style={styles.seeAll}>See all →</Text>
                 </Pressable>
               </View>
               {recentEntries.map(entry => {
-                const catColor = resolveCategoryColor(entry.category, categoryColors, categories);
+                const catColor = entry.category
+                  ? resolveCategoryColor(entry.category, categoryColors, categories)
+                  : theme.primary;
+                const handlePress = () => {
+                  if (entry.isStandalone) {
+                    router.push({ pathname: '/journal-entry/[id]', params: { id: entry.id } } as any);
+                  } else if (entry.ritualId) {
+                    router.push({ pathname: '/journal-entry/[id]', params: { id: entry.id, ritualId: entry.ritualId } } as any);
+                  }
+                };
                 return (
-                  <Pressable key={entry.id} style={styles.activityCard} onPress={() => router.push(`/ritual/${entry.ritualId}`)}>
+                  <Pressable key={entry.id} style={styles.activityCard} onPress={handlePress}>
                     <View style={[styles.activityDot, { backgroundColor: catColor }]} />
                     <View style={{ flex: 1 }}>
-                      <Text style={styles.activityRitual}>{entry.ritualName}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                        <Text style={styles.activityRitual} numberOfLines={1}>{entry.ritualName}</Text>
+                        {entry.isStandalone ? (
+                          <View style={styles.activityStandalonePill}>
+                            <Text style={styles.activityStandalonePillText}>Personal</Text>
+                          </View>
+                        ) : null}
+                      </View>
                       <Text style={styles.activityNotes} numberOfLines={2}>{entry.notes}</Text>
                       <View style={styles.activityMeta}>
                         <Text style={styles.activityDate}>
                           {new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </Text>
-                        <View style={styles.activityMoodBadge}>
-                          <Text style={styles.activityMood}>{entry.mood}</Text>
-                        </View>
+                        {entry.mood ? (
+                          <View style={styles.activityMoodBadge}>
+                            <Text style={styles.activityMood}>{entry.mood}</Text>
+                          </View>
+                        ) : null}
+                        <MaterialIcons name="chevron-right" size={14} color={theme.textMuted} style={{ marginLeft: 'auto' }} />
                       </View>
                     </View>
                   </Pressable>
@@ -848,6 +939,36 @@ const styles = StyleSheet.create({
   activityDate: { fontSize: 12, color: theme.textMuted },
   activityMoodBadge: { backgroundColor: 'rgba(255,255,255,0.10)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8 },
   activityMood: { fontSize: 11, color: theme.textSecondary, fontWeight: '500' },
+
+  // ═══ Today's Rituals ═══
+  todaySection: { marginBottom: 16 },
+  todayCard: {
+    flexDirection: 'row', alignItems: 'center', backgroundColor: theme.surface,
+    borderRadius: theme.radius.md, paddingVertical: 12, paddingRight: 12,
+    marginBottom: 8, gap: 10, borderWidth: 1, borderColor: theme.border,
+    overflow: 'hidden',
+  },
+  todayCatBar: { width: 4, alignSelf: 'stretch', borderRadius: 2, marginRight: 2 },
+  todayIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  todayName: { fontSize: 14, fontWeight: '700', color: theme.textPrimary },
+  todayIntention: { fontSize: 11, color: theme.textMuted, fontStyle: 'italic', marginTop: 1 },
+  todayCompleteBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20,
+    borderWidth: 1, backgroundColor: 'transparent',
+  },
+  todayCompleteBtnText: { fontSize: 11, fontWeight: '700' },
+  todayCountBadge: {
+    backgroundColor: theme.primary + '30', paddingHorizontal: 8, paddingVertical: 3,
+    borderRadius: 10,
+  },
+  todayCountText: { fontSize: 11, fontWeight: '700', color: theme.primary },
+
+  // ═══ Activity standalone pill ═══
+  activityStandalonePill: {
+    backgroundColor: 'rgba(255,255,255,0.10)', paddingHorizontal: 7, paddingVertical: 2, borderRadius: 8,
+  },
+  activityStandalonePillText: { fontSize: 9, fontWeight: '600', color: theme.textMuted, letterSpacing: 0.3 },
 
   // Monthly Intention Banner
   intentionBanner: {
