@@ -4,9 +4,11 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../../constants/theme';
 import { useApp } from '../../contexts/AppContext';
 import { getComputedStatus, getDaysUntil, getUniqueRitualCounts, Ritual } from '../../services/mockData';
+import StarField from '../../components/StarField';
 
 type StatusFilter = 'all' | 'scheduled' | 'approaching' | 'completed' | 'overdue';
 
@@ -280,6 +282,15 @@ export default function TrackerScreen() {
 
   return (
     <SafeAreaView edges={['top']} style={styles.container}>
+      <LinearGradient
+        colors={[theme.primary + '28', theme.primary + '10', 'transparent']}
+        locations={[0, 0.4, 1]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
+        style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 320, zIndex: 0 }}
+        pointerEvents="none"
+      />
+      <StarField starCount={35} showShootingStar={false} />
       {/* Header */}
       <View style={styles.header}>
         <View>

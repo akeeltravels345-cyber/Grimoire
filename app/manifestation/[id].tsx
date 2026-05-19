@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     position: 'absolute', bottom: 0, left: 0, right: 0,
     flexDirection: 'row', gap: 10,
     paddingHorizontal: 16, paddingTop: 12,
-    backgroundColor: '#1C0E3A',
+    backgroundColor: theme.background,
     borderTopWidth: 1, borderTopColor: theme.border,
   },
   logSignBtn: {

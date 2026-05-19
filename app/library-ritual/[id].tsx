@@ -233,8 +233,8 @@ export default function LibraryRitualDetailScreen() {
           </View>
         ) : null}
 
-        {/* Tangible Outcome */}
-        {libRitual.tangibleOutcome ? (
+        {/* Tangible Outcome — always visible in edit mode, hidden when empty in view mode */}
+        {(editing || libRitual.tangibleOutcome) ? (
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>PURPOSE / TANGIBLE OUTCOME</Text>
             <View style={styles.outcomeBox}>
@@ -242,10 +242,17 @@ export default function LibraryRitualDetailScreen() {
               <View style={styles.outcomeContent}>
                 <MaterialIcons name="track-changes" size={16} color={theme.accent} />
                 {editing ? (
-  <TextInput style={[styles.outcomeText, { borderBottomWidth: 1, borderBottomColor: theme.accent }]} value={editOutcome} onChangeText={setEditOutcome} multiline />
-) : (
-  <Text style={styles.outcomeText}>{libRitual.tangibleOutcome}</Text>
-)}
+                  <TextInput
+                    style={[styles.outcomeText, { borderBottomWidth: 1, borderBottomColor: theme.accent }]}
+                    value={editOutcome}
+                    onChangeText={setEditOutcome}
+                    placeholder="Optional: a specific measurable result…"
+                    placeholderTextColor={theme.textMuted}
+                    multiline
+                  />
+                ) : (
+                  <Text style={styles.outcomeText}>{libRitual.tangibleOutcome}</Text>
+                )}
               </View>
             </View>
           </View>
@@ -483,7 +490,7 @@ const styles = StyleSheet.create({
   floatingBar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     paddingHorizontal: 20, paddingTop: 12,
-    backgroundColor: '#1C0E3A',
+    backgroundColor: theme.background,
     borderTopWidth: 1, borderTopColor: theme.border,
   },
   addPracticeBtn: {

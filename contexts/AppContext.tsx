@@ -773,7 +773,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCoreCategoriesState([]);
     setMonthlySnapshots([]);
     setCurrentMonthIntention({ intention: '', ritualIntention: '', intentionSet: false, month: '' });
-    await AsyncStorage.multiRemove([STORAGE_KEY, MANIFESTATIONS_KEY, STANDALONE_KEY, NOTIF_IDS_KEY, LIBRARY_KEY, JOURNAL_TYPES_KEY, MOODS_KEY, CORE_CATEGORIES_KEY, SNAPSHOTS_KEY, MONTHLY_INTENTION_KEY]);
+    await AsyncStorage.multiRemove([STORAGE_KEY, MANIFESTATIONS_KEY, STANDALONE_KEY, NOTIF_IDS_KEY, LIBRARY_KEY, JOURNAL_TYPES_KEY, MOODS_KEY, CORE_CATEGORIES_KEY, SNAPSHOTS_KEY, MONTHLY_INTENTION_KEY, 'grimoire_spell_research']);
     await Notifications.cancelAllScheduledNotificationsAsync().catch(() => {});
   };
 

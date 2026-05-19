@@ -181,11 +181,6 @@ for (let i = 0; i < 90; i++) {
     );
   };
 
-  const handleComplete = () => {
-    updateStatus(ritual.id, 'completed');
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  };
-
   function getStatusStyle(status: string) {
     switch (status) {
       case 'brewing':  return { bg: theme.primary + '18', border: theme.primary, color: theme.primary, label: '\ud83e\ude84 Brewing', icon: 'hourglass-top' as const };

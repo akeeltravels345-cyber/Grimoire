@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, StyleSheet, Alert } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -9,6 +9,7 @@ import { theme } from '../../constants/theme';
 import { useApp } from '../../contexts/AppContext';
 import { useAlert } from '@/template';
 import { resolveCategoryColor } from '../../utils/categoryHelpers';
+import StarField from '../../components/StarField';
 
 const MOOD_COLORS: Record<string, string> = {
   Connected: '#6667AB', Empowered: '#7B337E', Peaceful: '#5EBD8A',
@@ -140,6 +141,7 @@ export default function JournalEntryDetailScreen() {
         style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 260 }}
         pointerEvents="none"
       />
+      <StarField starCount={30} showShootingStar={false} />
 
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 4 }]}>
